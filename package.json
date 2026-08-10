@@ -1,0 +1,20 @@
+{
+  "name": "js13kgames-2026",
+  "version": "0.1.0",
+  "description": "js13kGames 2026 entry, built on the LittleJS js13k branch",
+  "private": true,
+  "author": "Martin Tale",
+  "license": "MIT",
+  "scripts": {
+    "start": "node serve.js",
+    "build": "node game/build.mjs",
+    "test": "node test/smoke.mjs"
+  },
+  "devDependencies": {
+    "ect-bin": "~1.4.1",
+    "google-closure-compiler": "~20230502.0.0",
+    "roadroller": "~2.1.0",
+    "typescript": "~5.1.6",
+    "uglify-js": "~3.17.4"
+  }
+}

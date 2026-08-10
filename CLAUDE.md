@@ -1,6 +1,24 @@
 # js13kgames-2026
 
-Entry for the js13kGames 2026 compo (13 Aug - 13 Sep 2026), built on the LittleJS `js13k` branch.
+Entry for the js13kGames 2026 compo (13 Aug - 13 Sep 2026), built on the LittleJS `js13k` branch (vendored into `src/`).
+
+## Commands
+
+```bash
+npm start        # dev server, game at http://localhost:8000/game/
+npm run build    # writes game/game.zip, prints size vs the 13312 limit
+npm test         # headless engine smoke test
+```
+
+## Layout
+
+- `src/` - vendored LittleJS engine, keep unmodified so upstream fixes drop in cleanly
+- `game/` - the game: `game.js`, `index.html`, `build.mjs`, `tiles.png`
+- `serve.js`, `test/` - dev server and smoke test
+
+## Git
+
+Solo dev project: **commit directly to `main`**, no feature branches. Commit at each logical step.
 
 ## Reference docs
 

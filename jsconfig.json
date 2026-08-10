@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+  },
+  "include": [
+    "./src/*.js",
+    "./examples/starter/*.js",
+  ],
+  "exclude": [
+  ]
+}

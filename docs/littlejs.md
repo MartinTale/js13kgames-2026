@@ -3,23 +3,38 @@
 Repo: `https://github.com/KilledByAPixel/LittleJS` branch `js13k`. Version `1.18.25-js13k`. MIT.
 API docs (main branch, names/args/defaults match): https://killedbyapixel.github.io/LittleJS/docs
 
-Size-optimized fork of LittleJS for size-coding compos. Starter builds to **7684 bytes of 13312** (57.7%) with the whole engine plus `tiles.png` included - verified locally 2026-08-11, build takes ~10s.
+Size-optimized fork of LittleJS for size-coding compos. Vendored into `src/` in this repo. The starter game builds to **7681 bytes of 13312** (57.7%) with the whole engine plus `tiles.png` included - verified locally 2026-08-11, build takes ~10s.
 
 ## Setup
 
+The engine is vendored into this repo, so there is nothing to clone:
+
 ```bash
-git clone -b js13k https://github.com/KilledByAPixel/LittleJS.git
-cd LittleJS && npm install && npm start
+npm install && npm start
 ```
 
-Dev page: `http://localhost:8000/examples/starter/`. Edit `examples/starter/game.js`, reload.
+Dev page: `http://localhost:8000/game/`. Edit `game/game.js`, reload.
 
 **Use `npm start`, never open `index.html` over `file://`** - the browser treats `tiles.png` as cross-origin and the WebGL texture upload throws `SecurityError`. `serve.js` is a dependency-free static server that exists only for this. `PORT` env var changes the port.
 
 Debug overlay on the dev page: `Esc` toggles, then `1`/`2` for physics and particle debug, `5` screenshot, `6` record video. All debug tooling compiles out of the release zip.
 
-`npm run build` writes `examples/starter/game.zip` and prints size vs limit, exiting non-zero if over.
-`npm run build:engine` (dist bundles + TS defs) and `npm test` (headless smoke test) are not needed to make a game.
+`npm run build` writes `game/game.zip` and prints size vs limit, exiting non-zero if over.
+`npm test` runs a headless engine smoke test and is not needed to make a game.
+
+### Repo layout
+
+| Path | What |
+| --- | --- |
+| `src/` | Vendored LittleJS engine sources, unmodified |
+| `game/game.js` | The game. Where all gameplay code goes |
+| `game/index.html` | Dev page, loads engine sources individually |
+| `game/build.mjs` | Build pipeline and size config |
+| `game/tiles.png` | Sprite sheet, shipped in the zip |
+| `serve.js` | Dev static server |
+| `test/smoke.mjs` | Headless engine smoke test |
+
+Engine paths are one level shallower than upstream (`../src/` rather than `../../src/`) since `game/` sits at the repo root instead of `examples/starter/`. Keep `src/` unmodified so upstream fixes can be dropped in.
 
 ## Game structure
 
