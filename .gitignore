@@ -1,0 +1,9 @@
+# node files
+node_modules
+
+# editor files
+.vscode
+
+# build output
+game/build
+game/*.zip
