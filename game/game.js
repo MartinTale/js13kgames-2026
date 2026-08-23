@@ -1,212 +1,237 @@
 /*
-    Unicorn Drill - js13k 2026
-    Dig as deep as possible before your rainbow fuel runs out.
+    Rainbow Pop - js13k 2026
+    Pop rainbow bubbles with your unicorn horn, earn shards, buy upgrades.
 */
 
 'use strict';
 
-const WORLD_W = 40;
-const WORLD_H = 300;
-const SURFACE_Y = WORLD_H - 12; // tile row where open sky ends and diggable dirt begins
-const TILE_EMPTY = 0;
-const TILE_DIRT = 1;
-const TILE_HARD = 2;
+const SAVE_KEY = 'js13k26_rainbowpop_save';
+const HUE_STEP = .09;
 
-const sound_dig = new Sound([1, .1, 150, , .02, .1, , 1.5, , , , , , 3]);
-const sound_shard = new Sound([1.2, , 600, , .05, .1, , 1.8, , , 300, .05]);
-const sound_die = new Sound([1.5, , 200, .05, .2, .3, , 1.2, , , , , , .5]);
+const sound_pop = new Sound([1, .1, 300, , .04, .12, , 1.6, , , 200, .04]);
+const sound_buy = new Sound([1.1, , 500, , .05, .08, , 1.4, , , 400, .04]);
 
-let player, fuel, maxFuel, depth, maxDepth, shardsCollected, gameOver, hiscore;
-let shardEmitter;
+let bubbles, shards, particleEmitter;
+let clickPower, splashRadius, autoPopRate, spawnRate, lastSaveTime;
+let upgrades;
 
-// tile color by depth band, cycling through rainbow hues
-function tileColor(y)
+function defaultState()
 {
-    const depthBelowSurface = SURFACE_Y - y;
-    const hue = mod(depthBelowSurface * .03, 1);
-    return hsl(hue, .7, .35 + .1 * Math.sin(depthBelowSurface * .1));
+    return {
+        shards: 0,
+        clickLevel: 0,
+        splashLevel: 0,
+        autoLevel: 0,
+        spawnLevel: 0,
+        lastSaveTime: Date.now(),
+    };
 }
 
-function isHardTile(y)
-{
-    const depthBelowSurface = SURFACE_Y - y;
-    return depthBelowSurface > 40 && rand() < .15 + depthBelowSurface * .0008;
-}
+function upgradeCost(level) { return Math.floor(10 * Math.pow(1.5, level)); }
 
 ///////////////////////////////////////////////////////////////////////////////
 function gameInit()
 {
-    initTileCollision(vec2(WORLD_W, WORLD_H));
-    const tileLayer = new TileLayer(vec2(), tileCollisionSize);
+    cameraPos = vec2(0, 0);
+    cameraScale = 40;
+    gravity.y = 0;
+    setGLEnable(false);
 
-    const pos = vec2();
-    for (pos.x = WORLD_W; pos.x--;)
-    for (pos.y = WORLD_H; pos.y--;)
-    {
-        if (pos.y >= SURFACE_Y)
-        {
-            setTileCollisionData(pos, TILE_EMPTY);
-            continue;
-        }
+    let saved;
+    try { saved = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) {}
+    const state = saved || defaultState();
 
-        const hard = isHardTile(pos.y);
-        const tileIndex = hard ? TILE_HARD : TILE_DIRT;
-        setTileCollisionData(pos, tileIndex);
-        const data = new TileLayerData(0, 0, 0, tileColor(pos.y));
-        tileLayer.setData(pos, data);
-    }
-    tileLayer.redraw();
-    window.worldTileLayer = tileLayer;
+    shards = state.shards;
+    upgrades = {
+        click: state.clickLevel,
+        splash: state.splashLevel,
+        auto: state.autoLevel,
+        spawn: state.spawnLevel,
+    };
 
-    player = new Unicorn(vec2(WORLD_W / 2, SURFACE_Y + 3));
+    bubbles = [];
+    recalcStats();
 
-    cameraPos = player.pos.copy();
-    cameraScale = 32;
-    gravity.y = -.015;
+    // offline progress from auto-poppers, capped at 2 hours
+    const elapsed = Math.min((Date.now() - (state.lastSaveTime || Date.now())) / 1000, 7200);
+    if (elapsed > 5 && autoPopRate > 0)
+        shards += Math.floor(autoPopRate * elapsed * .6);
 
-    maxFuel = 100;
-    fuel = maxFuel;
-    depth = 0;
-    maxDepth = 0;
-    shardsCollected = 0;
-    gameOver = false;
-    hiscore = +(localStorage.getItem('js13k26_unicorn_hiscore') || 0);
-
-    shardEmitter = new ParticleEmitter(
-        player.pos, 0,
-        .5, .1, 80, PI,
+    particleEmitter = new ParticleEmitter(
+        vec2(), 0,
+        .3, .1, 60, PI,
         0,
-        hsl(0, 1, .6), hsl(.6, 1, .6),
-        hsl(0, 1, .6, 0), hsl(.6, 1, .6, 0),
-        .4, .3, 0, .15, .1,
-        .95, 1, .3, PI,
-        .05, .5, 0, 1
+        hsl(0, 1, .7), hsl(.5, 1, .7),
+        hsl(0, 1, .7, 0), hsl(.5, 1, .7, 0),
+        .5, .25, 0, .2, .1,
+        .94, 1, 0, PI,
+        .05, .6, 0, 1
     );
-    shardEmitter.emitRate = 0;
+    particleEmitter.emitRate = 0;
+
+    autoPopTimer = 0;
+    spawnTimer = 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-class Unicorn extends EngineObject
+function recalcStats()
 {
-    constructor(pos)
-    {
-        super(pos, vec2(.8, .8), 0, 0, hsl(.85, .6, .8));
-        this.setCollision(true, true);
-        this.digTimer = 0;
-        this.facing = 1;
-    }
-
-    update()
-    {
-        if (gameOver)
-            return;
-
-        super.update();
-
-        const moveInput = keyDirection();
-        this.velocity.x += moveInput.x * .02;
-        this.velocity.x = clamp(this.velocity.x, -.15, .15);
-        if (moveInput.x)
-            this.facing = sign(moveInput.x);
-
-        if ((keyIsDown('ArrowUp') || keyIsDown('KeyW')) && this.groundObject)
-            this.velocity.y = .22;
-
-        // dig in facing/movement direction
-        this.digTimer -= timeDelta;
-        if (fuel > 0 && this.digTimer <= 0)
-        {
-            const digDir = moveInput.y < 0 ? vec2(0, -1) :
-                moveInput.y > 0 ? vec2(0, 1) :
-                vec2(this.facing, 0);
-            this.tryDig(this.pos.add(digDir.scale(.7)));
-        }
-
-        // deplete fuel over time, faster while digging
-        fuel = max(0, fuel - timeDelta * 1.2);
-        if (fuel <= 0 && !gameOver)
-            endRun();
-
-        maxDepth = max(maxDepth, Math.floor(SURFACE_Y - this.pos.y));
-        depth = Math.floor(SURFACE_Y - this.pos.y);
-
-        // fell into the void at world bottom
-        if (this.pos.y < 2)
-            endRun();
-    }
-
-    tryDig(worldPos)
-    {
-        const tilePos = worldPos.floor();
-        const data = getTileCollisionData(tilePos);
-        if (data === TILE_EMPTY)
-            return;
-
-        const cost = data === TILE_HARD ? 2.5 : 1;
-        this.digTimer = data === TILE_HARD ? .18 : .08;
-        setTileCollisionData(tilePos, TILE_EMPTY);
-        window.worldTileLayer.setData(tilePos, new TileLayerData());
-        window.worldTileLayer.redraw();
-        sound_dig.play(this.pos, .5);
-
-        // chance to reveal a rainbow shard where dirt was removed
-        if (rand() < .12)
-            new Shard(tilePos.add(vec2(.5, .5)));
-    }
+    clickPower = 1 + upgrades.click;
+    splashRadius = upgrades.splash * .5;
+    autoPopRate = upgrades.auto * .5; // pops per second, abstracted to shard income
+    spawnRate = 1 + upgrades.spawn * .3;
 }
 
+let autoPopTimer, spawnTimer;
+
 ///////////////////////////////////////////////////////////////////////////////
-class Shard extends EngineObject
+class Bubble extends EngineObject
 {
-    constructor(pos)
+    constructor(pos, tier)
     {
-        super(pos, vec2(.4, .4), 0, rand(PI * 2), hsl(rand(), .9, .6));
+        const size = 1.2 - tier * .25;
+        super(pos, vec2(max(size, .35)), 0, 0, hsl(mod(tier * HUE_STEP, 1), .8, .6));
         this.setCollision(false, false);
         this.gravityScale = 0;
+        this.tier = tier;
+        this.maxHp = 1 + tier * 2;
+        this.hp = this.maxHp;
         this.bobTime = rand(PI * 2);
+        this.driftAngle = rand(PI * 2);
+        this.driftSpeed = .015 + rand(.015);
+        this.value = 1 + tier * 2;
     }
 
     update()
     {
-        this.bobTime += timeDelta * 4;
-        this.angle += timeDelta * 2;
-        if (!gameOver && this.pos.distance(player.pos) < .7)
-        {
-            fuel = min(maxFuel, fuel + 18);
-            shardsCollected++;
-            sound_shard.play(this.pos, .6);
-            shardEmitter.pos = this.pos.copy();
-            shardEmitter.emitRate = 200;
-            shardEmitter.emitTime = .15;
+        this.bobTime += timeDelta * 2;
+        this.pos.x += Math.cos(this.driftAngle) * this.driftSpeed;
+        this.pos.y += Math.sin(this.driftAngle) * this.driftSpeed + Math.sin(this.bobTime) * .003;
+
+        // despawn if drifted off the play field
+        if (this.pos.length() > 14)
             this.destroy();
-        }
     }
 
     render()
     {
-        drawRect(this.pos.add(vec2(0, Math.sin(this.bobTime) * .08)), this.size, this.color, this.angle);
+        drawRect(this.pos, this.size, this.color, 0);
+        const hpPct = this.hp / this.maxHp;
+        if (hpPct < 1)
+            drawRect(this.pos.add(vec2(0, -this.size.y * .7)), vec2(this.size.x * hpPct, .08), hsl(.35 * hpPct, 1, .5));
+    }
+
+    pop(bonusMultiplier = 1)
+    {
+        shards += this.value * bonusMultiplier;
+        particleEmitter.pos = this.pos.copy();
+        particleEmitter.colorStartA = this.color;
+        particleEmitter.colorStartB = hsl(mod(this.tier * HUE_STEP + .3, 1), .8, .6);
+        particleEmitter.emitRate = 150;
+        particleEmitter.emitTime = .12;
+        sound_pop.play(undefined, .4);
+
+        // split into smaller bubbles, up to a tier cap
+        if (this.tier < 4)
+        {
+            const childCount = 2;
+            for (let i = 0; i < childCount; i++)
+            {
+                const b = new Bubble(this.pos.add(randInCircle(.3)), this.tier + 1);
+                b.driftAngle = rand(PI * 2);
+                bubbles.push(b);
+            }
+        }
+        bubbles.splice(bubbles.indexOf(this), 1);
+        this.destroy();
+    }
+
+    hit(dmg, splash)
+    {
+        this.hp -= dmg;
+        if (this.hp <= 0)
+        {
+            this.pop();
+            if (splash > 0)
+                hitSplash(this.pos, splash, dmg * .5);
+        }
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-function endRun()
+function hitSplash(pos, radius, dmg)
 {
-    gameOver = true;
-    sound_die.play(player.pos);
-    if (maxDepth > hiscore)
+    for (const b of bubbles.slice())
     {
-        hiscore = maxDepth;
-        localStorage.setItem('js13k26_unicorn_hiscore', hiscore);
+        if (b.pos.distance(pos) < radius)
+            b.hit(dmg, 0);
     }
+}
+
+function spawnBubble()
+{
+    const angle = rand(PI * 2);
+    const dist = 8 + rand(4);
+    const pos = vec2(Math.cos(angle) * dist, Math.sin(angle) * dist);
+    const b = new Bubble(pos, 0);
+    bubbles.push(b);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 function gameUpdate()
 {
-    if (gameOver && keyWasPressed('Space'))
-        gameInit();
+    spawnTimer += timeDelta * spawnRate;
+    while (spawnTimer > 1)
+    {
+        spawnTimer -= 1;
+        if (bubbles.length < 40)
+            spawnBubble();
+    }
 
-    cameraPos = cameraPos.lerp(player.pos, .1);
+    if (autoPopRate > 0)
+    {
+        autoPopTimer += timeDelta * autoPopRate;
+        while (autoPopTimer > 1)
+        {
+            autoPopTimer -= 1;
+            if (bubbles.length)
+            {
+                const b = bubbles[randInt(bubbles.length)];
+                b.hit(1, 0);
+            }
+        }
+    }
+
+    if (mouseWasPressed(0))
+    {
+        const clicked = bubbles.find(b => b.pos.distance(mousePos) < b.size.x * .6);
+        if (clicked)
+        {
+            clicked.hit(clickPower, splashRadius);
+        }
+        else
+        {
+            checkUiClick(mousePosScreen);
+        }
+    }
+
+    // periodic save
+    lastSaveTime = (lastSaveTime || 0) + timeDelta;
+    if (lastSaveTime > 5)
+    {
+        lastSaveTime = 0;
+        saveGame();
+    }
+}
+
+function saveGame()
+{
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+        shards,
+        clickLevel: upgrades.click,
+        splashLevel: upgrades.splash,
+        autoLevel: upgrades.auto,
+        spawnLevel: upgrades.spawn,
+        lastSaveTime: Date.now(),
+    }));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -217,36 +242,67 @@ function gameUpdatePost()
 ///////////////////////////////////////////////////////////////////////////////
 function gameRender()
 {
-    // sky above surface
-    drawRect(vec2(WORLD_W / 2, SURFACE_Y + 20), vec2(WORLD_W + 20, 60), hsl(.55, .6, .75), 0, 0);
+    drawRect(vec2(), vec2(40), hsl(.6, .3, .12), 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+const UI_BUTTONS = [
+    { key: 'click', label: 'Horn Power', desc: '+1 click damage' },
+    { key: 'splash', label: 'Splash Radius', desc: '+AOE on pop' },
+    { key: 'auto', label: 'Auto-Unicorn', desc: '+.5 auto pops/sec' },
+    { key: 'spawn', label: 'Spawn Rate', desc: '+bubbles/sec' },
+];
+let uiButtonRects = [];
+
+function checkUiClick(screenPos)
+{
+    for (const btn of uiButtonRects)
+    {
+        if (screenPos.x >= btn.x && screenPos.x <= btn.x + btn.w &&
+            screenPos.y >= btn.y && screenPos.y <= btn.y + btn.h)
+        {
+            const cost = upgradeCost(upgrades[btn.key]);
+            if (shards >= cost)
+            {
+                shards -= cost;
+                upgrades[btn.key]++;
+                recalcStats();
+                sound_buy.play();
+                saveGame();
+            }
+        }
+    }
+}
+
 function gameRenderPost()
 {
     const w = mainCanvasSize.x;
 
-    // fuel bar
-    const barW = 200, barH = 18, barX = 20, barY = 30;
-    drawRect(vec2(barX + barW / 2, barY), vec2(barW + 4, barH + 4), hsl(0, 0, 0, .5), 0, false, true);
-    const fuelPct = fuel / maxFuel;
-    const fuelColor = hsl(.35 * fuelPct, .9, .55);
-    drawRect(vec2(barX + barW * fuelPct / 2, barY), vec2(barW * fuelPct, barH), fuelColor, 0, false, true);
-    drawTextScreen('FUEL', vec2(barX + barW / 2, barY), 14, WHITE, 3, BLACK);
+    drawTextScreen(`Shards: ${Math.floor(shards)}`, vec2(w / 2, 40), 32, WHITE, 3, BLACK);
+    drawTextScreen('Click bubbles to pop them', vec2(w / 2, 72), 16, WHITE, 2, BLACK);
 
-    drawTextScreen(`Depth ${depth}m`, vec2(80, 60), 20, WHITE, 3, BLACK);
-    drawTextScreen(`Shards ${shardsCollected}`, vec2(90, 84), 18, WHITE, 3, BLACK);
-    drawTextScreen(`Best ${hiscore}m`, vec2(w - 90, 60), 18, WHITE, 3, BLACK);
-
-    if (gameOver)
+    uiButtonRects = [];
+    const btnW = 190, btnH = 60, gap = 12;
+    const startX = 20, startY = mainCanvasSize.y - btnH - 20;
+    UI_BUTTONS.forEach((btn, i) =>
     {
-        const cy = mainCanvasSize.y / 2;
-        drawTextScreen('OUT OF FUEL', vec2(w / 2, cy - 40), 48, WHITE, 4, BLACK);
-        drawTextScreen(`Depth reached: ${maxDepth}m`, vec2(w / 2, cy + 10), 26, WHITE, 3, BLACK);
-        drawTextScreen('Press SPACE to dig again', vec2(w / 2, cy + 50), 22, WHITE, 3, BLACK);
-    }
+        const x = startX + i * (btnW + gap);
+        const y = startY;
+        const cost = upgradeCost(upgrades[btn.key]);
+        const affordable = shards >= cost;
+        const bg = affordable ? hsl(.4, .6, .3, .85) : hsl(0, 0, .2, .85);
+
+        drawRect(vec2(x + btnW / 2, y + btnH / 2), vec2(btnW, btnH), bg, 0, false, true);
+        drawTextScreen(`${btn.label} Lv${upgrades[btn.key]}`, vec2(x + btnW / 2, y + 16), 15, WHITE, 2, BLACK);
+        drawTextScreen(btn.desc, vec2(x + btnW / 2, y + 34), 11, hsl(0, 0, .8), 1, BLACK);
+        drawTextScreen(`${cost} shards`, vec2(x + btnW / 2, y + 50), 13, affordable ? hsl(.35, 1, .7) : hsl(0, .7, .6), 2, BLACK);
+
+        uiButtonRects.push({ x, y, w: btnW, h: btnH, key: btn.key });
+    });
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+window.addEventListener('beforeunload', () => { if (typeof shards !== 'undefined') saveGame(); });
+
 // Startup LittleJS Engine
 engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRenderPost, []);
