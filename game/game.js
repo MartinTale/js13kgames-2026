@@ -1,347 +1,304 @@
 /*
-    Rainbow Pop - js13k 2026
-    Click the unicorn horn to launch bubbles/candy/gems, click them to pop
-    for shards, spend shards on upgrades.
+    js13k 2026
 */
 
 'use strict';
 
-const SAVE_KEY = 'js13k26_rainbowpop_save';
-const TILE_SIZE = 32, TILE_PAD = 1;
-const TILE_HORN = 0, TILE_HORN_FIRE = 1, TILE_BUBBLE = 2, TILE_CANDY = 3, TILE_GEM = 4;
-const ITEM_TYPES = [
-    { tile: TILE_BUBBLE, hpMul: 1,   valueMul: 1,   weight: 5 },
-    { tile: TILE_CANDY,  hpMul: 1.5, valueMul: 2,   weight: 3 },
-    { tile: TILE_GEM,    hpMul: 2.5, valueMul: 5,   weight: 1 },
-];
-const HUE_STEP = .09;
-const HORN_POS = vec2(0, -6.5);
-
-const sound_pop = new Sound([1, .1, 300, , .04, .12, , 1.6, , , 200, .04]);
-const sound_buy = new Sound([1.1, , 500, , .05, .08, , 1.4, , , 400, .04]);
-const sound_fire = new Sound([1, , 200, , .03, .08, , 1.2, , , -100, .03]);
-
-let items, shards, particleEmitter;
-let clickPower, splashRadius, autoFireRate, autoPopRate, spawnRate;
-let upgrades, saveTimer, autoFireTimer, autoPopTimer, spawnTimer, hornFireFlash;
-
-function itemTile(t) { return tile(t, TILE_SIZE, 0, TILE_PAD); }
-
-function defaultState()
-{
-    return {
-        shards: 0,
-        clickLevel: 0,
-        splashLevel: 0,
-        autoFireLevel: 0,
-        autoPopLevel: 0,
-        spawnLevel: 0,
-        lastSaveTime: Date.now(),
-    };
-}
-
-function upgradeCost(level) { return Math.floor(10 * Math.pow(1.5, level)); }
-
-///////////////////////////////////////////////////////////////////////////////
 function gameInit()
 {
     cameraPos = vec2(0, 0);
-    cameraScale = 40;
-    gravity.y = -.01;
-
-    let saved;
-    try { saved = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) {}
-    const state = saved || defaultState();
-
-    shards = state.shards;
-    upgrades = {
-        click: state.clickLevel,
-        splash: state.splashLevel,
-        autoFire: state.autoFireLevel,
-        autoPop: state.autoPopLevel,
-        spawn: state.spawnLevel,
-    };
-
-    items = [];
-    recalcStats();
-
-    // offline progress from auto-fire + auto-pop working together, capped at 2 hours
-    const elapsed = Math.min((Date.now() - (state.lastSaveTime || Date.now())) / 1000, 7200);
-    if (elapsed > 5 && autoFireRate > 0 && autoPopRate > 0)
-        shards += Math.floor(Math.min(autoFireRate, autoPopRate) * elapsed * 2 * .5);
-
-    particleEmitter = new ParticleEmitter(
-        vec2(), 0,
-        .3, .1, 60, PI,
-        0,
-        hsl(0, 1, .7), hsl(.5, 1, .7),
-        hsl(0, 1, .7, 0), hsl(.5, 1, .7, 0),
-        .5, .25, 0, .2, .1,
-        .94, 1, 0, PI,
-        .05, .6, 0, 1
-    );
-    particleEmitter.emitRate = 0;
-
-    autoFireTimer = 0;
-    autoPopTimer = 0;
-    spawnTimer = 0;
-    saveTimer = 0;
-    hornFireFlash = 0;
 }
 
-function recalcStats()
-{
-    clickPower = 1 + upgrades.click;
-    splashRadius = upgrades.splash * .5;
-    autoFireRate = upgrades.autoFire * .3;
-    autoPopRate = upgrades.autoPop * .5;
-    spawnRate = 1 + upgrades.spawn * .3;
-}
-
-function pickItemType()
-{
-    const totalWeight = ITEM_TYPES.reduce((s, t) => s + t.weight, 0);
-    let r = rand(totalWeight);
-    for (const t of ITEM_TYPES)
-    {
-        if (r < t.weight) return t;
-        r -= t.weight;
-    }
-    return ITEM_TYPES[0];
-}
-
-///////////////////////////////////////////////////////////////////////////////
-class Item extends EngineObject
-{
-    constructor(pos, tier, type)
-    {
-        const size = 1.1 - tier * .2;
-        super(pos, vec2(max(size, .35)), itemTile(type.tile), 0, hsl(mod(tier * HUE_STEP + rand(.05), 1), .8, .6));
-        this.setCollision(false, false);
-        this.gravityScale = 1;
-        this.type = type;
-        this.tier = tier;
-        this.maxHp = Math.ceil((1 + tier * 2) * type.hpMul);
-        this.hp = this.maxHp;
-        this.value = Math.ceil((1 + tier * 2) * type.valueMul);
-        this.velocity = vec2((rand() - .5) * .08, .28 + rand(.08));
-        this.spinSpeed = (rand() - .5) * 2;
-    }
-
-    update()
-    {
-        super.update();
-        this.angle += this.spinSpeed * timeDelta;
-
-        // fell back off the bottom of the play field, or drifted too far sideways
-        if (this.pos.y < -8 || abs(this.pos.x) > 10)
-        {
-            items.splice(items.indexOf(this), 1);
-            this.destroy();
-        }
-    }
-
-    render()
-    {
-        drawTile(this.pos, this.size, this.tileInfo, this.color, this.angle);
-        const hpPct = this.hp / this.maxHp;
-        if (hpPct < 1)
-            drawRect(this.pos.add(vec2(0, this.size.y * .7)), vec2(this.size.x * hpPct, .08), hsl(.35 * hpPct, 1, .5));
-    }
-
-    pop()
-    {
-        shards += this.value;
-        particleEmitter.pos = this.pos.copy();
-        particleEmitter.colorStartA = this.color;
-        particleEmitter.colorStartB = hsl(mod(this.tier * HUE_STEP + .3, 1), .8, .6);
-        particleEmitter.emitRate = 150;
-        particleEmitter.emitTime = .12;
-        sound_pop.play(undefined, .4);
-
-        if (this.tier < 3)
-        {
-            for (let i = 0; i < 2; i++)
-            {
-                const it = new Item(this.pos.add(randInCircle(.2)), this.tier + 1, this.type);
-                it.velocity = vec2((rand() - .5) * .12, .15 + rand(.1));
-                items.push(it);
-            }
-        }
-        items.splice(items.indexOf(this), 1);
-        this.destroy();
-    }
-
-    hit(dmg, splash)
-    {
-        this.hp -= dmg;
-        if (this.hp <= 0)
-        {
-            const pos = this.pos.copy();
-            this.pop();
-            if (splash > 0)
-                hitSplash(pos, splash, dmg * .5);
-        }
-    }
-}
-
-function hitSplash(pos, radius, dmg)
-{
-    for (const it of items.slice())
-    {
-        if (it.pos.distance(pos) < radius)
-            it.hit(dmg, 0);
-    }
-}
-
-function fireItem()
-{
-    if (items.length >= 30)
-        return;
-    const type = pickItemType();
-    const it = new Item(HORN_POS.add(vec2(0, .5)), 0, type);
-    items.push(it);
-    hornFireFlash = .12;
-    sound_fire.play(undefined, .3);
-}
-
-///////////////////////////////////////////////////////////////////////////////
 function gameUpdate()
 {
-    hornFireFlash = max(0, hornFireFlash - timeDelta);
-
-    spawnTimer += timeDelta * spawnRate;
-    autoFireTimer += timeDelta * autoFireRate;
-    while (autoFireTimer > 1)
-    {
-        autoFireTimer -= 1;
-        fireItem();
-    }
-
-    if (autoPopRate > 0)
-    {
-        autoPopTimer += timeDelta * autoPopRate;
-        while (autoPopTimer > 1)
-        {
-            autoPopTimer -= 1;
-            if (items.length)
-                items[randInt(items.length)].hit(1, 0);
-        }
-    }
-
-    if (mouseWasPressed(0))
-    {
-        if (mousePos.distance(HORN_POS) < 1.1)
-        {
-            fireItem();
-        }
-        else
-        {
-            const clicked = items.find(it => it.pos.distance(mousePos) < it.size.x * .6);
-            if (clicked)
-                clicked.hit(clickPower, splashRadius);
-            else
-                checkUiClick(mousePosScreen);
-        }
-    }
-
-    saveTimer += timeDelta;
-    if (saveTimer > 5)
-    {
-        saveTimer = 0;
-        saveGame();
-    }
 }
 
-function saveGame()
-{
-    localStorage.setItem(SAVE_KEY, JSON.stringify({
-        shards,
-        clickLevel: upgrades.click,
-        splashLevel: upgrades.splash,
-        autoFireLevel: upgrades.autoFire,
-        autoPopLevel: upgrades.autoPop,
-        spawnLevel: upgrades.spawn,
-        lastSaveTime: Date.now(),
-    }));
-}
-
-///////////////////////////////////////////////////////////////////////////////
 function gameUpdatePost()
 {
 }
 
-///////////////////////////////////////////////////////////////////////////////
 function gameRender()
 {
     drawRect(vec2(), vec2(40), hsl(.6, .3, .12), 0);
-
-    // unicorn horn at bottom, glows brighter while firing
-    const hornTile = hornFireFlash > 0 ? TILE_HORN_FIRE : TILE_HORN;
-    const hornColor = hsl(.85, .5, hornFireFlash > 0 ? .85 : .7);
-    drawTile(HORN_POS, vec2(2), itemTile(hornTile), hornColor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const UI_BUTTONS = [
-    { key: 'click', label: 'Horn Power', desc: '+1 click damage' },
-    { key: 'splash', label: 'Splash Radius', desc: '+AOE on pop' },
-    { key: 'autoFire', label: 'Auto-Fire', desc: '+horn fires itself' },
-    { key: 'autoPop', label: 'Auto-Pop', desc: '+items pop themselves' },
-    { key: 'spawn', label: 'Fire Rate+', desc: '+faster auto-fire' },
-];
-let uiButtonRects = [];
+// Interactive 3D button with hover/press animation and a particle burst on click,
+// styled after https://github.com/dojofoo/dojofoo motion Button + Confetti.
 
-function checkUiClick(screenPos)
+const PARTICLE_SHAPES = ['circle', 'circleOutline', 'square', 'squareOutline', 'plus', 'cross', 'triangle', 'triangleOutline'];
+
+// matches SPRING_PRESS from the dojofoo source: { stiffness: 500, damping: 30, mass: .6 }
+const SPRING_STIFFNESS = 500, SPRING_DAMPING = 30, SPRING_MASS = .6;
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+// critically/under-damped harmonic oscillator step, matches Framer/Motion's spring model
+class Spring
 {
-    for (const btn of uiButtonRects)
+    constructor(value = 0) { this.value = value; this.target = value; this.velocity = 0; }
+    set(target) { this.target = target; }
+    snap(value) { this.value = this.target = value; this.velocity = 0; }
+    update(dt)
     {
-        if (screenPos.x >= btn.x && screenPos.x <= btn.x + btn.w &&
-            screenPos.y >= btn.y && screenPos.y <= btn.y + btn.h)
+        // sub-step for stability at low frame rates
+        const steps = Math.max(1, Math.ceil(dt / (1 / 120)));
+        const h = dt / steps;
+        for (let i = 0; i < steps; i++)
         {
-            const cost = upgradeCost(upgrades[btn.key]);
-            if (shards >= cost)
-            {
-                shards -= cost;
-                upgrades[btn.key]++;
-                recalcStats();
-                sound_buy.play();
-                saveGame();
-            }
+            const accel = (-SPRING_STIFFNESS * (this.value - this.target) - SPRING_DAMPING * this.velocity) / SPRING_MASS;
+            this.velocity += accel * h;
+            this.value += this.velocity * h;
         }
     }
 }
 
+class Button
+{
+    constructor(x, y, w, h, color, label, onClick)
+    {
+        this.x = x; this.y = y; this.w = w; this.h = h;
+        this.color = color; // { base, light, dark, text }
+        this.label = label;
+        this.onClick = onClick;
+        this.wrapperScale = new Spring(1); // whileHover 1.02 / whileTap 0.98 on the outer span
+        this.pressY = new Spring(0);       // whileTap { y: 2 } on the button itself
+        this.hovering = false;
+        this.pressing = false;
+        this.particles = [];
+    }
+
+    contains(px, py)
+    {
+        return px >= this.x && px <= this.x + this.w && py >= this.y && py <= this.y + this.h;
+    }
+
+    update(dt)
+    {
+        const mx = mousePosScreen.x, my = mousePosScreen.y;
+        this.hovering = this.contains(mx, my);
+
+        if (mouseWasPressed(0) && this.hovering)
+        {
+            this.pressing = true;
+            this.emitBurst();
+            if (this.onClick) this.onClick();
+        }
+        if (mouseWasReleased(0))
+            this.pressing = false;
+        if (this.pressing && !mouseIsDown(0))
+            this.pressing = false;
+
+        // outer wrapper: whileTap scale takes priority over whileHover, as in Motion
+        const wrapperTarget = this.pressing ? .98 : this.hovering ? 1.02 : 1;
+        this.wrapperScale.set(wrapperTarget);
+        this.wrapperScale.update(dt);
+
+        this.pressY.set(this.pressing ? 2 : 0);
+        this.pressY.update(dt);
+
+        // advance particles
+        for (let i = this.particles.length - 1; i >= 0; i--)
+        {
+            const p = this.particles[i];
+            p.t += dt / p.duration;
+            if (p.t >= 1) { this.particles.splice(i, 1); continue; }
+        }
+    }
+
+    emitBurst()
+    {
+        const count = 10;
+        const centerX = this.x + this.w / 2, centerY = this.y + this.h / 2;
+        const direction = -90; // burst upward, degrees (0 = right, -90 = up)
+        const angleSpread = 220;
+        for (let i = 0; i < count; i++)
+        {
+            const angle = angleSpread === 0 ? direction :
+                (direction - angleSpread / 2) + (i + Math.random()) * (angleSpread / count);
+            const rad = angle * Math.PI / 180;
+            const insetX = this.w / 2 - 4, insetY = this.h / 2 - 4;
+            const scale = Math.max(Math.abs(Math.cos(rad)), Math.abs(Math.sin(rad))) || 1;
+            const startX = centerX + insetX * Math.cos(rad) / scale;
+            const startY = centerY + insetY * Math.sin(rad) / scale;
+            const radius = lerp(32, 48, Math.random());
+            const curvature = lerp(-8, 12, Math.random());
+            const duration = lerp(.3, .5, Math.random());
+            const shape = PARTICLE_SHAPES[randInt(PARTICLE_SHAPES.length)];
+            const size = lerp(10, 14, Math.random());
+            const spins = lerp(-.75, .75, Math.random()) * duration;
+
+            const endX = startX + Math.cos(rad) * radius;
+            const endY = startY + Math.sin(rad) * radius;
+            const midX = (startX + endX) / 2, midY = (startY + endY) / 2;
+            const outX = Math.cos(rad), outY = Math.sin(rad);
+            const ctrlX = midX - (-outY) * curvature;
+            const ctrlY = midY + outX * curvature;
+
+            this.particles.push({ startX, startY, ctrlX, ctrlY, endX, endY, t: 0, duration, shape, size, spins });
+        }
+    }
+
+    render(ctx)
+    {
+        // depth layer sits 3px below the face and is always visible as the "lip" (pb-[3px] / top-[3px])
+        const lift = 3;
+        const scale = this.wrapperScale.value;
+        const pressY = this.pressY.value;
+
+        const cx = this.x + this.w / 2, cy = this.y + this.h / 2;
+        const w = this.w * scale, h = this.h * scale;
+        const x = cx - w / 2, y = cy - h / 2;
+        const liftScaled = lift * scale;
+
+        const roundedPath = (px, py, pw, ph) =>
+        {
+            const rr = ph / 2;
+            ctx.beginPath();
+            ctx.moveTo(px + rr, py);
+            ctx.arcTo(px + pw, py, px + pw, py + ph, rr);
+            ctx.arcTo(px + pw, py + ph, px, py + ph, rr);
+            ctx.arcTo(px, py + ph, px, py, rr);
+            ctx.arcTo(px, py, px + pw, py, rr);
+            ctx.closePath();
+        };
+
+        // particles render behind the button (they burst out from under it)
+        this.renderParticles(ctx);
+
+        // soft drop shadow under the whole button
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,.35)';
+        ctx.shadowBlur = h * .3;
+        ctx.shadowOffsetY = h * .18;
+        roundedPath(x, y + liftScaled, w, h - liftScaled);
+        ctx.fillStyle = this.color.dark;
+        ctx.fill();
+        ctx.restore();
+
+        // dark depth/bottom layer, fixed in place (only the face moves on press)
+        roundedPath(x, y + liftScaled, w, h - liftScaled);
+        ctx.fillStyle = this.color.dark;
+        ctx.fill();
+
+        // glossy top face, offset down by pressY on press (whileTap { y: 2 })
+        const faceH = h - liftScaled;
+        const faceY = y + pressY * scale;
+        roundedPath(x, faceY, w, faceH);
+        const grad = ctx.createLinearGradient(0, faceY, 0, faceY + faceH);
+        const hoverAmt = clamp((scale - 1) / .02, 0, 1);
+        const lightCol = hoverAmt > 0 ? mixWhite(this.color.light, hoverAmt * .1) : this.color.light;
+        grad.addColorStop(0, lightCol);
+        grad.addColorStop(1, this.color.base);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // label
+        ctx.font = `700 ${h * .38}px system-ui, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = this.color.text || '#fff';
+        ctx.fillText(this.label, cx, faceY + faceH / 2);
+    }
+
+    renderParticles(ctx)
+    {
+        for (const p of this.particles)
+        {
+            const t = p.t;
+            // keyTimes 0,0.2,1 -> keyPoints 0,0.22,1 (fast start, slow drift out), matches source easing
+            const u = t < .2 ? (t / .2) * .22 : .22 + ((t - .2) / .8) * .78;
+            const omu = 1 - u;
+            const px = omu * omu * p.startX + 2 * omu * u * p.ctrlX + u * u * p.endX;
+            const py = omu * omu * p.startY + 2 * omu * u * p.ctrlY + u * u * p.endY;
+
+            // scale keyframes 1 -> 0.8075 -> 0.125 matching source
+            const s = t < .2 ? lerp(1, .8075, t / .2) : lerp(.8075, .125, (t - .2) / .8);
+            const rot = p.spins * (t < .2 ? (t / .2) * 79.2 : 79.2 + (t - .2) / .8 * (360 - 79.2)) * Math.PI / 180;
+            const alpha = 1 - Math.pow(t, 2);
+
+            ctx.save();
+            ctx.translate(px, py);
+            ctx.rotate(rot);
+            ctx.scale(s, s);
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = this.color.base;
+            ctx.strokeStyle = this.color.base;
+            ctx.lineWidth = 1.5;
+            drawParticleShape(ctx, p.shape, p.size / 2);
+            ctx.restore();
+        }
+    }
+}
+
+function mixWhite(hex, amount)
+{
+    const c = parseInt(hex.slice(1), 16);
+    let r = (c >> 16) & 255, g = (c >> 8) & 255, b = c & 255;
+    r = Math.round(lerp(r, 255, amount));
+    g = Math.round(lerp(g, 255, amount));
+    b = Math.round(lerp(b, 255, amount));
+    return `rgb(${r},${g},${b})`;
+}
+
+function drawParticleShape(ctx, shape, r)
+{
+    switch (shape)
+    {
+        case 'circle':
+            ctx.beginPath(); ctx.arc(0, 0, r, 0, 2 * Math.PI); ctx.fill();
+            break;
+        case 'circleOutline':
+            ctx.beginPath(); ctx.arc(0, 0, r * .85, 0, 2 * Math.PI); ctx.stroke();
+            break;
+        case 'square':
+            ctx.fillRect(-r, -r, r * 2, r * 2);
+            break;
+        case 'squareOutline':
+            ctx.strokeRect(-r * .8, -r * .8, r * 1.6, r * 1.6);
+            break;
+        case 'plus':
+            ctx.beginPath();
+            ctx.moveTo(-r, 0); ctx.lineTo(r, 0);
+            ctx.moveTo(0, -r); ctx.lineTo(0, r);
+            ctx.stroke();
+            break;
+        case 'cross':
+            ctx.beginPath();
+            ctx.moveTo(-r * .75, -r * .75); ctx.lineTo(r * .75, r * .75);
+            ctx.moveTo(r * .75, -r * .75); ctx.lineTo(-r * .75, r * .75);
+            ctx.stroke();
+            break;
+        case 'triangle':
+            ctx.beginPath();
+            ctx.moveTo(0, -r); ctx.lineTo(r, r * .875); ctx.lineTo(-r, r * .875);
+            ctx.closePath(); ctx.fill();
+            break;
+        case 'triangleOutline':
+            ctx.beginPath();
+            ctx.moveTo(0, -r * .8); ctx.lineTo(r * .8, r * .7); ctx.lineTo(-r * .8, r * .7);
+            ctx.closePath(); ctx.stroke();
+            break;
+    }
+}
+
+const RED_BUTTON = { base: '#e5484d', light: '#ee6e72', dark: '#a83a3e', text: '#fff' };
+
+let redButton;
+
+function initButtons()
+{
+    const w = mainCanvasSize.x, h = mainCanvasSize.y;
+    const btnW = 160, btnH = 64;
+    redButton = new Button((w - btnW) / 2, (h - btnH) / 2, btnW, btnH, RED_BUTTON, 'Red');
+}
+
 function gameRenderPost()
 {
-    const w = mainCanvasSize.x;
-
-    drawTextScreen(`Shards: ${Math.floor(shards)}`, vec2(w / 2, 40), 32, WHITE, 3, BLACK);
-    drawTextScreen('Click the horn to fire, click items to pop', vec2(w / 2, 72), 16, WHITE, 2, BLACK);
-
-    uiButtonRects = [];
-    const btnW = 160, btnH = 60, gap = 10;
-    const totalW = UI_BUTTONS.length * btnW + (UI_BUTTONS.length - 1) * gap;
-    const startX = (w - totalW) / 2, startY = mainCanvasSize.y - btnH - 20;
-    UI_BUTTONS.forEach((btn, i) =>
-    {
-        const x = startX + i * (btnW + gap);
-        const y = startY;
-        const cost = upgradeCost(upgrades[btn.key]);
-        const affordable = shards >= cost;
-        const bg = affordable ? hsl(.4, .6, .3, .85) : hsl(0, 0, .2, .85);
-
-        drawRect(vec2(x + btnW / 2, y + btnH / 2), vec2(btnW, btnH), bg, 0, false, true);
-        drawTextScreen(`${btn.label} Lv${upgrades[btn.key]}`, vec2(x + btnW / 2, y + 16), 14, WHITE, 2, BLACK);
-        drawTextScreen(btn.desc, vec2(x + btnW / 2, y + 34), 10, hsl(0, 0, .8), 1, BLACK);
-        drawTextScreen(`${cost} shards`, vec2(x + btnW / 2, y + 50), 12, affordable ? hsl(.35, 1, .7) : hsl(0, .7, .6), 2, BLACK);
-
-        uiButtonRects.push({ x, y, w: btnW, h: btnH, key: btn.key });
-    });
+    if (!redButton) initButtons();
+    redButton.update(timeDelta);
+    redButton.render(overlayContext);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-window.addEventListener('beforeunload', () => { if (typeof shards !== 'undefined') saveGame(); });
-
-// Startup LittleJS Engine
 engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRenderPost, ['tiles.png']);
