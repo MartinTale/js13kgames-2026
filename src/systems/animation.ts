@@ -384,3 +384,21 @@ export function explode(
 		element.remove();
 	}
 }
+
+// squash-and-stretch punch feedback, e.g. on purchase/reward
+export function popUp(element: HTMLElement) {
+	tween(element, {
+		from: { scale: 1, y: 0 },
+		to: { y: -10, scale: 1.4 },
+		duration: 200,
+		easing: easings.easeInOutExpo,
+		onComplete: () => {
+			tween(element, {
+				from: { y: -10, scale: 1.4 },
+				to: { y: 0, scale: 1 },
+				duration: 800,
+				easing: easings.easeOutBounce,
+			});
+		},
+	});
+}

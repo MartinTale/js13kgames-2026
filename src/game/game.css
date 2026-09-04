@@ -7,3 +7,26 @@
 .game * {
 	transition: all 0.2s ease-in-out;
 }
+
+/* idle life for mascot/character sprites: apply .wiggle-and-float to any element */
+.wiggle-and-float {
+	animation: wiggle-and-float 1s infinite;
+}
+
+@keyframes wiggle-and-float {
+	0% {
+		transform: rotate(0deg) translateY(0px);
+	}
+	25% {
+		transform: rotate(7deg) translateY(-2px);
+	}
+	50% {
+		transform: rotate(0deg) translateY(0px);
+	}
+	75% {
+		transform: rotate(-7deg) translateY(-2px);
+	}
+	100% {
+		transform: rotate(0deg) translateY(0px);
+	}
+}
