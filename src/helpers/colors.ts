@@ -24,27 +24,30 @@ export const colors = ["#FF8FC7", "#C896FF", "#8FD9FF", "#8FFFC9", "#FFF48F", "#
 // 	}
 // }, 100);
 
+// deep night-sky purple that every game color's background darkens toward
+const NIGHT_BG = { r: 26, g: 12, b: 36 };
+
 export function setGameColor(newHexColor: string) {
 	const rgbColor = hexToRgb(newHexColor);
 
-	// light blush-white background: mostly white, lightly tinted by the game color
+	// dark night-sky background: mostly a deep purple, lightly tinted by the game color
 	const bg =
 		"rgb(" +
-		lerpChannel(rgbColor.r, 255, 0.92) +
+		lerpChannel(NIGHT_BG.r, rgbColor.r, 0.12) +
 		"," +
-		lerpChannel(rgbColor.g, 255, 0.92) +
+		lerpChannel(NIGHT_BG.g, rgbColor.g, 0.12) +
 		"," +
-		lerpChannel(rgbColor.b, 255, 0.92) +
+		lerpChannel(NIGHT_BG.b, rgbColor.b, 0.12) +
 		")";
 	const color = newHexColor;
-	// soft glow: same hue, lightened toward white for a pastel shadow/highlight
+	// bright glow: same hue pushed brighter, pops against the dark background
 	const shadow =
 		"rgb(" +
-		lerpChannel(rgbColor.r, 255, 0.35) +
+		Math.min(255, Math.round(rgbColor.r * 1.15)) +
 		"," +
-		lerpChannel(rgbColor.g, 255, 0.35) +
+		Math.min(255, Math.round(rgbColor.g * 1.15)) +
 		"," +
-		lerpChannel(rgbColor.b, 255, 0.35) +
+		Math.min(255, Math.round(rgbColor.b * 1.15)) +
 		")";
 
 	document.documentElement.style.setProperty("--bg", bg);
