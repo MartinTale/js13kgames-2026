@@ -1,5 +1,6 @@
 import "./button.css";
-import { el } from "../../helpers/dom";
+import { el, mount } from "../../helpers/dom";
+import { mathRandomInteger } from "../../helpers/numbers";
 import { playSound, sounds } from "../../systems/music";
 
 export type ButtonType = "normal" | "primary" | "danger" | "disabled";
@@ -10,16 +11,115 @@ export type Button = {
 	onClickCallback: ((e: Event) => void) | null;
 };
 
+// button element with a .face property pointing at the inner <button>,
+// so callers can still set text / attach tweens to the actual clickable face
+export type ButtonElement = HTMLElement & { face: HTMLButtonElement };
+
+const PARTICLE_SHAPES = [
+	(r: number) => `<circle r="${r}" fill="currentColor" />`,
+	(r: number) => `<circle r="${r * 0.85}" fill="none" stroke="currentColor" stroke-width="1.5" />`,
+	(r: number) => `<rect x="${-r}" y="${-r}" width="${r * 2}" height="${r * 2}" fill="currentColor" />`,
+	(r: number) =>
+		`<rect x="${-r * 0.8}" y="${-r * 0.8}" width="${r * 1.6}" height="${r * 1.6}" fill="none" stroke="currentColor" stroke-width="1.5" />`,
+	(r: number) => `<path d="M${-r} 0H${r}M0 ${-r}V${r}" fill="none" stroke="currentColor" stroke-width="1.5" />`,
+	(r: number) =>
+		`<path d="M${-r * 0.75} ${-r * 0.75}L${r * 0.75} ${r * 0.75}M${r * 0.75} ${-r * 0.75}L${-r * 0.75} ${r * 0.75}" fill="none" stroke="currentColor" stroke-width="1.5" />`,
+	(r: number) => `<polygon points="0,${-r} ${r},${r * 0.875} ${-r},${r * 0.875}" fill="currentColor" />`,
+	(r: number) =>
+		`<polygon points="0,${-r * 0.8} ${r * 0.8},${r * 0.7} ${-r * 0.8},${r * 0.7}" fill="none" stroke="currentColor" stroke-width="1.5" />`,
+];
+
+function burst(wrapper: HTMLElement) {
+	const svg = wrapper.querySelector("svg.button-confetti") as SVGSVGElement;
+	if (!svg) return;
+
+	const rect = wrapper.getBoundingClientRect();
+	const svgRect = svg.getBoundingClientRect();
+	const cx = rect.width / 2;
+	const cy = rect.height / 2;
+	const offX = rect.left - svgRect.left;
+	const offY = rect.top - svgRect.top;
+
+	const count = 12;
+	const direction = -90; // burst upward
+	const spread = 220;
+
+	for (let i = 0; i < count; i++) {
+		const angle = direction - spread / 2 + (i + Math.random()) * (spread / count);
+		const rad = (angle * Math.PI) / 180;
+		const insetX = rect.width / 2 - 6;
+		const insetY = rect.height / 2 - 6;
+		const s = Math.max(Math.abs(Math.cos(rad)), Math.abs(Math.sin(rad))) || 1;
+		const startX = offX + cx + (insetX * Math.cos(rad)) / s;
+		const startY = offY + cy + (insetY * Math.sin(rad)) / s;
+
+		const radius = mathRandomInteger(32, 52);
+		const curvature = mathRandomInteger(-10, 14);
+		const duration = mathRandomInteger(320, 520);
+		const size = mathRandomInteger(10, 15);
+		const spins = mathRandomInteger(-75, 75) / 100;
+		const shape = PARTICLE_SHAPES[mathRandomInteger(0, PARTICLE_SHAPES.length - 1)];
+
+		const endX = startX + Math.cos(rad) * radius;
+		const endY = startY + Math.sin(rad) * radius;
+		const midX = (startX + endX) / 2;
+		const midY = (startY + endY) / 2;
+		const outX = Math.cos(rad);
+		const outY = Math.sin(rad);
+		const ctrlX = midX - -outY * curvature;
+		const ctrlY = midY + outX * curvature;
+
+		const path = `M ${startX} ${startY} Q ${ctrlX} ${ctrlY} ${endX} ${endY}`;
+
+		const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+		g.style.color = "var(--color)";
+		g.innerHTML = shape(size / 2);
+		svg.appendChild(g);
+
+		g.style.offsetPath = `path('${path}')`;
+		g.style.offsetRotate = "0deg";
+
+		const anim = g.animate(
+			[
+				{ offsetDistance: "0%", transform: "rotate(0deg) scale(1)", opacity: 1 },
+				{ offsetDistance: "22%", transform: `rotate(${spins * 79.2}deg) scale(.8075)`, opacity: 1, offset: 0.2 },
+				{ offsetDistance: "100%", transform: `rotate(${spins * 360}deg) scale(.125)`, opacity: 0 },
+			],
+			{ duration, easing: "linear", fill: "forwards" },
+		);
+
+		anim.onfinish = () => g.remove();
+	}
+}
+
 export function createButton(
 	content: string | HTMLElement | HTMLElement[],
 	onClickCallback: (e: any) => void,
 	type: ButtonType,
-): HTMLElement {
-	const button = el("button." + type, content) as HTMLButtonElement;
-	button.onclick = (e) => {
+): ButtonElement {
+	const face = el("button." + type) as HTMLButtonElement;
+	if (typeof content === "string") {
+		face.textContent = content;
+	} else if (Array.isArray(content)) {
+		content.forEach((item) => mount(face, item));
+	} else if (content != null) {
+		mount(face, content);
+	}
+
+	const depth = el("span.button-depth");
+	const confetti = document.createElementNS("http://www.w3.org/2000/svg", "svg") as unknown as HTMLElement;
+	confetti.classList.add("button-confetti");
+
+	const wrapper = el("span.button-wrap." + type, [depth, confetti, face]) as ButtonElement;
+	wrapper.face = face;
+
+	face.onpointerdown = () => {
 		playSound(sounds.tap);
+		burst(wrapper);
+	};
+	face.onclick = (e) => {
 		onClickCallback(e);
 	};
 
-	return button;
+	return wrapper;
 }

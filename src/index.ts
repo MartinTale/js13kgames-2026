@@ -117,11 +117,11 @@ window.addEventListener("DOMContentLoaded", () => {
 	};
 
 	state.level.subscribe((level) => {
-		setTextContent(testButton, `Test ${abbreviateNumber(level)}`);
+		setTextContent(testButton.face, `Test ${abbreviateNumber(level)}`);
 	});
 
 	state.level.subscribe((level) => {
-		setTextContent(testButton2, `Test ${abbreviateNumber(level * 80)}`);
+		setTextContent(testButton2.face, `Test ${abbreviateNumber(level * 80)}`);
 	});
 
 	setRealViewportValues();
