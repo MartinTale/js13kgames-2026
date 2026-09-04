@@ -1,9 +1,5 @@
-# node files
+dist
 node_modules
-
-# editor files
+.idea
 .vscode
-
-# build output
-game/build
-game/*.zip
+.DS_Store
