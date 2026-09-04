@@ -1,14 +1,15 @@
 :root {
-	--bg: #03182b;
-	--color: #8be9ff;
-	--shadow: #4f838f;
+	--bg: #fdeef5;
+	--color: #ff8fc7;
+	--shadow: #ffd6ec;
+	--text: #6b3a56;
 	--vw: 1vw;
 	--vh: 1vh;
 }
 
 body,
 body * {
-	text-shadow: 0 0 3px #000;
+	text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -37,7 +38,7 @@ body {
 
 body {
 	align-items: flex-end;
-	color: #ccc;
+	color: var(--text);
 	font-size: 24px;
 	background: var(--bg);
 	position: fixed;
@@ -57,7 +58,7 @@ h2 {
 	margin: 0;
 	font-size: 32px;
 	width: 100%;
-	color: #fff;
+	color: var(--text);
 }
 
 h2 {
@@ -73,7 +74,7 @@ a {
 
 hr {
 	width: 100%;
-	border-color: #333;
+	border-color: var(--shadow);
 	margin: 16px 0;
 }
 
@@ -84,7 +85,7 @@ p {
 }
 
 b {
-	color: #fff;
+	color: var(--text);
 	margin-bottom: 8px;
 }
 
@@ -102,5 +103,5 @@ div {
 }
 
 svg {
-	filter: drop-shadow(0 0 5px #000);
+	filter: drop-shadow(0 1px 3px rgba(107, 58, 86, 0.35));
 }

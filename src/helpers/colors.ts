@@ -2,7 +2,8 @@ import { updateFireflyColor } from "../components/fireflies/fireflies";
 
 type RGB = { r: number; g: number; b: number };
 
-export const colors = ["#D1D5D8", "#41A85F", "#2C82C9", "#9365B8", "#FAC51C", "#E25041", "#D1D5D8"];
+// unicorn/rainbow pastel palette: bubblegum pink, lavender, sky, mint, banana, peach
+export const colors = ["#FF8FC7", "#C896FF", "#8FD9FF", "#8FFFC9", "#FFF48F", "#FFB98F", "#FF8FC7"];
 
 // const colorsPerIndex = 20;
 // let colorIndex = 0;
@@ -26,29 +27,24 @@ export const colors = ["#D1D5D8", "#41A85F", "#2C82C9", "#9365B8", "#FAC51C", "#
 export function setGameColor(newHexColor: string) {
 	const rgbColor = hexToRgb(newHexColor);
 
+	// light blush-white background: mostly white, lightly tinted by the game color
 	const bg =
 		"rgb(" +
-		Math.max(0, rgbColor.r * 0.25) +
+		lerpChannel(rgbColor.r, 255, 0.92) +
 		"," +
-		Math.max(0, rgbColor.g * 0.25) +
+		lerpChannel(rgbColor.g, 255, 0.92) +
 		"," +
-		Math.max(0, rgbColor.b * 0.25) +
+		lerpChannel(rgbColor.b, 255, 0.92) +
 		")";
-	const color =
-		"rgb(" +
-		Math.min(255, rgbColor.r * 1.5) +
-		"," +
-		Math.min(255, rgbColor.g * 1.5) +
-		"," +
-		Math.min(255, rgbColor.b * 1.5) +
-		")";
+	const color = newHexColor;
+	// soft glow: same hue, lightened toward white for a pastel shadow/highlight
 	const shadow =
 		"rgb(" +
-		Math.min(255, rgbColor.r * 1.2) +
+		lerpChannel(rgbColor.r, 255, 0.35) +
 		"," +
-		Math.min(255, rgbColor.g * 1.2) +
+		lerpChannel(rgbColor.g, 255, 0.35) +
 		"," +
-		Math.min(255, rgbColor.b * 1.2) +
+		lerpChannel(rgbColor.b, 255, 0.35) +
 		")";
 
 	document.documentElement.style.setProperty("--bg", bg);
@@ -56,6 +52,10 @@ export function setGameColor(newHexColor: string) {
 	document.documentElement.style.setProperty("--shadow", shadow);
 
 	updateFireflyColor(newHexColor);
+}
+
+function lerpChannel(from: number, to: number, amount: number) {
+	return Math.round(from + (to - from) * amount);
 }
 
 globalThis.setGameColor = setGameColor;
