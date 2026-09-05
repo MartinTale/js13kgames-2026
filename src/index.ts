@@ -78,7 +78,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	}
 
 	const bar = new ProgressBar(gameContainer, 0, 100, 0);
-	bar.container.style.margin = "10px";
+	bar.container.style.margin = "4px 10px 10px";
 
 	const magicButton = createButton(
 		"Magic",
