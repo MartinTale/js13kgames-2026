@@ -16,7 +16,7 @@
 
 .button-depth {
 	position: absolute;
-	inset: 3px 0 0 0;
+	inset: 0 0 -4px 0;
 	border-radius: 999px;
 	background: oklch(from var(--color) calc(0.7 * l) c h);
 }
