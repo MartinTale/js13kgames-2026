@@ -41,11 +41,6 @@ button {
 	font-size: 16px;
 	border-radius: 999px;
 	color: var(--text);
-	text-shadow:
-		-1px -1px 0 rgba(0, 0, 0, 0.55),
-		1px -1px 0 rgba(0, 0, 0, 0.55),
-		-1px 1px 0 rgba(0, 0, 0, 0.55),
-		1px 1px 0 rgba(0, 0, 0, 0.55);
 	cursor: pointer;
 	background: linear-gradient(to bottom, oklch(from var(--color) calc(l + 0.1) c h), var(--color));
 	box-shadow:
