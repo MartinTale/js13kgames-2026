@@ -14,8 +14,6 @@ export class ProgressBar {
 	fx: SVGSVGElement;
 	cloud: HTMLElement;
 
-	private hitMax = false;
-
 	constructor(
 		parent: HTMLElement,
 		public min: number,
@@ -47,12 +45,7 @@ export class ProgressBar {
 		this.progress.style.width = `${to}%`;
 
 		if (to >= 100) {
-			if (!this.hitMax) {
-				this.hitMax = true;
-				this.cloudBurst();
-			}
-		} else {
-			this.hitMax = false;
+			this.cloudBurst();
 		}
 	}
 
@@ -64,5 +57,14 @@ export class ProgressBar {
 		const y = inset + h / 2;
 
 		burstFromStadium(this.fx, x, y, 0, h, -90, 300, 20);
+
+		this.cloud.animate(
+			[
+				{ transform: "translate(50%, -50%) scale(1)" },
+				{ transform: "translate(50%, -50%) scale(1.35)", offset: 0.35 },
+				{ transform: "translate(50%, -50%) scale(1)" },
+			],
+			{ duration: 420, easing: "cubic-bezier(.34,1.56,.64,1)" },
+		);
 	}
 }
