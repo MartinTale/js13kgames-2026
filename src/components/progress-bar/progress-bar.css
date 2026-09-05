@@ -13,5 +13,17 @@
 .progress {
 	height: 14px;
 	border-radius: 2px;
-	background-color: var(--color);
+	background: linear-gradient(90deg, #ff8fc7, #c896ff, #8fd9ff, #8fffc9, #fff48f, #ffb98f, #ff8fc7);
+	background-size: 300% 100%;
+	box-shadow: 0 0 8px var(--shadow);
+	animation: progress-rainbow 3s linear infinite;
+}
+
+@keyframes progress-rainbow {
+	from {
+		background-position: 0% 0;
+	}
+	to {
+		background-position: 100% 0;
+	}
 }
