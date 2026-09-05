@@ -94,7 +94,7 @@ function burst(wrapper: HTMLElement) {
 
 		const radius = mathRandomInteger(32, 52);
 		const curvature = mathRandomInteger(-10, 14);
-		const duration = mathRandomInteger(32000, 52000);
+		const duration = mathRandomInteger(320, 520);
 		const size = mathRandomInteger(10, 15);
 		const spins = mathRandomInteger(-75, 75) / 100;
 		const shape = PARTICLE_SHAPES[mathRandomInteger(0, PARTICLE_SHAPES.length - 1)];
@@ -150,10 +150,10 @@ function ripple(face: HTMLButtonElement, clientX: number, clientY: number) {
 
 	const anim = span.animate(
 		[
-			{ transform: "translate(-50%, -50%) scale(.05)", opacity: 0.3 },
+			{ transform: "translate(-50%, -50%) scale(.05)", opacity: 0.75 },
 			{ transform: "translate(-50%, -50%) scale(1)", opacity: 0 },
 		],
-		{ duration: 1600, easing: "cubic-bezier(.16,1,.3,1)", fill: "forwards" },
+		{ duration: 900, easing: "cubic-bezier(.16,1,.3,1)", fill: "forwards" },
 	);
 	anim.onfinish = () => span.remove();
 }
@@ -163,6 +163,7 @@ export function createButton(
 	onClickCallback: (e: any) => void,
 	type: ButtonType,
 	size: ButtonSize = "md",
+	withEffects = false,
 ): ButtonElement {
 	const face = el("button." + type + "." + size) as HTMLButtonElement;
 	if (typeof content === "string") {
@@ -174,16 +175,25 @@ export function createButton(
 	}
 
 	const depth = el("span.button-depth");
-	const confetti = document.createElementNS("http://www.w3.org/2000/svg", "svg") as unknown as HTMLElement;
-	confetti.classList.add("button-confetti");
+	const children: HTMLElement[] = [depth];
 
-	const wrapper = el("span.button-wrap." + type, [depth, confetti, face]) as ButtonElement;
+	if (withEffects) {
+		const confetti = document.createElementNS("http://www.w3.org/2000/svg", "svg") as unknown as HTMLElement;
+		confetti.classList.add("button-confetti");
+		children.push(confetti);
+	}
+
+	children.push(face);
+
+	const wrapper = el("span.button-wrap." + type, children) as ButtonElement;
 	wrapper.face = face;
 
 	face.onpointerdown = (e) => {
 		playSound(sounds.tap);
-		burst(wrapper);
-		ripple(face, e.clientX, e.clientY);
+		if (withEffects) {
+			burst(wrapper);
+			ripple(face, e.clientX, e.clientY);
+		}
 	};
 	face.onclick = (e) => {
 		onClickCallback(e);
