@@ -35,9 +35,9 @@
 .progress-cloud {
 	position: absolute;
 	top: 50%;
-	right: -6px;
-	width: 34px;
-	height: 34px;
+	right: -10px;
+	width: 52px;
+	height: 52px;
 	transform: translate(50%, -50%);
-	filter: drop-shadow(0 0 3px var(--shadow));
+	filter: drop-shadow(0 0 4px var(--shadow));
 }
