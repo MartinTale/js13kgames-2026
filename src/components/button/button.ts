@@ -112,7 +112,7 @@ function burst(wrapper: HTMLElement) {
 		const radius = mathRandomInteger(32, 52);
 		const curvature = mathRandomInteger(-10, 14);
 		const duration = mathRandomInteger(320, 520);
-		const size = mathRandomInteger(10, 15);
+		const size = mathRandomInteger(14, 20);
 		const spins = mathRandomInteger(-75, 75) / 100;
 		const shape = PARTICLE_SHAPES[mathRandomInteger(0, PARTICLE_SHAPES.length - 1)];
 
