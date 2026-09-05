@@ -2,6 +2,7 @@ import "./button.css";
 import { el, mount } from "../../helpers/dom";
 import { mathRandomInteger } from "../../helpers/numbers";
 import { playSound, sounds } from "../../systems/music";
+import { colors } from "../../helpers/colors";
 
 export type ButtonType = "normal" | "primary" | "danger" | "disabled" | "secondary" | "outline" | "ghost";
 export type ButtonSize = "sm" | "md" | "lg" | "icon";
@@ -17,24 +18,40 @@ export type Button = {
 // so callers can still set text / attach tweens to the actual clickable face
 export type ButtonElement = HTMLElement & { face: HTMLButtonElement };
 
+// 5-point star polygon centered on origin
+function starPoints(r: number): string {
+	const points: string[] = [];
+	for (let i = 0; i < 10; i++) {
+		const rad = (Math.PI / 5) * i - Math.PI / 2;
+		const rr = i % 2 === 0 ? r : r * 0.4;
+		points.push(`${Math.cos(rad) * rr},${Math.sin(rad) * rr}`);
+	}
+	return points.join(" ");
+}
+
 const PARTICLE_SHAPES = [
 	(r: number) => `<circle r="${r}" fill="currentColor" />`,
-	(r: number) => `<circle r="${r * 0.85}" fill="none" stroke="currentColor" stroke-width="1.5" />`,
-	(r: number) => `<rect x="${-r}" y="${-r}" width="${r * 2}" height="${r * 2}" fill="currentColor" />`,
+	// 4-point sparkle/diamond
+	(r: number) => `<polygon points="0,${-r} ${r * 0.35},${-r * 0.35} ${r},0 ${r * 0.35},${r * 0.35} 0,${r} ${
+		-r * 0.35
+	},${r * 0.35} ${-r},0 ${-r * 0.35},${-r * 0.35}" fill="currentColor" />`,
+	// 5-point star
+	(r: number) => `<polygon points="${starPoints(r)}" fill="currentColor" />`,
+	// heart
 	(r: number) =>
-		`<rect x="${-r * 0.8}" y="${-r * 0.8}" width="${r * 1.6}" height="${
-			r * 1.6
-		}" fill="none" stroke="currentColor" stroke-width="1.5" />`,
-	(r: number) => `<path d="M${-r} 0H${r}M0 ${-r}V${r}" fill="none" stroke="currentColor" stroke-width="1.5" />`,
+		`<path d="M0 ${r * 0.75}C${-r * 1.3} ${-r * 0.2} ${-r * 0.5} ${-r * 1.1} 0 ${-r * 0.35}C${r * 0.5} ${
+			-r * 1.1
+		} ${r * 1.3} ${-r * 0.2} 0 ${r * 0.75}Z" fill="currentColor" />`,
+	// crescent moon
 	(r: number) =>
-		`<path d="M${-r * 0.75} ${-r * 0.75}L${r * 0.75} ${r * 0.75}M${r * 0.75} ${-r * 0.75}L${-r * 0.75} ${
-			r * 0.75
-		}" fill="none" stroke="currentColor" stroke-width="1.5" />`,
-	(r: number) => `<polygon points="0,${-r} ${r},${r * 0.875} ${-r},${r * 0.875}" fill="currentColor" />`,
+		`<path d="M${r * 0.5} ${-r}A${r} ${r} 0 1 0 ${r * 0.5} ${r}A${r * 0.7} ${r * 0.7} 0 1 1 ${r * 0.5} ${
+			-r
+		}Z" fill="currentColor" />`,
+	// rainbow arc (three nested stripes)
 	(r: number) =>
-		`<polygon points="0,${-r * 0.8} ${r * 0.8},${r * 0.7} ${-r * 0.8},${
-			r * 0.7
-		}" fill="none" stroke="currentColor" stroke-width="1.5" />`,
+		`<path d="M${-r} ${r * 0.2}A${r} ${r} 0 0 1 ${r} ${r * 0.2}" fill="none" stroke="currentColor" stroke-width="${
+			r * 0.28
+		}" stroke-linecap="round" />`,
 ];
 
 // distance from the center of a w x h stadium/pill (rect with semicircular caps of radius h/2)
@@ -111,7 +128,7 @@ function burst(wrapper: HTMLElement) {
 		const path = `M ${startX} ${startY} Q ${ctrlX} ${ctrlY} ${endX} ${endY}`;
 
 		const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-		g.style.color = "var(--color)";
+		g.style.color = colors[mathRandomInteger(0, colors.length - 1)];
 		g.innerHTML = shape(size / 2);
 		svg.appendChild(g);
 
