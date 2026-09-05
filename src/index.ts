@@ -84,7 +84,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		"Magic",
 		() => {
 			state.level.value += 1;
-			bar.setValue(bar.value + 10);
+			bar.setValue(bar.value + 5);
 		},
 		"primary",
 		"md",
