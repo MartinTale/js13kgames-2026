@@ -3,12 +3,14 @@ import { el, mount } from "../../helpers/dom";
 import { mathRandomInteger } from "../../helpers/numbers";
 import { playSound, sounds } from "../../systems/music";
 
-export type ButtonType = "normal" | "primary" | "danger" | "disabled";
+export type ButtonType = "normal" | "primary" | "danger" | "disabled" | "secondary" | "outline" | "ghost";
+export type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 export type Button = {
 	type: ButtonType;
 	content: string | HTMLElement | HTMLElement[];
 	onClickCallback: ((e: Event) => void) | null;
+	size?: ButtonSize;
 };
 
 // button element with a .face property pointing at the inner <button>,
@@ -92,12 +94,34 @@ function burst(wrapper: HTMLElement) {
 	}
 }
 
+function ripple(face: HTMLButtonElement, clientX: number, clientY: number) {
+	const rect = face.getBoundingClientRect();
+	const size = Math.max(rect.width, rect.height) * 2;
+
+	const span = el("span.button-ripple");
+	span.style.width = `${size}px`;
+	span.style.height = `${size}px`;
+	span.style.left = `${clientX - rect.left}px`;
+	span.style.top = `${clientY - rect.top}px`;
+	mount(face, span);
+
+	const anim = span.animate(
+		[
+			{ transform: "translate(-50%, -50%) scale(.05)", opacity: 0.3 },
+			{ transform: "translate(-50%, -50%) scale(1)", opacity: 0 },
+		],
+		{ duration: 1600, easing: "cubic-bezier(.16,1,.3,1)", fill: "forwards" },
+	);
+	anim.onfinish = () => span.remove();
+}
+
 export function createButton(
 	content: string | HTMLElement | HTMLElement[],
 	onClickCallback: (e: any) => void,
 	type: ButtonType,
+	size: ButtonSize = "md",
 ): ButtonElement {
-	const face = el("button." + type) as HTMLButtonElement;
+	const face = el("button." + type + "." + size) as HTMLButtonElement;
 	if (typeof content === "string") {
 		face.textContent = content;
 	} else if (Array.isArray(content)) {
@@ -113,9 +137,10 @@ export function createButton(
 	const wrapper = el("span.button-wrap." + type, [depth, confetti, face]) as ButtonElement;
 	wrapper.face = face;
 
-	face.onpointerdown = () => {
+	face.onpointerdown = (e) => {
 		playSound(sounds.tap);
 		burst(wrapper);
+		ripple(face, e.clientX, e.clientY);
 	};
 	face.onclick = (e) => {
 		onClickCallback(e);

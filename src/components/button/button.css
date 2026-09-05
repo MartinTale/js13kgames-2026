@@ -32,6 +32,7 @@
 button {
 	position: relative;
 	z-index: 2;
+	overflow: hidden;
 	border: 0;
 	margin: 0;
 	padding: 10px 20px;
@@ -46,6 +47,38 @@ button {
 	transition:
 		transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1),
 		filter 160ms ease;
+}
+
+button.sm {
+	height: 32px;
+	padding: 0 12px;
+	font-size: 12px;
+}
+
+button.md {
+	height: 40px;
+	padding: 0 20px;
+	font-size: 14px;
+}
+
+button.lg {
+	height: 48px;
+	padding: 0 24px;
+	font-size: 16px;
+}
+
+button.icon {
+	height: 32px;
+	width: 32px;
+	padding: 0;
+}
+
+.button-ripple {
+	position: absolute;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.6);
+	pointer-events: none;
+	transform: translate(-50%, -50%) scale(0.05);
 }
 
 .button-wrap:hover button {
@@ -77,4 +110,41 @@ button.disabled {
 
 .button-wrap.normal .button-depth {
 	background: oklch(from var(--text) calc(l - 0.75) c h);
+}
+
+/* secondary/outline/ghost are flat: no 3D depth pill, no press-slide */
+.button-wrap.secondary .button-depth,
+.button-wrap.outline .button-depth,
+.button-wrap.ghost .button-depth {
+	display: none;
+}
+
+.button-wrap.secondary:active button,
+.button-wrap.outline:active button,
+.button-wrap.ghost:active button {
+	transform: none;
+}
+
+.button-wrap.secondary button {
+	background: oklch(from var(--bg) calc(l + 0.15) c h);
+	color: var(--text);
+	box-shadow: none;
+}
+
+.button-wrap.outline button {
+	background: transparent;
+	color: var(--text);
+	border: 1px solid var(--color);
+	box-shadow: none;
+}
+
+.button-wrap.ghost button {
+	background: transparent;
+	color: var(--text);
+	box-shadow: none;
+	opacity: 0.7;
+}
+
+.button-wrap.ghost:hover button {
+	opacity: 1;
 }
