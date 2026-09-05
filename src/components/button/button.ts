@@ -31,6 +31,36 @@ const PARTICLE_SHAPES = [
 		`<polygon points="0,${-r * 0.8} ${r * 0.8},${r * 0.7} ${-r * 0.8},${r * 0.7}" fill="none" stroke="currentColor" stroke-width="1.5" />`,
 ];
 
+// distance from the center of a w x h stadium/pill (rect with semicircular caps of radius h/2)
+// to its outline along a ray at angle `rad`, so burst particles hug the actual pill edge
+function stadiumEdgeDistance(rad: number, w: number, h: number): number {
+	const r = h / 2;
+	const straightHalfWidth = w / 2 - r;
+	const dx = Math.cos(rad);
+	const dy = Math.sin(rad);
+
+	if (straightHalfWidth <= 0) {
+		return r;
+	}
+
+	// does the ray exit through the flat top/bottom edge (within the straight section)?
+	if (Math.abs(dy) > 1e-6) {
+		const tFlat = r / Math.abs(dy);
+		const xAtFlat = Math.abs(dx) * tFlat;
+		if (xAtFlat <= straightHalfWidth) {
+			return tFlat;
+		}
+	}
+
+	// otherwise it exits through one of the rounded end caps: solve for intersection
+	// with a circle of radius r centered at (+-straightHalfWidth, 0)
+	const cx = straightHalfWidth * Math.sign(dx || 1);
+	const b = -2 * cx * dx;
+	const c = cx * cx - r * r;
+	const disc = Math.max(0, b * b - 4 * c);
+	return (-b + Math.sqrt(disc)) / 2;
+}
+
 function burst(wrapper: HTMLElement) {
 	const svg = wrapper.querySelector("svg.button-confetti") as SVGSVGElement;
 	if (!svg) return;
@@ -49,11 +79,9 @@ function burst(wrapper: HTMLElement) {
 	for (let i = 0; i < count; i++) {
 		const angle = direction - spread / 2 + (i + Math.random()) * (spread / count);
 		const rad = (angle * Math.PI) / 180;
-		const insetX = rect.width / 2 - 6;
-		const insetY = rect.height / 2 - 6;
-		const s = Math.max(Math.abs(Math.cos(rad)), Math.abs(Math.sin(rad))) || 1;
-		const startX = offX + cx + (insetX * Math.cos(rad)) / s;
-		const startY = offY + cy + (insetY * Math.sin(rad)) / s;
+		const edgeDist = stadiumEdgeDistance(rad, rect.width, rect.height);
+		const startX = offX + cx + Math.cos(rad) * edgeDist;
+		const startY = offY + cy + Math.sin(rad) * edgeDist;
 
 		const radius = mathRandomInteger(32, 52);
 		const curvature = mathRandomInteger(-10, 14);

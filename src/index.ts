@@ -1,15 +1,13 @@
 import "./reset.css";
 import "./defaults.css";
 import { initMusic } from "./systems/music";
-import { mount, setTextContent } from "./helpers/dom";
+import { mount } from "./helpers/dom";
 import { initState, resetState, state } from "./systems/state";
 import { SVGs } from "./systems/svgs";
-import { abbreviateNumber, mathRandomInteger } from "./helpers/numbers";
 import { initFireflies } from "./components/fireflies/fireflies";
 import { EdgeLinkButton, EdgeButton } from "./components/edge-button/edge-button";
 import { initGame, startGameLoop } from "./game/game";
 import { createButton } from "./components/button/button";
-import { easings, tween } from "./systems/animation";
 import { ProgressBar } from "./components/progress-bar/progress-bar";
 import { colors, setGameColor } from "./helpers/colors";
 import { closeModal, openModal } from "./components/modal/modal";
@@ -79,50 +77,19 @@ window.addEventListener("DOMContentLoaded", () => {
 		);
 	}
 
-	const testButton = createButton(
-		"",
-		() => {
-			state.level.value += 1;
-			tween(testButton, {
-				to: {
-					x: mathRandomInteger(-200, 200),
-					y: mathRandomInteger(-100, 300),
-					rotate: mathRandomInteger(-180, 180),
-					scale: mathRandomInteger(5, 20) / 10,
-					opacity: mathRandomInteger(20, 100) / 100,
-				},
-				duration: 1000,
-				easing: easings.swingTo,
-			});
-		},
-		"primary",
-	);
-
-	mount(gameContainer, testButton);
-
-	const testButton2 = createButton(
-		"",
-		() => {
-			state.level.value += 1;
-		},
-		"primary",
-	);
-
-	mount(gameContainer, testButton2);
-
 	const bar = new ProgressBar(gameContainer, 0, 100, 0);
 	bar.container.style.margin = "10px";
-	bar.container.onclick = () => {
-		bar.setValue(bar.value + 10);
-	};
 
-	state.level.subscribe((level) => {
-		setTextContent(testButton.face, `Test ${abbreviateNumber(level)}`);
-	});
+	const magicButton = createButton(
+		"Magic",
+		() => {
+			state.level.value += 1;
+			bar.setValue(bar.value + 10);
+		},
+		"primary",
+	);
 
-	state.level.subscribe((level) => {
-		setTextContent(testButton2.face, `Test ${abbreviateNumber(level * 80)}`);
-	});
+	mount(gameContainer, magicButton);
 
 	setRealViewportValues();
 
