@@ -13,32 +13,16 @@
 .progress {
 	height: 14px;
 	border-radius: 2px;
-	background: linear-gradient(
-		90deg,
-		#ff8fc7,
-		#c896ff,
-		#8fd9ff,
-		#8fffc9,
-		#fff48f,
-		#ffb98f,
-		#ff8fc7,
-		#c896ff,
-		#8fd9ff,
-		#8fffc9,
-		#fff48f,
-		#ffb98f,
-		#ff8fc7
-	);
-	background-size: 600% 100%;
+	background: linear-gradient(90deg, #ff8fc7, #c896ff, #8fd9ff, #8fffc9, #fff48f, #ffb98f);
 	box-shadow: 0 0 8px var(--shadow);
-	animation: progress-rainbow 6s linear infinite;
+	animation: progress-rainbow 4s linear infinite;
 }
 
 @keyframes progress-rainbow {
 	from {
-		background-position: 0% 0;
+		filter: hue-rotate(0deg);
 	}
 	to {
-		background-position: -100% 0;
+		filter: hue-rotate(360deg);
 	}
 }
