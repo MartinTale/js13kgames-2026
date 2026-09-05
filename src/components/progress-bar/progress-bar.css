@@ -15,6 +15,7 @@
 	height: 100%;
 	border-radius: 2px;
 	overflow: hidden;
+	justify-content: flex-start;
 }
 
 .progress {
@@ -34,9 +35,9 @@
 .progress-cloud {
 	position: absolute;
 	top: 50%;
-	width: 22px;
-	height: 22px;
-	transform: translate(-50%, -50%);
+	right: -6px;
+	width: 34px;
+	height: 34px;
+	transform: translate(50%, -50%);
 	filter: drop-shadow(0 0 3px var(--shadow));
-	transition: left 550ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }

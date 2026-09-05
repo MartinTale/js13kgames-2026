@@ -30,7 +30,7 @@ export class ProgressBar {
 		this.track = el("div.progress-track", this.progress);
 		this.fx = document.createElementNS("http://www.w3.org/2000/svg", "svg") as unknown as SVGSVGElement;
 		this.fx.classList.add("progress-fx");
-		this.cloud = svgEl(CLOUD_SVG.replace("[fill]", "var(--color)"));
+		this.cloud = svgEl(CLOUD_SVG.replace("[fill]", "#fff"));
 		this.cloud.classList.add("progress-cloud");
 
 		this.container = el("div.progress-bar", [this.track, this.fx as unknown as HTMLElement, this.cloud]);
@@ -51,7 +51,6 @@ export class ProgressBar {
 		const to = this.getProgress();
 
 		this.progress.style.width = `${to}%`;
-		this.cloud.style.left = `${to}%`;
 
 		if (to > from) {
 			for (const milestone of MILESTONES) {
