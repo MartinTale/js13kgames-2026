@@ -167,10 +167,10 @@ function ripple(face: HTMLButtonElement, clientX: number, clientY: number) {
 
 	const anim = span.animate(
 		[
-			{ transform: "translate(-50%, -50%) scale(.05)", opacity: 0.75 },
+			{ transform: "translate(-50%, -50%) scale(.05)", opacity: 0.5 },
 			{ transform: "translate(-50%, -50%) scale(1)", opacity: 0 },
 		],
-		{ duration: 900, easing: "cubic-bezier(.16,1,.3,1)", fill: "forwards" },
+		{ duration: 1200, easing: "cubic-bezier(.16,1,.3,1)", fill: "forwards" },
 	);
 	anim.onfinish = () => span.remove();
 }

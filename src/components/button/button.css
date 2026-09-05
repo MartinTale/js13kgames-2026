@@ -79,7 +79,7 @@ button.icon {
 .button-ripple {
 	position: absolute;
 	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.85);
+	background: rgba(255, 255, 255, 0.72);
 	pointer-events: none;
 	transform: translate(-50%, -50%) scale(0.05);
 }
