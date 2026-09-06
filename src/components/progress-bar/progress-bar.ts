@@ -123,7 +123,11 @@ export class ProgressBar {
 		const endY = (slotRect.top + slotRect.height / 2 - originRect.top) / scale;
 
 		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width / scale, slotRect.height / scale);
-		const overlay = this.burnSlot(slot);
+
+		// conic-gradient angles are measured clockwise from north (0deg = up), unlike atan2's
+		// east-based/counter-clockwise convention, so convert the beam's direction into that space
+		const beamAngleDeg = (Math.atan2(endY - startY, endX - startX) * 180) / Math.PI + 90;
+		const overlay = this.burnSlot(slot, beamAngleDeg);
 
 		setTimeout(() => {
 			slot.insertBefore(el("span.inventory-slot-item", item), overlay);
@@ -132,9 +136,9 @@ export class ProgressBar {
 
 	// tints the slot with the beam's colors and flashes its border/glow, fading out
 	// on the same curve as the rainbow beam so both effects read as one animation
-	private burnSlot(slot: HTMLElement): HTMLElement {
+	private burnSlot(slot: HTMLElement, angleDeg: number): HTMLElement {
 		const overlay = el("div.inventory-slot-overlay");
-		overlay.style.background = `conic-gradient(from 120deg, ${RAINBOW.join(", ")})`;
+		overlay.style.background = `conic-gradient(from ${angleDeg}deg, ${RAINBOW.join(", ")})`;
 		mount(slot, overlay);
 
 		const keyframes = [
