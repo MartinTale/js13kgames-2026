@@ -3,6 +3,7 @@ import { el, mount, svgEl } from "../../helpers/dom";
 import { burstFromStadium } from "../../systems/confetti";
 import { mathRandomInteger } from "../../helpers/numbers";
 import { getScaleableContainerScale } from "../scaleable-container/scaleable-container";
+import { playSound, sounds } from "../../systems/music";
 
 const CLOUD_SVG =
 	'<svg viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg">' +
@@ -122,6 +123,7 @@ export class ProgressBar {
 		const endX = (slotRect.left + slotRect.width / 2 - originRect.left) / scale;
 		const endY = (slotRect.top + slotRect.height / 2 - originRect.top) / scale;
 
+		playSound(sounds.beam);
 		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width / scale, slotRect.height / scale);
 
 		// conic-gradient angles are measured clockwise from north (0deg = up), unlike atan2's
