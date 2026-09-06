@@ -123,16 +123,16 @@ export class ProgressBar {
 		const endY = (slotRect.top + slotRect.height / 2 - originRect.top) / scale;
 
 		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width / scale, slotRect.height / scale);
-		this.burnSlot(slot);
+		const overlay = this.burnSlot(slot);
 
 		setTimeout(() => {
-			mount(slot, el("span.inventory-slot-item", item));
+			slot.insertBefore(el("span.inventory-slot-item", item), overlay);
 		}, 220);
 	}
 
 	// tints the slot with the beam's colors and flashes its border/glow, fading out
 	// on the same curve as the rainbow beam so both effects read as one animation
-	private burnSlot(slot: HTMLElement) {
+	private burnSlot(slot: HTMLElement): HTMLElement {
 		const overlay = el("div.inventory-slot-overlay");
 		overlay.style.background = `conic-gradient(${RAINBOW.join(", ")})`;
 		mount(slot, overlay);
@@ -160,6 +160,8 @@ export class ProgressBar {
 			slot.style.boxShadow = "";
 			slot.style.borderColor = "";
 		};
+
+		return overlay;
 	}
 
 	private drawRainbowBeam(startX: number, startY: number, endX: number, endY: number, slotW: number, slotH: number) {
