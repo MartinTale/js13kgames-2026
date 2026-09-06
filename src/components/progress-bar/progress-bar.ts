@@ -126,7 +126,7 @@ export class ProgressBar {
 
 		// conic-gradient angles are measured clockwise from north (0deg = up), unlike atan2's
 		// east-based/counter-clockwise convention, so convert the beam's direction into that space
-		const beamAngleDeg = (Math.atan2(endY - startY, endX - startX) * 180) / Math.PI + 90;
+		const beamAngleDeg = (Math.atan2(endY - startY, endX - startX) * 180) / Math.PI + 90 + 180;
 		const overlay = this.burnSlot(slot, beamAngleDeg);
 
 		setTimeout(() => {
