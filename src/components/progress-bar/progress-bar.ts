@@ -2,6 +2,7 @@ import "./progress-bar.css";
 import { el, mount, svgEl } from "../../helpers/dom";
 import { burstFromStadium } from "../../systems/confetti";
 import { mathRandomInteger } from "../../helpers/numbers";
+import { getScaleableContainerScale } from "../scaleable-container/scaleable-container";
 
 const CLOUD_SVG =
 	'<svg viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg">' +
@@ -112,13 +113,16 @@ export class ProgressBar {
 		const cloudRect = this.cloud.getBoundingClientRect();
 		const slotRect = slot.getBoundingClientRect();
 		const originRect = this.container.getBoundingClientRect();
+		// getBoundingClientRect() is in viewport (post-scale) space, but the beam svg lives
+		// inside the same scaled ancestor, so its local coordinate system is pre-scale
+		const scale = getScaleableContainerScale("game").final || 1;
 
-		const startX = cloudRect.left + cloudRect.width / 2 - originRect.left;
-		const startY = cloudRect.top + cloudRect.height / 2 - originRect.top;
-		const endX = slotRect.left + slotRect.width / 2 - originRect.left;
-		const endY = slotRect.top + slotRect.height / 2 - originRect.top;
+		const startX = (cloudRect.left + cloudRect.width / 2 - originRect.left) / scale;
+		const startY = (cloudRect.top + cloudRect.height / 2 - originRect.top) / scale;
+		const endX = (slotRect.left + slotRect.width / 2 - originRect.left) / scale;
+		const endY = (slotRect.top + slotRect.height / 2 - originRect.top) / scale;
 
-		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width, slotRect.height);
+		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width / scale, slotRect.height / scale);
 
 		const overlay = el("div.inventory-slot-overlay");
 		overlay.style.background = `conic-gradient(${RAINBOW.join(", ")})`;
