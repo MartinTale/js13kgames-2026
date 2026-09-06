@@ -86,10 +86,10 @@ export class ProgressBar {
 		const x = inset + w + 10;
 		const y = inset + h / 2;
 
-		burstFromStadium(this.fx, x, y, 0, h, -90, 300, 20);
+		burstFromStadium(this.fx, x, y, 0, h, -90, 300, 32, 1.4);
 
 		this.cloud.style.setProperty("--cloud-progress-scale", "1");
-		// grows and holds large while the rainbow beam plays (beam starts at 500ms, runs 1200ms),
+		// grows and holds large while the rainbow beam plays (beam starts at 250ms, runs 1200ms),
 		// then shrinks back down to its resting size
 		this.cloud.animate(
 			[
@@ -98,10 +98,10 @@ export class ProgressBar {
 				{ transform: "translate(50%, -50%) scale(1.4) rotate(-10deg)", offset: 0.85 },
 				{ transform: "translate(50%, -50%) scale(1) rotate(0deg)" },
 			],
-			{ duration: 1700, easing: "cubic-bezier(.34,1.2,.64,1)" },
+			{ duration: 1450, easing: "cubic-bezier(.34,1.2,.64,1)" },
 		);
 
-		setTimeout(() => this.spawnItemAtNextSlot(), 500);
+		setTimeout(() => this.spawnItemAtNextSlot(), 250);
 	}
 
 	private spawnItemAtNextSlot() {

@@ -38,13 +38,13 @@ export const PARTICLE_SHAPES = [
 ];
 
 // spawns one particle at (x, y) inside svg, flying outward along `angleDeg`
-export function spawnParticle(svg: SVGSVGElement, x: number, y: number, angleDeg: number) {
+export function spawnParticle(svg: SVGSVGElement, x: number, y: number, angleDeg: number, sizeScale = 1) {
 	const rad = (angleDeg * Math.PI) / 180;
 
 	const radius = mathRandomInteger(32, 52);
 	const curvature = mathRandomInteger(-10, 14);
 	const duration = mathRandomInteger(320, 520);
-	const size = mathRandomInteger(14, 20);
+	const size = mathRandomInteger(14, 20) * sizeScale;
 	const spins = mathRandomInteger(-75, 75) / 100;
 	const shape = PARTICLE_SHAPES[mathRandomInteger(0, PARTICLE_SHAPES.length - 1)];
 
@@ -125,6 +125,7 @@ export function burstFromStadium(
 	direction: number,
 	spread: number,
 	count = 12,
+	sizeScale = 1,
 ) {
 	for (let i = 0; i < count; i++) {
 		const angle = direction - spread / 2 + (i + Math.random()) * (spread / count);
@@ -133,6 +134,6 @@ export function burstFromStadium(
 		const startX = originX + Math.cos(rad) * edgeDist;
 		const startY = originY + Math.sin(rad) * edgeDist;
 
-		spawnParticle(svg, startX, startY, angle);
+		spawnParticle(svg, startX, startY, angle, sizeScale);
 	}
 }
