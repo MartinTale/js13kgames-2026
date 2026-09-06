@@ -86,7 +86,7 @@ export class ProgressBar {
 		const x = inset + w + 10;
 		const y = inset + h / 2;
 
-		burstFromStadium(this.fx, x, y, 0, h, -90, 300, 32, 1.4);
+		burstFromStadium(this.fx, x, y, 0, h, -90, 300, 46, 1.7, 1.6, 1.6);
 
 		this.cloud.style.setProperty("--cloud-progress-scale", "1");
 		// grows and holds large while the rainbow beam plays (beam starts at 250ms, runs 1200ms),
@@ -123,19 +123,43 @@ export class ProgressBar {
 		const endY = (slotRect.top + slotRect.height / 2 - originRect.top) / scale;
 
 		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width / scale, slotRect.height / scale);
+		this.burnSlot(slot);
 
+		setTimeout(() => {
+			mount(slot, el("span.inventory-slot-item", item));
+		}, 220);
+	}
+
+	// tints the slot with the beam's colors and flashes its border/glow, fading out
+	// on the same curve as the rainbow beam so both effects read as one animation
+	private burnSlot(slot: HTMLElement) {
 		const overlay = el("div.inventory-slot-overlay");
 		overlay.style.background = `conic-gradient(${RAINBOW.join(", ")})`;
 		mount(slot, overlay);
 
-		slot.classList.add("burning");
-		setTimeout(() => {
-			mount(slot, el("span.inventory-slot-item", item));
-		}, 220);
-		setTimeout(() => {
-			slot.classList.remove("burning");
-			overlay.remove();
-		}, 1200);
+		const keyframes = [
+			{ opacity: 0, offset: 0 },
+			{ opacity: 1, offset: 0.2 },
+			{ opacity: 1, offset: 0.75 },
+			{ opacity: 0, offset: 1 },
+		];
+
+		const overlayAnim = overlay.animate(keyframes, { duration: 1200, easing: "cubic-bezier(.2,.8,.3,1)" });
+		const glowAnim = slot.animate(
+			[
+				{ boxShadow: "0 0 0 rgba(255, 255, 255, 0)", borderColor: "var(--shadow)", offset: 0 },
+				{ boxShadow: "0 0 16px 4px var(--shadow)", borderColor: "#fff", offset: 0.2 },
+				{ boxShadow: "0 0 16px 4px var(--shadow)", borderColor: "#fff", offset: 0.75 },
+				{ boxShadow: "0 0 0 rgba(255, 255, 255, 0)", borderColor: "var(--shadow)", offset: 1 },
+			],
+			{ duration: 1200, easing: "cubic-bezier(.2,.8,.3,1)" },
+		);
+
+		overlayAnim.onfinish = () => overlay.remove();
+		glowAnim.onfinish = () => {
+			slot.style.boxShadow = "";
+			slot.style.borderColor = "";
+		};
 	}
 
 	private drawRainbowBeam(startX: number, startY: number, endX: number, endY: number, slotW: number, slotH: number) {
