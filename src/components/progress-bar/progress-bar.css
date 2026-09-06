@@ -13,6 +13,7 @@
 
 .inventory-slot {
 	position: relative;
+	z-index: 1001;
 	width: 36px;
 	height: 36px;
 	background-color: var(--bg);
@@ -34,7 +35,6 @@
 	border-radius: 5px;
 	opacity: 0;
 	pointer-events: none;
-	mix-blend-mode: screen;
 }
 
 .progress-bar {
