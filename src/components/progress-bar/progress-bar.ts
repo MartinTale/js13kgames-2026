@@ -88,6 +88,7 @@ export class ProgressBar {
 		const y = inset + h / 2;
 
 		burstFromStadium(this.fx, x, y, 0, h, -90, 300, 46, 1.7, 1.6, 1.6);
+		playSound(sounds.beam);
 
 		this.cloud.style.setProperty("--cloud-progress-scale", "1");
 		// grows and holds large while the rainbow beam plays (beam starts at 250ms, runs 1200ms),
@@ -123,7 +124,6 @@ export class ProgressBar {
 		const endX = (slotRect.left + slotRect.width / 2 - originRect.left) / scale;
 		const endY = (slotRect.top + slotRect.height / 2 - originRect.top) / scale;
 
-		playSound(sounds.beam);
 		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width / scale, slotRect.height / scale);
 
 		// conic-gradient angles are measured clockwise from north (0deg = up), unlike atan2's
