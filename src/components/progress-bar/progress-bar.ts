@@ -114,75 +114,62 @@ export class ProgressBar {
 		const endX = slotRect.left + slotRect.width / 2;
 		const endY = slotRect.top + slotRect.height / 2;
 
-		const trail = el("div.progress-item-trail", item);
-		trail.style.left = "0";
-		trail.style.top = "0";
-		mount(document.body, trail);
+		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width, slotRect.height);
 
-		const midX = (startX + endX) / 2;
-		const midY = Math.min(startY, endY) - 60;
-
-		const path = `M ${startX} ${startY} Q ${midX} ${midY} ${endX} ${endY}`;
-		trail.style.offsetPath = `path('${path}')`;
-		trail.style.offsetRotate = "0deg";
-
-		this.drawRainbowArc(path, startX, startY, endX, endY);
-
-		const rainbowGlow = (color: string) =>
-			RAINBOW.map((c, i) => `0 0 ${10 + i * 4}px ${i === 0 ? color : c}`).join(", ");
-
-		const colorFrames = RAINBOW.map((color, i) => ({
-			offsetDistance: `${(i / (RAINBOW.length - 1)) * 100}%`,
-			filter: `drop-shadow(${rainbowGlow(color)})`,
-			transform: i === 0 ? "scale(0.8)" : i === RAINBOW.length - 1 ? "scale(1.6)" : "scale(1.3)",
-			opacity: 1,
-		}));
-
-		const anim = trail.animate(colorFrames, {
-			duration: 1400,
-			easing: "cubic-bezier(.34,1.2,.64,1)",
-			fill: "forwards",
-		});
-
-		anim.onfinish = () => {
-			trail.remove();
+		setTimeout(() => {
 			slot.textContent = item;
 			slot.classList.add("filled");
-		};
+		}, 220);
 	}
 
-	private drawRainbowArc(path: string, startX: number, startY: number, endX: number, endY: number) {
+	private drawRainbowBeam(startX: number, startY: number, endX: number, endY: number, slotW: number, slotH: number) {
 		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg") as unknown as SVGSVGElement;
-		svg.classList.add("progress-rainbow-arc");
+		svg.classList.add("progress-rainbow-beam");
 		svg.setAttribute("width", `${window.innerWidth}`);
 		svg.setAttribute("height", `${window.innerHeight}`);
 
-		const stripeGap = 4;
-		RAINBOW.forEach((color, i) => {
-			const offset = (i - (RAINBOW.length - 1) / 2) * stripeGap;
-			const nx = -(endY - startY);
-			const ny = endX - startX;
-			const len = Math.hypot(nx, ny) || 1;
-			const ox = (nx / len) * offset;
-			const oy = (ny / len) * offset;
+		const dx = endX - startX;
+		const dy = endY - startY;
+		const len = Math.hypot(dx, dy) || 1;
+		// perpendicular unit vector, half-width at the slot end covers the whole slot cell
+		const nx = -dy / len;
+		const ny = dx / len;
+		const halfW = Math.max(slotW, slotH) / 2 + 4;
 
-			const stripe = document.createElementNS("http://www.w3.org/2000/svg", "path");
-			stripe.setAttribute("d", path.replace(/M ([\d.-]+) ([\d.-]+) Q ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+)/, (_m, mx, my, qx, qy, ex, ey) =>
-				`M ${+mx + ox} ${+my + oy} Q ${+qx + ox} ${+qy + oy} ${+ex + ox} ${+ey + oy}`,
-			));
-			stripe.setAttribute("fill", "none");
-			stripe.setAttribute("stroke", color);
-			stripe.setAttribute("stroke-width", "3");
-			stripe.setAttribute("stroke-linecap", "round");
+		const leftX = endX + nx * halfW;
+		const leftY = endY + ny * halfW;
+		const rightX = endX - nx * halfW;
+		const rightY = endY - ny * halfW;
+
+		RAINBOW.forEach((color, i) => {
+			const t0 = i / RAINBOW.length;
+			const t1 = (i + 1) / RAINBOW.length;
+			const l0x = startX + (leftX - startX) * t0;
+			const l0y = startY + (leftY - startY) * t0;
+			const l1x = startX + (leftX - startX) * t1;
+			const l1y = startY + (leftY - startY) * t1;
+			const r0x = startX + (rightX - startX) * t0;
+			const r0y = startY + (rightY - startY) * t0;
+			const r1x = startX + (rightX - startX) * t1;
+			const r1y = startY + (rightY - startY) * t1;
+
+			const stripe = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+			stripe.setAttribute("points", `${l0x},${l0y} ${l1x},${l1y} ${r1x},${r1y} ${r0x},${r0y}`);
+			stripe.setAttribute("fill", color);
 			svg.appendChild(stripe);
 		});
 
 		mount(document.body, svg as unknown as HTMLElement);
 
-		const anim = svg.animate([{ opacity: 0 }, { opacity: 0.9, offset: 0.15 }, { opacity: 0.9, offset: 0.7 }, { opacity: 0 }], {
-			duration: 1400,
-			easing: "ease-out",
-		});
+		const anim = svg.animate(
+			[
+				{ opacity: 0, transform: "scale(0.3)", transformOrigin: `${startX}px ${startY}px` },
+				{ opacity: 1, transform: "scale(1)", transformOrigin: `${startX}px ${startY}px`, offset: 0.25 },
+				{ opacity: 1, offset: 0.6 },
+				{ opacity: 0 },
+			],
+			{ duration: 650, easing: "cubic-bezier(.2,.8,.3,1)" },
+		);
 
 		anim.onfinish = () => svg.remove();
 	}

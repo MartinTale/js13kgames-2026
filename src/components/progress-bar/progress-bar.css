@@ -87,20 +87,12 @@
 	filter: drop-shadow(0 0 4px var(--shadow));
 }
 
-.progress-rainbow-arc {
+.progress-rainbow-beam {
 	position: fixed;
 	top: 0;
 	left: 0;
 	z-index: 999;
 	pointer-events: none;
 	overflow: visible;
-}
-
-.progress-item-trail {
-	position: fixed;
-	z-index: 1000;
-	font-size: 28px;
-	line-height: 1;
-	pointer-events: none;
-	will-change: transform, opacity, filter;
+	filter: blur(1px) drop-shadow(0 0 8px var(--shadow));
 }
