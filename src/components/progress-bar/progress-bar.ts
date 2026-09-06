@@ -97,7 +97,7 @@ export class ProgressBar {
 			{ duration: 500, easing: "cubic-bezier(.34,1.56,.64,1)" },
 		);
 
-		this.spawnItemAtNextSlot();
+		setTimeout(() => this.spawnItemAtNextSlot(), 500);
 	}
 
 	private spawnItemAtNextSlot() {
@@ -116,13 +116,17 @@ export class ProgressBar {
 
 		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width, slotRect.height);
 
+		const overlay = el("div.inventory-slot-overlay");
+		overlay.style.background = `conic-gradient(${RAINBOW.join(", ")})`;
+		mount(slot, overlay);
+
 		slot.classList.add("burning");
 		setTimeout(() => {
-			slot.textContent = item;
-			slot.classList.add("filled");
+			mount(slot, el("span.inventory-slot-item", item));
 		}, 220);
 		setTimeout(() => {
 			slot.classList.remove("burning");
+			overlay.remove();
 		}, 1200);
 	}
 
@@ -138,8 +142,7 @@ export class ProgressBar {
 		// perpendicular unit vector, half-width at the slot end covers the whole slot cell
 		const nx = -dy / len;
 		const ny = dx / len;
-		// half-diagonal so the beam fully engulfs the slot's corners, plus overflow for a "burning" look
-		const halfW = Math.hypot(slotW, slotH) / 2 + 10;
+		const halfW = Math.max(slotW, slotH) / 2;
 
 		const leftX = endX + nx * halfW;
 		const leftY = endY + ny * halfW;
