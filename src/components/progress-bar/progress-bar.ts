@@ -88,13 +88,16 @@ export class ProgressBar {
 		burstFromStadium(this.fx, x, y, 0, h, -90, 300, 20);
 
 		this.cloud.style.setProperty("--cloud-progress-scale", "1");
+		// grows and holds large while the rainbow beam plays (beam starts at 500ms, runs 1200ms),
+		// then shrinks back down to its resting size
 		this.cloud.animate(
 			[
 				{ transform: "translate(50%, -50%) scale(1) rotate(0deg)" },
-				{ transform: "translate(50%, -50%) scale(1.5) rotate(-18deg)", offset: 0.35 },
+				{ transform: "translate(50%, -50%) scale(1.5) rotate(-18deg)", offset: 0.2 },
+				{ transform: "translate(50%, -50%) scale(1.4) rotate(-10deg)", offset: 0.85 },
 				{ transform: "translate(50%, -50%) scale(1) rotate(0deg)" },
 			],
-			{ duration: 500, easing: "cubic-bezier(.34,1.56,.64,1)" },
+			{ duration: 1700, easing: "cubic-bezier(.34,1.2,.64,1)" },
 		);
 
 		setTimeout(() => this.spawnItemAtNextSlot(), 500);
@@ -108,11 +111,12 @@ export class ProgressBar {
 
 		const cloudRect = this.cloud.getBoundingClientRect();
 		const slotRect = slot.getBoundingClientRect();
+		const originRect = this.container.getBoundingClientRect();
 
-		const startX = cloudRect.left + cloudRect.width / 2;
-		const startY = cloudRect.top + cloudRect.height / 2;
-		const endX = slotRect.left + slotRect.width / 2;
-		const endY = slotRect.top + slotRect.height / 2;
+		const startX = cloudRect.left + cloudRect.width / 2 - originRect.left;
+		const startY = cloudRect.top + cloudRect.height / 2 - originRect.top;
+		const endX = slotRect.left + slotRect.width / 2 - originRect.left;
+		const endY = slotRect.top + slotRect.height / 2 - originRect.top;
 
 		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width, slotRect.height);
 
@@ -133,8 +137,6 @@ export class ProgressBar {
 	private drawRainbowBeam(startX: number, startY: number, endX: number, endY: number, slotW: number, slotH: number) {
 		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg") as unknown as SVGSVGElement;
 		svg.classList.add("progress-rainbow-beam");
-		svg.setAttribute("width", `${window.innerWidth}`);
-		svg.setAttribute("height", `${window.innerHeight}`);
 
 		const dx = endX - startX;
 		const dy = endY - startY;
@@ -144,30 +146,26 @@ export class ProgressBar {
 		const ny = dx / len;
 		const halfW = Math.max(slotW, slotH) / 2;
 
-		const leftX = endX + nx * halfW;
-		const leftY = endY + ny * halfW;
-		const rightX = endX - nx * halfW;
-		const rightY = endY - ny * halfW;
-
+		// each rainbow color is drawn as its own line from the cloud to its own point along
+		// the slot's edge, fanning out into a bundle of parallel-ish beams instead of a solid wedge
 		RAINBOW.forEach((color, i) => {
-			const t0 = i / RAINBOW.length;
-			const t1 = (i + 1) / RAINBOW.length;
-			const l0x = startX + (leftX - startX) * t0;
-			const l0y = startY + (leftY - startY) * t0;
-			const l1x = startX + (leftX - startX) * t1;
-			const l1y = startY + (leftY - startY) * t1;
-			const r0x = startX + (rightX - startX) * t0;
-			const r0y = startY + (rightY - startY) * t0;
-			const r1x = startX + (rightX - startX) * t1;
-			const r1y = startY + (rightY - startY) * t1;
+			const t = RAINBOW.length === 1 ? 0 : i / (RAINBOW.length - 1) - 0.5;
+			const lineEndX = endX + nx * halfW * t;
+			const lineEndY = endY + ny * halfW * t;
 
-			const stripe = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-			stripe.setAttribute("points", `${l0x},${l0y} ${l1x},${l1y} ${r1x},${r1y} ${r0x},${r0y}`);
-			stripe.setAttribute("fill", color);
-			svg.appendChild(stripe);
+			const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+			line.setAttribute("x1", `${startX}`);
+			line.setAttribute("y1", `${startY}`);
+			line.setAttribute("x2", `${lineEndX}`);
+			line.setAttribute("y2", `${lineEndY}`);
+			line.setAttribute("stroke", color);
+			line.setAttribute("stroke-width", "2.5");
+			line.setAttribute("stroke-linecap", "round");
+			svg.appendChild(line);
 		});
 
-		mount(document.body, svg as unknown as HTMLElement);
+		// insert before the cloud so it renders underneath within the same stacking context
+		this.container.insertBefore(svg as unknown as HTMLElement, this.cloud);
 
 		const anim = svg.animate(
 			[
