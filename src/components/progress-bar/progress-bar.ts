@@ -116,10 +116,14 @@ export class ProgressBar {
 
 		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width, slotRect.height);
 
+		slot.classList.add("burning");
 		setTimeout(() => {
 			slot.textContent = item;
 			slot.classList.add("filled");
 		}, 220);
+		setTimeout(() => {
+			slot.classList.remove("burning");
+		}, 1200);
 	}
 
 	private drawRainbowBeam(startX: number, startY: number, endX: number, endY: number, slotW: number, slotH: number) {
@@ -134,7 +138,8 @@ export class ProgressBar {
 		// perpendicular unit vector, half-width at the slot end covers the whole slot cell
 		const nx = -dy / len;
 		const ny = dx / len;
-		const halfW = Math.max(slotW, slotH) / 2 + 4;
+		// half-diagonal so the beam fully engulfs the slot's corners, plus overflow for a "burning" look
+		const halfW = Math.hypot(slotW, slotH) / 2 + 10;
 
 		const leftX = endX + nx * halfW;
 		const leftY = endY + ny * halfW;
@@ -164,11 +169,11 @@ export class ProgressBar {
 		const anim = svg.animate(
 			[
 				{ opacity: 0, transform: "scale(0.3)", transformOrigin: `${startX}px ${startY}px` },
-				{ opacity: 1, transform: "scale(1)", transformOrigin: `${startX}px ${startY}px`, offset: 0.25 },
-				{ opacity: 1, offset: 0.6 },
+				{ opacity: 1, transform: "scale(1)", transformOrigin: `${startX}px ${startY}px`, offset: 0.2 },
+				{ opacity: 1, offset: 0.75 },
 				{ opacity: 0 },
 			],
-			{ duration: 650, easing: "cubic-bezier(.2,.8,.3,1)" },
+			{ duration: 1200, easing: "cubic-bezier(.2,.8,.3,1)" },
 		);
 
 		anim.onfinish = () => svg.remove();

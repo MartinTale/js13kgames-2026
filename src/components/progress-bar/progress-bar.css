@@ -28,6 +28,29 @@
 	animation: slot-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+.inventory-slot.burning {
+	animation: slot-burn 1.2s ease-out;
+}
+
+@keyframes slot-burn {
+	0% {
+		box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+		border-color: var(--shadow);
+	}
+	20% {
+		box-shadow: 0 0 16px 4px var(--shadow);
+		border-color: #fff;
+	}
+	75% {
+		box-shadow: 0 0 12px 2px var(--shadow);
+		border-color: #fff;
+	}
+	100% {
+		box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+		border-color: var(--shadow);
+	}
+}
+
 @keyframes slot-pop {
 	0% {
 		transform: scale(0.3);
