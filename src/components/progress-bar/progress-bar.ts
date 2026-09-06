@@ -146,22 +146,20 @@ export class ProgressBar {
 		const ny = dx / len;
 		const halfW = Math.max(slotW, slotH) / 2;
 
-		// each rainbow color is drawn as its own line from the cloud to its own point along
-		// the slot's edge, fanning out into a bundle of parallel-ish beams instead of a solid wedge
+		// solid wedge from the cloud (narrow) to the slot (wide), with color bands running
+		// lengthwise along the beam (radial, cloud to slot) rather than stacked across its width
 		RAINBOW.forEach((color, i) => {
-			const t = RAINBOW.length === 1 ? 0 : i / (RAINBOW.length - 1) - 0.5;
-			const lineEndX = endX + nx * halfW * t;
-			const lineEndY = endY + ny * halfW * t;
+			const t0 = i / RAINBOW.length - 0.5;
+			const t1 = (i + 1) / RAINBOW.length - 0.5;
+			const e0x = endX + nx * halfW * 2 * t0;
+			const e0y = endY + ny * halfW * 2 * t0;
+			const e1x = endX + nx * halfW * 2 * t1;
+			const e1y = endY + ny * halfW * 2 * t1;
 
-			const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-			line.setAttribute("x1", `${startX}`);
-			line.setAttribute("y1", `${startY}`);
-			line.setAttribute("x2", `${lineEndX}`);
-			line.setAttribute("y2", `${lineEndY}`);
-			line.setAttribute("stroke", color);
-			line.setAttribute("stroke-width", "2.5");
-			line.setAttribute("stroke-linecap", "round");
-			svg.appendChild(line);
+			const stripe = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+			stripe.setAttribute("points", `${startX},${startY} ${e0x},${e0y} ${e1x},${e1y}`);
+			stripe.setAttribute("fill", color);
+			svg.appendChild(stripe);
 		});
 
 		// insert before the cloud so it renders underneath within the same stacking context
