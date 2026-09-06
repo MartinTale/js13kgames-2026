@@ -134,7 +134,7 @@ export class ProgressBar {
 	// on the same curve as the rainbow beam so both effects read as one animation
 	private burnSlot(slot: HTMLElement): HTMLElement {
 		const overlay = el("div.inventory-slot-overlay");
-		overlay.style.background = `conic-gradient(${RAINBOW.join(", ")})`;
+		overlay.style.background = `conic-gradient(from 110deg, ${RAINBOW.join(", ")})`;
 		mount(slot, overlay);
 
 		const keyframes = [
