@@ -141,6 +141,9 @@ export class ProgressBar {
 		overlay.style.background = `conic-gradient(from ${angleDeg}deg, ${RAINBOW.join(", ")})`;
 		mount(slot, overlay);
 
+		// lift above the beam (which itself renders above every other slot) while it's the target
+		slot.classList.add("beam-target");
+
 		const keyframes = [
 			{ opacity: 0, offset: 0 },
 			{ opacity: 1, offset: 0.2 },
@@ -163,6 +166,7 @@ export class ProgressBar {
 		glowAnim.onfinish = () => {
 			slot.style.boxShadow = "";
 			slot.style.borderColor = "";
+			slot.classList.remove("beam-target");
 		};
 
 		return overlay;

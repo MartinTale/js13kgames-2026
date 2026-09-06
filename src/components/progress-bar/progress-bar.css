@@ -13,7 +13,7 @@
 
 .inventory-slot {
 	position: relative;
-	z-index: 1001;
+	z-index: 998;
 	width: 36px;
 	height: 36px;
 	background-color: var(--bg);
@@ -23,6 +23,10 @@
 	align-items: center;
 	font-size: 20px;
 	line-height: 1;
+}
+
+.inventory-slot.beam-target {
+	z-index: 1001;
 }
 
 .inventory-slot-item {
@@ -76,7 +80,7 @@
 	right: -10px;
 	width: 52px;
 	height: 52px;
-	z-index: 1000;
+	z-index: 1002;
 	--cloud-progress-scale: 1;
 	transform: translate(50%, -50%) scale(var(--cloud-progress-scale));
 	transition: transform 0.25s ease-out;
@@ -89,6 +93,7 @@
 	left: 0;
 	width: 1px;
 	height: 1px;
+	z-index: 999;
 	pointer-events: none;
 	overflow: visible;
 	filter: blur(0.5px) drop-shadow(0 0 6px var(--shadow));
