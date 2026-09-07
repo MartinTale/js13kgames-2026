@@ -67,7 +67,7 @@ export class ProgressBar {
 		this.cloud.style.setProperty("--cloud-progress-scale", `${1 + (to / 100) * 0.3}`);
 
 		if (to >= 100) {
-			this.cloudBurst();
+			setTimeout(() => this.cloudBurst(), 200);
 
 			this.value = this.min;
 			setTimeout(() => {
@@ -88,7 +88,7 @@ export class ProgressBar {
 		const y = inset + h / 2;
 
 		burstFromStadium(this.fx, x, y, 0, h, -90, 300, 46, 1.7, 1.6, 1.6);
-		setTimeout(() => playSound(sounds.beam), 200);
+		playSound(sounds.beam);
 
 		this.cloud.style.setProperty("--cloud-progress-scale", "1");
 		// grows and holds large while the rainbow beam plays (beam starts at 250ms, runs 1200ms),
@@ -100,7 +100,7 @@ export class ProgressBar {
 				{ transform: "translate(50%, -50%) scale(1.4) rotate(-10deg)", offset: 0.85 },
 				{ transform: "translate(50%, -50%) scale(1) rotate(0deg)" },
 			],
-			{ duration: 1450, delay: 200, easing: "cubic-bezier(.34,1.2,.64,1)" },
+			{ duration: 1450, easing: "cubic-bezier(.34,1.2,.64,1)" },
 		);
 
 		setTimeout(() => this.spawnItemAtNextSlot(), 250);
