@@ -100,7 +100,7 @@ export class ProgressBar {
 				{ transform: "translate(50%, -50%) scale(1.4) rotate(-10deg)", offset: 0.85 },
 				{ transform: "translate(50%, -50%) scale(1) rotate(0deg)" },
 			],
-			{ duration: 1450, delay: 100, easing: "cubic-bezier(.34,1.2,.64,1)" },
+			{ duration: 1450, delay: 200, easing: "cubic-bezier(.34,1.2,.64,1)" },
 		);
 
 		setTimeout(() => this.spawnItemAtNextSlot(), 250);
