@@ -8,9 +8,16 @@ import { createButton, ButtonElement } from "../button/button";
 const TICK_MS = 400;
 const ACTION_TRANSITION_MS = 500;
 
+// tracks the latest transitionActions() call per container, so a stale pending
+// timeout from an interrupted transition can't clobber a newer one's result
+const actionsGeneration = new WeakMap<HTMLElement, number>();
+
 // slides the current children of `container` down while fading out, then swaps in
 // `next` sliding up while fading in - used whenever the bottom action row's buttons change
 function transitionActions(container: HTMLElement, next: HTMLElement[]) {
+	const generation = (actionsGeneration.get(container) ?? 0) + 1;
+	actionsGeneration.set(container, generation);
+
 	const outgoing = Array.from(container.children) as HTMLElement[];
 
 	if (outgoing.length === 0) {
@@ -19,6 +26,7 @@ function transitionActions(container: HTMLElement, next: HTMLElement[]) {
 	}
 
 	outgoing.forEach((child) => {
+		child.getAnimations().forEach((anim) => anim.cancel());
 		child.style.pointerEvents = "none";
 		child.animate([{ transform: "translateY(0)", opacity: 1 }, { transform: "translateY(10px)", opacity: 0 }], {
 			duration: ACTION_TRANSITION_MS,
@@ -28,6 +36,7 @@ function transitionActions(container: HTMLElement, next: HTMLElement[]) {
 	});
 
 	setTimeout(() => {
+		if (actionsGeneration.get(container) !== generation) return;
 		container.replaceChildren();
 		mountActionsIn(container, next);
 	}, ACTION_TRANSITION_MS);
