@@ -36,6 +36,8 @@ function transitionActions(container: HTMLElement, next: HTMLElement[]) {
 function mountActionsIn(container: HTMLElement, next: HTMLElement[]) {
 	next.forEach((el) => mount(container, el));
 	next.forEach((child) => {
+		child.getAnimations().forEach((anim) => anim.cancel());
+		child.style.pointerEvents = "";
 		child.animate([{ transform: "translateY(10px)", opacity: 0 }, { transform: "translateY(0)", opacity: 1 }], {
 			duration: ACTION_TRANSITION_MS,
 			easing: "ease-out",
