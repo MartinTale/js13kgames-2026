@@ -28,6 +28,8 @@ export function getInventoryStats(inventory: (Item | null)[]): Record<Stat, numb
 	return totals;
 }
 
+const BASE_PLAYER_POWER = 12;
+
 export function createPlayerFighter(inventory: (Item | null)[]): Fighter {
 	const stats = getInventoryStats(inventory);
 
@@ -35,25 +37,25 @@ export function createPlayerFighter(inventory: (Item | null)[]): Fighter {
 		name: "You",
 		hp: BASE_HP + stats.vitality,
 		maxHp: BASE_HP + stats.vitality,
-		power: 5 + stats.power,
+		power: BASE_PLAYER_POWER + stats.power,
 		guard: stats.guard,
-		crit: Math.min(50, stats.crit),
+		crit: Math.min(50, 5 + stats.crit),
 		dodge: Math.min(35, stats.dodge),
 	};
 }
 
 export function createStormling(depth: number): Fighter {
 	const name = STORMLINGS[randomInteger(0, STORMLINGS.length - 1)];
-	const scale = 1 + depth * 0.15;
+	const scale = 1 + (depth - 1) * 0.15;
 
 	return {
 		name,
-		hp: Math.round((60 + depth * 8) * scale),
-		maxHp: Math.round((60 + depth * 8) * scale),
-		power: Math.round((4 + depth * 1.2) * scale),
-		guard: Math.round(depth * 0.8),
-		crit: Math.min(50, 5 + depth),
-		dodge: Math.min(35, depth * 0.5),
+		hp: Math.round((40 + depth * 6) * scale),
+		maxHp: Math.round((40 + depth * 6) * scale),
+		power: Math.round((3 + depth * 0.9) * scale),
+		guard: Math.round(depth * 0.5),
+		crit: Math.min(50, depth),
+		dodge: Math.min(35, depth * 0.4),
 	};
 }
 

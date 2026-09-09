@@ -92,7 +92,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
 					if (won) {
 						state.level.value += 1;
-						state.depth.value += 1;
+						if (state.level.value % 3 === 0) {
+							state.depth.value += 1;
+						}
 						bar.setValue(bar.value + 20);
 					}
 				});
