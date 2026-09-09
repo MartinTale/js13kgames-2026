@@ -52,7 +52,7 @@ export class ProgressBar {
 		this.container = el("div.progress-bar", [this.track, this.fx as unknown as HTMLElement, this.cloud]);
 		this.wrap = el("div.progress-bar-wrap", [this.inventory, this.container]);
 
-		this.setValue(value);
+		this.setValue(value, false);
 
 		mount(parent, this.wrap);
 	}
@@ -61,12 +61,14 @@ export class ProgressBar {
 		return Math.min(100, Math.max(0, ((this.value - this.min) / (this.max - this.min)) * 100));
 	}
 
-	setValue(value: number) {
+	setValue(value: number, triggerBeam = true) {
 		this.value = value;
 		const to = this.getProgress();
 
 		this.progress.style.width = `${to}%`;
 		this.cloud.style.setProperty("--cloud-progress-scale", `${1 + (to / 100) * 0.3}`);
+
+		if (!triggerBeam) return;
 
 		const boosted = to >= 100;
 
