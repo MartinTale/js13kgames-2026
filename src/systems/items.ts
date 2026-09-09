@@ -49,6 +49,7 @@ export type Item = {
 	emoji: string;
 	rarity: Rarity;
 	quality: Quality;
+	depth: number;
 	affixes: Partial<Record<Stat, number>>;
 };
 
@@ -101,7 +102,7 @@ export function generateItem(depth: number, boosted = false): Item {
 
 	const emoji = EMOJI_POOL[rarity][randomInteger(0, EMOJI_POOL[rarity].length - 1)];
 
-	return { emoji, rarity, quality, affixes };
+	return { emoji, rarity, quality, depth, affixes };
 }
 
 export function getItemScore(item: Item | null): number {

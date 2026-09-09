@@ -5,8 +5,9 @@ import { randomInteger } from "../../helpers/numbers";
 import { getScaleableContainerScale } from "../scaleable-container/scaleable-container";
 import { playSound, sounds } from "../../systems/music";
 import { generateItem, getQualityGlow, Item, RARITY_COLORS } from "../../systems/items";
-import { EncounterPanel } from "../encounter-panel/encounter-panel";
 import { state } from "../../systems/state";
+
+export type LootHandler = (slotIndex: number, item: Item) => void;
 
 const CLOUD_SVG =
 	'<svg viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg">' +
@@ -28,8 +29,7 @@ export class ProgressBar {
 	tapCount = 0;
 
 	constructor(
-		parent: HTMLElement,
-		public encounterPanel: EncounterPanel,
+		public onLoot: LootHandler,
 		public slotCount = 8,
 	) {
 		this.progress = el("div.progress");
@@ -52,8 +52,6 @@ export class ProgressBar {
 		this.wrap = el("div.progress-bar-wrap", [this.inventory, this.container]);
 
 		this.render();
-
-		mount(parent, this.wrap);
 	}
 
 	getProgress() {
@@ -143,15 +141,15 @@ export class ProgressBar {
 		this.burnSlot(slot, beamAngleDeg, colors);
 
 		setTimeout(() => {
-			this.renderSlotItem(slot, state.inventory.value[slotIndex]);
-
-			this.encounterPanel.showLootReveal(slotIndex, item, () => {
-				this.renderSlotItem(slot, state.inventory.value[slotIndex]);
-			});
+			this.renderSlotItem(slotIndex, state.inventory.value[slotIndex]);
+			this.onLoot(slotIndex, item);
 		}, 220);
 	}
 
-	private renderSlotItem(slot: HTMLElement, item: Item | null) {
+	// re-renders whatever is currently equipped in a slot - call after a loot
+	// decision (keep/equip) resolves so the icon reflects the final choice
+	renderSlotItem(slotIndex: number, item: Item | null) {
+		const slot = this.slots[slotIndex];
 		slot.querySelector(".inventory-slot-item")?.remove();
 		if (!item) return;
 

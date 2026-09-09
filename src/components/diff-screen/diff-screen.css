@@ -1,0 +1,119 @@
+.diff-screen {
+	justify-content: center;
+}
+
+.diff-body {
+	flex-direction: column;
+	align-items: center;
+}
+
+.diff-title {
+	display: block;
+	text-align: center;
+	font-size: 16px;
+	font-weight: bold;
+	margin-bottom: 14px;
+}
+
+.diff-compare {
+	justify-content: center;
+	align-items: flex-start;
+	gap: 12px;
+}
+
+.diff-vs {
+	align-self: center;
+	font-size: 18px;
+	font-weight: bold;
+	opacity: 0.6;
+	padding-top: 40px;
+}
+
+.diff-side {
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	width: 120px;
+}
+
+.diff-side-label {
+	display: block;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	opacity: 0.6;
+}
+
+.diff-card {
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	width: 100%;
+}
+
+.diff-emoji {
+	width: 60px;
+	height: 60px;
+	font-size: 32px;
+	justify-content: center;
+	align-items: center;
+	border: 2px solid var(--shadow);
+	border-radius: 10px;
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
+.diff-emoji.empty {
+	color: var(--shadow);
+	opacity: 0.5;
+	border-style: dashed;
+}
+
+.diff-rarity {
+	display: block;
+	height: 13px;
+	font-size: 10px;
+	text-transform: capitalize;
+	opacity: 0.8;
+}
+
+.diff-found {
+	display: block;
+	font-size: 9px;
+	opacity: 0.5;
+}
+
+.diff-stats {
+	display: block;
+	min-height: 15px;
+	font-size: 11px;
+	text-align: center;
+}
+
+.diff-stat {
+	display: block;
+}
+
+.diff-score-row {
+	flex-direction: column;
+	align-items: center;
+	margin-top: 4px;
+}
+
+.diff-score {
+	font-size: 15px;
+	font-weight: bold;
+	line-height: 1.2;
+}
+
+.diff-score-label {
+	font-size: 9px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	opacity: 0.6;
+}
+
+.diff-actions {
+	justify-content: center;
+	gap: 8px;
+	margin-top: auto;
+}

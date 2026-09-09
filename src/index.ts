@@ -7,11 +7,14 @@ import { SVGs } from "./systems/svgs";
 import { initFireflies } from "./components/fireflies/fireflies";
 import { EdgeLinkButton, EdgeButton } from "./components/edge-button/edge-button";
 import { initGame, startGameLoop } from "./game/game";
-import { ProgressBar } from "./components/progress-bar/progress-bar";
 import { colors, setGameColor } from "./helpers/colors";
 import { closeModal, openModal } from "./components/modal/modal";
 import { createScaleableContainer } from "./components/scaleable-container/scaleable-container";
-import { EncounterPanel } from "./components/encounter-panel/encounter-panel";
+import { ScreenManager } from "./components/screen-manager/screen-manager";
+import { HomeScreen } from "./components/home-screen/home-screen";
+import { BattleScreen } from "./components/battle-screen/battle-screen";
+import { RevealScreen } from "./components/reveal-screen/reveal-screen";
+import { DiffScreen } from "./components/diff-screen/diff-screen";
 
 export let bodyElement: HTMLElement;
 export let gameContainer: HTMLElement;
@@ -77,32 +80,70 @@ window.addEventListener("DOMContentLoaded", () => {
 		);
 	}
 
-	let bar: ProgressBar;
+	const screens = new ScreenManager(gameContainer);
 
-	const encounterPanel = new EncounterPanel(() => {
-		encounterPanel.setMagicEnabled(false);
+	const battleScreen = new BattleScreen();
+	const revealScreen = new RevealScreen();
+	const diffScreen = new DiffScreen();
 
-		setTimeout(() => {
-			encounterPanel.runCombat((won) => {
-				encounterPanel.setMagicEnabled(true);
+	const homeScreen = new HomeScreen(
+		() => {
+			homeScreen.setMagicEnabled(false);
 
-				if (won) {
-					state.level.value += 1;
-					if (state.level.value % 3 === 0) {
-						state.depth.value += 1;
-					}
-					bar.tap();
-				}
+			setTimeout(() => {
+				screens.show("battle").then(() => {
+					battleScreen.refreshDepth();
+
+					battleScreen.run((won) => {
+						homeScreen.setMagicEnabled(true);
+
+						if (!won) {
+							screens.show("home");
+							return;
+						}
+
+						state.level.value += 1;
+						if (state.level.value % 3 === 0) {
+							state.depth.value += 1;
+						}
+
+						screens.show("home").then(() => {
+							homeScreen.refreshDepth();
+							homeScreen.bar.tap();
+						});
+					});
+				});
+			}, 500);
+		},
+		(slotIndex, item) => {
+			revealScreen.refreshDepth();
+			screens.show("reveal").then(() => {
+				revealScreen.show(item, () => {
+					diffScreen.refreshDepth();
+					screens.show("diff").then(() => {
+						diffScreen.show(slotIndex, item, (equip) => {
+							if (equip) {
+								const inventory = [...state.inventory.value];
+								inventory[slotIndex] = item;
+								state.inventory.value = inventory;
+							}
+
+							homeScreen.bar.renderSlotItem(slotIndex, state.inventory.value[slotIndex]);
+							screens.show("home");
+						});
+					});
+				});
 			});
-		}, 500);
-	});
+		},
+	);
 
-	encounterPanel.mountContent(gameContainer);
+	homeScreen.refreshDepth();
 
-	bar = new ProgressBar(gameContainer, encounterPanel);
-	bar.container.style.margin = "10px 10px 20px";
-
-	encounterPanel.mountActions(gameContainer);
+	screens.register("home", homeScreen.element);
+	screens.register("battle", battleScreen.element);
+	screens.register("reveal", revealScreen.element);
+	screens.register("diff", diffScreen.element);
+	screens.show("home");
 
 	setRealViewportValues();
 

@@ -1,0 +1,9 @@
+.home-screen {
+	justify-content: center;
+	flex: 1;
+}
+
+.home-actions {
+	justify-content: center;
+	margin-top: auto;
+}
