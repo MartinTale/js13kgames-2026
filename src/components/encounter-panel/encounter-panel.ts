@@ -8,7 +8,6 @@ import { createButton, ButtonElement } from "../button/button";
 const TICK_MS = 400;
 
 export class EncounterPanel {
-	element: HTMLElement;
 	content: HTMLElement;
 	actions: HTMLElement;
 	magicButton: ButtonElement;
@@ -19,12 +18,14 @@ export class EncounterPanel {
 
 		this.magicButton = createButton("Magic", () => this.onMagic(), "primary", "md", true);
 		mount(this.actions, this.magicButton);
-
-		this.element = el("div.encounter-panel", [this.content, this.actions]);
 	}
 
-	mount(parent: HTMLElement) {
-		mount(parent, this.element);
+	mountContent(parent: HTMLElement) {
+		mount(parent, this.content);
+	}
+
+	mountActions(parent: HTMLElement) {
+		mount(parent, this.actions);
 	}
 
 	setMagicEnabled(enabled: boolean) {

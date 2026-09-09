@@ -97,10 +97,12 @@ window.addEventListener("DOMContentLoaded", () => {
 		}, 500);
 	});
 
+	encounterPanel.mountContent(gameContainer);
+
 	bar = new ProgressBar(gameContainer, 0, 100, 0, encounterPanel);
 	bar.container.style.margin = "10px 10px 20px";
 
-	encounterPanel.mount(gameContainer);
+	encounterPanel.mountActions(gameContainer);
 
 	setRealViewportValues();
 
