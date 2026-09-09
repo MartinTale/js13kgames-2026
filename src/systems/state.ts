@@ -1,5 +1,6 @@
 import { rng } from "../helpers/numbers";
 import { Signal, createSignal } from "./signals";
+import { Item } from "./items";
 
 const STATE_KEY = "js13k26_save";
 
@@ -10,6 +11,8 @@ export type State = {
 	lastProcessedAt: Signal<number>;
 	sound: Signal<boolean | null>;
 	level: Signal<number>;
+	depth: Signal<number>;
+	inventory: Signal<(Item | null)[]>;
 };
 
 export const emptyState: State = {
@@ -18,6 +21,8 @@ export const emptyState: State = {
 	lastProcessedAt: createSignal(Date.now()),
 	sound: createSignal(null),
 	level: createSignal(0),
+	depth: createSignal(1),
+	inventory: createSignal(Array(8).fill(null)),
 };
 
 export let state: State;

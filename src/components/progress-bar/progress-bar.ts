@@ -1,16 +1,19 @@
 import "./progress-bar.css";
 import { el, mount, svgEl } from "../../helpers/dom";
 import { burstFromStadium } from "../../systems/confetti";
-import { mathRandomInteger } from "../../helpers/numbers";
+import { randomInteger } from "../../helpers/numbers";
 import { getScaleableContainerScale } from "../scaleable-container/scaleable-container";
 import { playSound, sounds } from "../../systems/music";
+import { generateItem, getQualityGlow, Item, RARITY_COLORS } from "../../systems/items";
+import { showLootPopup } from "../loot-popup/loot-popup";
+import { state } from "../../systems/state";
+import { gameContainer } from "../../index";
 
 const CLOUD_SVG =
 	'<svg viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg">' +
 	'<path d="M8 16C4 16 2 13.5 2 11C2 8.5 4 6.5 6.5 6.5C7 3.5 9.5 1 13 1C16.5 1 19 3.2 19.7 6.2C20 6.1 20.4 6 20.8 6C24.3 6 27 8.6 27 11.8C27 15 24.3 17 20.8 17" fill="[fill]" stroke="none" />' +
 	"</svg>";
 
-const ITEMS = ["🌟", "🍀", "🦄", "🌈", "🍄", "🧿", "🪄", "🔮", "🐚", "🍯", "🌙", "✨"];
 const RAINBOW = ["#FF8FC7", "#FFB98F", "#FFF48F", "#8FFFC9", "#8FD9FF", "#C896FF"];
 
 export class ProgressBar {
@@ -22,7 +25,6 @@ export class ProgressBar {
 	fx: SVGSVGElement;
 	cloud: HTMLElement;
 	slots: HTMLElement[] = [];
-	filledCount = 0;
 
 	constructor(
 		parent: HTMLElement,
@@ -66,9 +68,9 @@ export class ProgressBar {
 		this.progress.style.width = `${to}%`;
 		this.cloud.style.setProperty("--cloud-progress-scale", `${1 + (to / 100) * 0.3}`);
 
-		if (to >= 100) {
-			setTimeout(() => this.cloudBurst(), 200);
+		const boosted = to >= 100;
 
+		if (boosted) {
 			this.value = this.min;
 			setTimeout(() => {
 				this.progress.style.transition = "none";
@@ -78,9 +80,11 @@ export class ProgressBar {
 				});
 			}, 300);
 		}
+
+		setTimeout(() => this.cloudBurst(boosted), 200);
 	}
 
-	private cloudBurst() {
+	private cloudBurst(boosted = false) {
 		const w = this.container.offsetWidth;
 		const h = this.container.offsetHeight;
 		const inset = -parseFloat(getComputedStyle(this.fx).left);
@@ -103,14 +107,14 @@ export class ProgressBar {
 			{ duration: 1450, easing: "cubic-bezier(.34,1.2,.64,1)" },
 		);
 
-		setTimeout(() => this.spawnItemAtNextSlot(), 250);
+		setTimeout(() => this.spawnItemAtNextSlot(boosted), 250);
 	}
 
-	private spawnItemAtNextSlot() {
-		const slot = this.slots[this.filledCount % this.slots.length];
-		this.filledCount++;
+	private spawnItemAtNextSlot(boosted = false) {
+		const slotIndex = randomInteger(0, this.slots.length - 1);
+		const slot = this.slots[slotIndex];
 
-		const item = ITEMS[mathRandomInteger(0, ITEMS.length - 1)];
+		const item = generateItem(state.depth.value, boosted);
 
 		const cloudRect = this.cloud.getBoundingClientRect();
 		const slotRect = slot.getBoundingClientRect();
@@ -133,8 +137,22 @@ export class ProgressBar {
 		const overlay = this.burnSlot(slot, beamAngleDeg);
 
 		setTimeout(() => {
-			slot.insertBefore(el("span.inventory-slot-item", item), overlay);
+			this.renderSlotItem(slot, overlay, state.inventory.value[slotIndex]);
+
+			showLootPopup(gameContainer, slotIndex, item, () => {
+				this.renderSlotItem(slot, overlay, state.inventory.value[slotIndex]);
+			});
 		}, 220);
+	}
+
+	private renderSlotItem(slot: HTMLElement, overlay: HTMLElement, item: Item | null) {
+		slot.querySelector(".inventory-slot-item")?.remove();
+		if (!item) return;
+
+		const itemEl = el("span.inventory-slot-item", item.emoji);
+		itemEl.style.borderColor = RARITY_COLORS[item.rarity];
+		itemEl.style.boxShadow = getQualityGlow(item.quality);
+		slot.insertBefore(itemEl, overlay);
 	}
 
 	// tints the slot with the beam's colors and flashes its border/glow, fading out

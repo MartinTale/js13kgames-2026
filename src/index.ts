@@ -12,6 +12,7 @@ import { ProgressBar } from "./components/progress-bar/progress-bar";
 import { colors, setGameColor } from "./helpers/colors";
 import { closeModal, openModal } from "./components/modal/modal";
 import { createScaleableContainer } from "./components/scaleable-container/scaleable-container";
+import { runCombat } from "./components/combat/combat";
 
 export let bodyElement: HTMLElement;
 export let gameContainer: HTMLElement;
@@ -83,8 +84,19 @@ window.addEventListener("DOMContentLoaded", () => {
 	const magicButton = createButton(
 		"Magic",
 		() => {
-			state.level.value += 1;
-			bar.setValue(bar.value + 20);
+			magicButton.face.disabled = true;
+
+			setTimeout(() => {
+				runCombat(gameContainer, (won) => {
+					magicButton.face.disabled = false;
+
+					if (won) {
+						state.level.value += 1;
+						state.depth.value += 1;
+						bar.setValue(bar.value + 20);
+					}
+				});
+			}, 500);
 		},
 		"primary",
 		"md",
