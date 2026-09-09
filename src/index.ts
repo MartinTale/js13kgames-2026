@@ -7,7 +7,6 @@ import { SVGs } from "./systems/svgs";
 import { initFireflies } from "./components/fireflies/fireflies";
 import { EdgeLinkButton, EdgeButton } from "./components/edge-button/edge-button";
 import { initGame, startGameLoop } from "./game/game";
-import { createButton } from "./components/button/button";
 import { ProgressBar } from "./components/progress-bar/progress-bar";
 import { colors, setGameColor } from "./helpers/colors";
 import { closeModal, openModal } from "./components/modal/modal";
@@ -78,35 +77,30 @@ window.addEventListener("DOMContentLoaded", () => {
 		);
 	}
 
-	const encounterPanel = new EncounterPanel(gameContainer);
-	const bar = new ProgressBar(gameContainer, 0, 100, 0, encounterPanel);
-	bar.container.style.margin = "10px 10px 40px";
+	let bar: ProgressBar;
 
-	const magicButton = createButton(
-		"Magic",
-		() => {
-			magicButton.face.disabled = true;
+	const encounterPanel = new EncounterPanel(() => {
+		encounterPanel.setMagicEnabled(false);
 
-			setTimeout(() => {
-				encounterPanel.runCombat((won) => {
-					magicButton.face.disabled = false;
+		setTimeout(() => {
+			encounterPanel.runCombat((won) => {
+				encounterPanel.setMagicEnabled(true);
 
-					if (won) {
-						state.level.value += 1;
-						if (state.level.value % 3 === 0) {
-							state.depth.value += 1;
-						}
-						bar.setValue(bar.value + 20);
+				if (won) {
+					state.level.value += 1;
+					if (state.level.value % 3 === 0) {
+						state.depth.value += 1;
 					}
-				});
-			}, 500);
-		},
-		"primary",
-		"md",
-		true,
-	);
+					bar.setValue(bar.value + 20);
+				}
+			});
+		}, 500);
+	});
 
-	mount(gameContainer, magicButton);
+	bar = new ProgressBar(gameContainer, 0, 100, 0, encounterPanel);
+	bar.container.style.margin = "10px 10px 20px";
+
+	encounterPanel.mount(gameContainer);
 
 	setRealViewportValues();
 

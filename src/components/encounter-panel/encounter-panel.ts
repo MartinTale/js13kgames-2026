@@ -3,29 +3,45 @@ import { el, mount } from "../../helpers/dom";
 import { combatTick, CombatEvent, createPlayerFighter, createStormling } from "../../systems/combat";
 import { state } from "../../systems/state";
 import { getItemScore, getQualityGlow, Item, RARITY_COLORS, STAT_LABELS, Stat, STATS } from "../../systems/items";
-import { createButton } from "../button/button";
+import { createButton, ButtonElement } from "../button/button";
 
 const TICK_MS = 400;
 
 export class EncounterPanel {
-	panel: HTMLElement;
+	element: HTMLElement;
+	content: HTMLElement;
+	actions: HTMLElement;
+	magicButton: ButtonElement;
 
-	constructor(parent: HTMLElement) {
-		this.panel = el("div.encounter-panel");
-		mount(parent, this.panel);
+	constructor(private onMagic: () => void) {
+		this.content = el("div.encounter-content");
+		this.actions = el("div.encounter-actions");
+
+		this.magicButton = createButton("Magic", () => this.onMagic(), "primary", "md", true);
+		mount(this.actions, this.magicButton);
+
+		this.element = el("div.encounter-panel", [this.content, this.actions]);
 	}
 
-	private clear() {
-		this.panel.replaceChildren();
-		this.panel.classList.remove("active");
+	mount(parent: HTMLElement) {
+		mount(parent, this.element);
 	}
 
-	private show() {
-		requestAnimationFrame(() => this.panel.classList.add("active"));
+	setMagicEnabled(enabled: boolean) {
+		this.magicButton.face.disabled = !enabled;
+	}
+
+	private clearContent() {
+		this.content.replaceChildren();
+	}
+
+	private clearActions() {
+		this.actions.replaceChildren();
 	}
 
 	runCombat(onDone: (won: boolean) => void) {
-		this.clear();
+		this.clearContent();
+		this.clearActions();
 
 		const player = createPlayerFighter(state.inventory.value);
 		const enemy = createStormling(state.depth.value);
@@ -37,7 +53,7 @@ export class EncounterPanel {
 		const log = el("div.combat-log");
 
 		mount(
-			this.panel,
+			this.content,
 			el("div.combat-view", [
 				el("div.hp-row", [
 					el("span.hp-label", [el("span", player.name), playerHpText]),
@@ -50,8 +66,6 @@ export class EncounterPanel {
 				log,
 			]),
 		);
-
-		this.show();
 
 		const updateBars = () => {
 			playerBar.style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
@@ -80,7 +94,8 @@ export class EncounterPanel {
 				updateBars();
 
 				setTimeout(() => {
-					this.clear();
+					this.clearContent();
+					this.restoreMagicButton();
 					onDone(won);
 				}, 1200);
 				return;
@@ -100,7 +115,8 @@ export class EncounterPanel {
 	}
 
 	showLootReveal(slotIndex: number, newItem: Item, onResolved: () => void) {
-		this.clear();
+		this.clearContent();
+		this.clearActions();
 
 		const oldItem = state.inventory.value[slotIndex];
 		const oldScore = getItemScore(oldItem);
@@ -109,23 +125,9 @@ export class EncounterPanel {
 
 		const rows = STATS.map((stat) => diffRow(stat, oldItem, newItem)).filter((row): row is HTMLElement => row != null);
 
-		const keepButton = createButton("Keep Current", () => onResolved(), "normal", "sm");
-		const equipButton = createButton(
-			"Equip New",
-			() => {
-				const inventory = [...state.inventory.value];
-				inventory[slotIndex] = newItem;
-				state.inventory.value = inventory;
-				onResolved();
-			},
-			"primary",
-			"sm",
-		);
-
 		mount(
-			this.panel,
+			this.content,
 			el("div.loot-view", [
-				el("div.loot-title", "Loot!"),
 				el("div.loot-compare", [
 					el("div.loot-side", [
 						el("div.loot-side-label", "Current"),
@@ -138,11 +140,35 @@ export class EncounterPanel {
 					"div.loot-score-delta" + (scoreDelta >= 0 ? ".up" : ".down"),
 					`Score: ${oldScore} → ${newScore} (${scoreDelta >= 0 ? "+" : ""}${scoreDelta})`,
 				),
-				el("div.loot-actions", [keepButton, equipButton]),
 			]),
 		);
 
-		this.show();
+		const resolve = () => {
+			this.clearContent();
+			this.restoreMagicButton();
+			onResolved();
+		};
+
+		const keepButton = createButton("Keep Current", resolve, "normal", "md");
+		const equipButton = createButton(
+			"Equip New",
+			() => {
+				const inventory = [...state.inventory.value];
+				inventory[slotIndex] = newItem;
+				state.inventory.value = inventory;
+				resolve();
+			},
+			"primary",
+			"md",
+		);
+
+		mount(this.actions, keepButton);
+		mount(this.actions, equipButton);
+	}
+
+	private restoreMagicButton() {
+		this.clearActions();
+		mount(this.actions, this.magicButton);
 	}
 }
 
