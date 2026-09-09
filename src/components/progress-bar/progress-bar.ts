@@ -5,9 +5,8 @@ import { randomInteger } from "../../helpers/numbers";
 import { getScaleableContainerScale } from "../scaleable-container/scaleable-container";
 import { playSound, sounds } from "../../systems/music";
 import { generateItem, getQualityGlow, Item, RARITY_COLORS } from "../../systems/items";
-import { showLootPopup } from "../loot-popup/loot-popup";
+import { EncounterPanel } from "../encounter-panel/encounter-panel";
 import { state } from "../../systems/state";
-import { gameContainer } from "../../index";
 
 const CLOUD_SVG =
 	'<svg viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg">' +
@@ -31,6 +30,7 @@ export class ProgressBar {
 		public min: number,
 		public max: number,
 		public value: number,
+		public encounterPanel: EncounterPanel,
 		public slotCount = 8,
 	) {
 		this.progress = el("div.progress");
@@ -141,7 +141,7 @@ export class ProgressBar {
 		setTimeout(() => {
 			this.renderSlotItem(slot, state.inventory.value[slotIndex]);
 
-			showLootPopup(gameContainer, slotIndex, item, () => {
+			this.encounterPanel.showLootReveal(slotIndex, item, () => {
 				this.renderSlotItem(slot, state.inventory.value[slotIndex]);
 			});
 		}, 220);

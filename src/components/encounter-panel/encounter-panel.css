@@ -1,0 +1,213 @@
+.encounter-panel {
+	display: block;
+	width: 100%;
+	max-width: 300px;
+	min-height: 0;
+	box-sizing: border-box;
+	margin: 0 auto 10px;
+	opacity: 0;
+	transition: opacity 200ms;
+}
+
+.encounter-panel.active {
+	opacity: 1;
+}
+
+.encounter-panel:empty {
+	margin: 0;
+}
+
+.combat-view,
+.loot-view {
+	display: block;
+	box-sizing: border-box;
+	background-color: var(--bg);
+	border: 2px solid var(--color);
+	box-shadow: 0 0 15px var(--shadow);
+	border-radius: 8px;
+	padding: 12px;
+}
+
+.hp-row {
+	display: block;
+	margin-bottom: 8px;
+}
+
+.hp-label {
+	display: flex;
+	justify-content: space-between;
+	font-size: 13px;
+	margin-bottom: 4px;
+}
+
+.hp-track {
+	display: flex;
+	width: 100%;
+	height: 12px;
+	background-color: rgba(255, 255, 255, 0.1);
+	border: 1px solid var(--shadow);
+	border-radius: 6px;
+	overflow: hidden;
+	justify-content: flex-start;
+	box-sizing: border-box;
+}
+
+.hp-fill {
+	height: 100%;
+	width: 100%;
+	background-color: var(--color);
+	transition: width 200ms;
+}
+
+.combat-log {
+	display: block;
+	box-sizing: border-box;
+	height: 120px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	font-size: 11px;
+	line-height: 1.5;
+	text-align: left;
+	border-top: 1px solid var(--shadow);
+	margin-top: 8px;
+	padding-top: 8px;
+}
+
+.combat-line {
+	display: block;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.combat-line.crit {
+	color: #ffd54f;
+}
+
+.combat-line.win {
+	color: #8fffc9;
+	font-weight: bold;
+	margin-top: 4px;
+}
+
+.combat-line.loss {
+	color: #ff8f8f;
+	font-weight: bold;
+	margin-top: 4px;
+}
+
+.loot-title {
+	display: block;
+	font-size: 16px;
+	font-weight: bold;
+	text-align: center;
+	margin-bottom: 8px;
+}
+
+.loot-compare {
+	justify-content: center;
+	gap: 12px;
+}
+
+.loot-side {
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+}
+
+.loot-side-label {
+	font-size: 11px;
+	opacity: 0.7;
+}
+
+.loot-card {
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	min-width: 100px;
+}
+
+.loot-empty {
+	width: 44px;
+	height: 44px;
+	border: 2px dashed var(--shadow);
+	border-radius: 8px;
+	justify-content: center;
+	align-items: center;
+	font-size: 10px;
+	opacity: 0.6;
+}
+
+.loot-emoji {
+	width: 44px;
+	height: 44px;
+	font-size: 26px;
+	justify-content: center;
+	align-items: center;
+	border: 2px solid var(--shadow);
+	border-radius: 8px;
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
+.loot-rarity {
+	font-size: 10px;
+	text-transform: capitalize;
+	opacity: 0.8;
+}
+
+.loot-stats {
+	display: block;
+	font-size: 11px;
+}
+
+.loot-stat {
+	display: block;
+}
+
+.loot-score {
+	font-size: 11px;
+	font-weight: bold;
+}
+
+.loot-diffs {
+	display: block;
+	font-size: 11px;
+	text-align: left;
+	margin-top: 8px;
+	border-top: 1px solid var(--shadow);
+	padding-top: 8px;
+}
+
+.loot-diff-row {
+	display: block;
+}
+
+.loot-diff-row.up {
+	color: #8fffc9;
+}
+
+.loot-diff-row.down {
+	color: #ff8f8f;
+}
+
+.loot-score-delta {
+	display: block;
+	text-align: center;
+	font-size: 13px;
+	font-weight: bold;
+	margin-top: 8px;
+}
+
+.loot-score-delta.up {
+	color: #8fffc9;
+}
+
+.loot-score-delta.down {
+	color: #ff8f8f;
+}
+
+.loot-actions {
+	justify-content: center;
+	gap: 8px;
+	margin-top: 10px;
+}

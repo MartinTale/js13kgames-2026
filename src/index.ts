@@ -12,7 +12,7 @@ import { ProgressBar } from "./components/progress-bar/progress-bar";
 import { colors, setGameColor } from "./helpers/colors";
 import { closeModal, openModal } from "./components/modal/modal";
 import { createScaleableContainer } from "./components/scaleable-container/scaleable-container";
-import { runCombat } from "./components/combat/combat";
+import { EncounterPanel } from "./components/encounter-panel/encounter-panel";
 
 export let bodyElement: HTMLElement;
 export let gameContainer: HTMLElement;
@@ -78,7 +78,8 @@ window.addEventListener("DOMContentLoaded", () => {
 		);
 	}
 
-	const bar = new ProgressBar(gameContainer, 0, 100, 0);
+	const encounterPanel = new EncounterPanel(gameContainer);
+	const bar = new ProgressBar(gameContainer, 0, 100, 0, encounterPanel);
 	bar.container.style.margin = "10px 10px 40px";
 
 	const magicButton = createButton(
@@ -87,7 +88,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			magicButton.face.disabled = true;
 
 			setTimeout(() => {
-				runCombat(gameContainer, (won) => {
+				encounterPanel.runCombat((won) => {
 					magicButton.face.disabled = false;
 
 					if (won) {
