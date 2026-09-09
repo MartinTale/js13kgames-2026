@@ -2,17 +2,51 @@ import "./encounter-panel.css";
 import { el, mount } from "../../helpers/dom";
 import { combatTick, CombatEvent, createPlayerFighter, createStormling } from "../../systems/combat";
 import { state } from "../../systems/state";
-import { getItemScore, getQualityGlow, Item, RARITY_COLORS, STAT_LABELS, Stat, STATS } from "../../systems/items";
+import { getItemScore, getQualityGlow, Item, RARITY_COLORS, STAT_LABELS, STATS } from "../../systems/items";
 import { createButton, ButtonElement } from "../button/button";
-import { burstFromStadium } from "../../systems/confetti";
 
 const TICK_MS = 400;
+const ACTION_TRANSITION_MS = 500;
+
+// slides the current children of `container` down while fading out, then swaps in
+// `next` sliding up while fading in - used whenever the bottom action row's buttons change
+function transitionActions(container: HTMLElement, next: HTMLElement[]) {
+	const outgoing = Array.from(container.children) as HTMLElement[];
+
+	if (outgoing.length === 0) {
+		mountActionsIn(container, next);
+		return;
+	}
+
+	outgoing.forEach((child) => {
+		child.style.pointerEvents = "none";
+		child.animate([{ transform: "translateY(0)", opacity: 1 }, { transform: "translateY(10px)", opacity: 0 }], {
+			duration: ACTION_TRANSITION_MS,
+			easing: "ease-in",
+			fill: "forwards",
+		});
+	});
+
+	setTimeout(() => {
+		container.replaceChildren();
+		mountActionsIn(container, next);
+	}, ACTION_TRANSITION_MS);
+}
+
+function mountActionsIn(container: HTMLElement, next: HTMLElement[]) {
+	next.forEach((el) => mount(container, el));
+	next.forEach((child) => {
+		child.animate([{ transform: "translateY(10px)", opacity: 0 }, { transform: "translateY(0)", opacity: 1 }], {
+			duration: ACTION_TRANSITION_MS,
+			easing: "ease-out",
+		});
+	});
+}
 
 export class EncounterPanel {
 	content: HTMLElement;
 	actions: HTMLElement;
 	magicButton: ButtonElement;
-	private fadeAnim: Animation | null = null;
 
 	constructor(private onMagic: () => void) {
 		this.content = el("div.encounter-content");
@@ -32,45 +66,20 @@ export class EncounterPanel {
 
 	private tapMagic() {
 		this.magicButton.face.disabled = true;
-
-		const svg = this.magicButton.querySelector("svg.button-confetti") as SVGSVGElement | null;
-		if (svg) {
-			const w = this.magicButton.offsetWidth;
-			const h = this.magicButton.offsetHeight;
-			const inset = -parseFloat(getComputedStyle(svg).left);
-			burstFromStadium(svg, inset + w / 2, inset + h / 2, w, h, -90, 320, 60, 2, 1.8, 1.8);
-		}
-
-		setTimeout(() => {
-			this.fadeAnim = this.magicButton.animate([{ opacity: 1 }, { opacity: 0 }], {
-				duration: 1000,
-				fill: "forwards",
-			});
-		}, 250);
-
 		this.onMagic();
 	}
 
 	setMagicEnabled(enabled: boolean) {
 		this.magicButton.face.disabled = !enabled;
-
-		if (enabled) {
-			this.fadeAnim?.cancel();
-			this.fadeAnim = null;
-		}
 	}
 
 	private clearContent() {
 		this.content.replaceChildren();
 	}
 
-	private clearActions() {
-		this.actions.replaceChildren();
-	}
-
 	runCombat(onDone: (won: boolean) => void) {
 		this.clearContent();
-		this.clearActions();
+		transitionActions(this.actions, []);
 
 		const player = createPlayerFighter(state.inventory.value);
 		const enemy = createStormling(state.depth.value);
@@ -124,7 +133,7 @@ export class EncounterPanel {
 
 				setTimeout(() => {
 					this.clearContent();
-					this.restoreMagicButton();
+					transitionActions(this.actions, [this.magicButton]);
 					onDone(won);
 				}, 1200);
 				return;
@@ -145,40 +154,24 @@ export class EncounterPanel {
 
 	showLootReveal(slotIndex: number, newItem: Item, onResolved: () => void) {
 		this.clearContent();
-		this.clearActions();
 
 		const oldItem = state.inventory.value[slotIndex];
-		const oldScore = getItemScore(oldItem);
-		const newScore = getItemScore(newItem);
-		const scoreDelta = newScore - oldScore;
 
-		const rows = STATS.map((stat) => diffRow(stat, oldItem, newItem)).filter((row): row is HTMLElement => row != null);
-
-		const viewChildren: HTMLElement[] = [
-			el("div.loot-title", "Loot!"),
-			el("div.loot-compare", [
-				el("div.loot-side", [el("div.loot-side-label", "Current"), itemCard(oldItem)]),
-				el("div.loot-vs", "→"),
-				el("div.loot-side", [el("div.loot-side-label", "New"), itemCard(newItem)]),
+		mount(
+			this.content,
+			el("div.loot-view", [
+				el("div.loot-title", "Loot!"),
+				el("div.loot-compare", [
+					el("div.loot-side", [el("div.loot-side-label", "Current"), itemCard(oldItem)]),
+					el("div.loot-vs", "→"),
+					el("div.loot-side", [el("div.loot-side-label", "New"), itemCard(newItem)]),
+				]),
 			]),
-		];
-
-		if (rows.length > 0) {
-			viewChildren.push(el("div.loot-diffs", rows));
-		}
-
-		viewChildren.push(
-			el(
-				"div.loot-score-delta" + (scoreDelta >= 0 ? ".up" : ".down"),
-				`Score ${oldScore} → ${newScore} (${scoreDelta >= 0 ? "+" : ""}${scoreDelta})`,
-			),
 		);
-
-		mount(this.content, el("div.loot-view", viewChildren));
 
 		const resolve = () => {
 			this.clearContent();
-			this.restoreMagicButton();
+			transitionActions(this.actions, [this.magicButton]);
 			onResolved();
 		};
 
@@ -195,23 +188,17 @@ export class EncounterPanel {
 			"md",
 		);
 
-		mount(this.actions, keepButton);
-		mount(this.actions, equipButton);
-	}
-
-	private restoreMagicButton() {
-		this.clearActions();
-		mount(this.actions, this.magicButton);
+		transitionActions(this.actions, [keepButton, equipButton]);
 	}
 }
 
 function itemCard(item: Item | null): HTMLElement {
 	if (!item) {
 		return el("div.loot-card", [
-			el("div.loot-emoji.empty", "?"),
+			el("div.loot-emoji.empty"),
 			el("div.loot-rarity", " "),
 			el("div.loot-stats", el("div.loot-stat", "Empty slot")),
-			el("div.loot-score", "Score: 0"),
+			el("div.loot-score-row", [el("div.loot-score", "0"), el("div.loot-score-label", "Sparkles")]),
 		]);
 	}
 
@@ -230,20 +217,6 @@ function itemCard(item: Item | null): HTMLElement {
 		emoji,
 		el("div.loot-rarity", `${item.rarity} · ${item.quality}`),
 		stats,
-		el("div.loot-score", `Score: ${getItemScore(item)}`),
+		el("div.loot-score-row", [el("div.loot-score", `${getItemScore(item)}`), el("div.loot-score-label", "Sparkles")]),
 	]);
-}
-
-function diffRow(stat: Stat, oldItem: Item | null, newItem: Item): HTMLElement | null {
-	const oldValue = oldItem?.affixes[stat] || 0;
-	const newValue = newItem.affixes[stat] || 0;
-	if (!oldValue && !newValue) return null;
-
-	const delta = newValue - oldValue;
-	const cls = delta > 0 ? "up" : delta < 0 ? "down" : "";
-
-	return el(
-		"div.loot-diff-row" + (cls ? "." + cls : ""),
-		`${STAT_LABELS[stat]}: ${oldValue} → ${newValue}${delta !== 0 ? ` (${delta > 0 ? "+" : ""}${delta})` : ""}`,
-	);
 }

@@ -170,46 +170,22 @@
 	display: block;
 }
 
+.loot-score-row {
+	flex-direction: column;
+	align-items: center;
+	gap: 0;
+	margin-top: 4px;
+}
+
 .loot-score {
-	font-size: 12px;
+	font-size: 15px;
 	font-weight: bold;
+	line-height: 1.2;
 }
 
-.loot-diffs {
-	display: block;
-	max-height: 80px;
-	overflow-y: auto;
-	font-size: 11px;
-	text-align: center;
-	margin-top: 10px;
-	border-top: 1px solid var(--shadow);
-	padding-top: 8px;
-}
-
-.loot-diff-row {
-	display: block;
-}
-
-.loot-diff-row.up {
-	color: #8fffc9;
-}
-
-.loot-diff-row.down {
-	color: #ff8f8f;
-}
-
-.loot-score-delta {
-	display: block;
-	text-align: center;
-	font-size: 14px;
-	font-weight: bold;
-	margin-top: 10px;
-}
-
-.loot-score-delta.up {
-	color: #8fffc9;
-}
-
-.loot-score-delta.down {
-	color: #ff8f8f;
+.loot-score-label {
+	font-size: 9px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	opacity: 0.6;
 }
