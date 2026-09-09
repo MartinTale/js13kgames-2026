@@ -11,12 +11,17 @@ export function runCombat(container: HTMLElement, onDone: (won: boolean) => void
 
 	const playerBar = el("div.hp-fill");
 	const enemyBar = el("div.hp-fill");
+	const playerHpText = el("span", `${player.hp}/${player.maxHp}`);
+	const enemyHpText = el("span", `${enemy.hp}/${enemy.maxHp}`);
 	const log = el("div.combat-log");
 
 	const overlay = el("div.combat-overlay", [
 		el("div.combat-panel", [
-			el("div.hp-row", [el("span.hp-label", player.name), el("div.hp-track", playerBar)]),
-			el("div.hp-row", [el("span.hp-label", enemy.name), el("div.hp-track", enemyBar)]),
+			el("div.hp-row", [
+				el("span.hp-label", [el("span", player.name), playerHpText]),
+				el("div.hp-track", playerBar),
+			]),
+			el("div.hp-row", [el("span.hp-label", [el("span", enemy.name), enemyHpText]), el("div.hp-track", enemyBar)]),
 			log,
 		]),
 	]);
@@ -27,6 +32,8 @@ export function runCombat(container: HTMLElement, onDone: (won: boolean) => void
 	function updateBars() {
 		playerBar.style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
 		enemyBar.style.width = `${Math.max(0, (enemy.hp / enemy.maxHp) * 100)}%`;
+		playerHpText.textContent = `${Math.max(0, player.hp)}/${player.maxHp}`;
+		enemyHpText.textContent = `${Math.max(0, enemy.hp)}/${enemy.maxHp}`;
 	}
 
 	function logLine(text: string, cls = "") {
