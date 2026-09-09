@@ -91,7 +91,7 @@ window.addEventListener("DOMContentLoaded", () => {
 					if (state.level.value % 3 === 0) {
 						state.depth.value += 1;
 					}
-					bar.setValue(bar.value + 20);
+					bar.tap();
 				}
 			});
 		}, 500);
@@ -99,7 +99,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	encounterPanel.mountContent(gameContainer);
 
-	bar = new ProgressBar(gameContainer, 0, 100, 0, encounterPanel);
+	bar = new ProgressBar(gameContainer, encounterPanel);
 	bar.container.style.margin = "10px 10px 20px";
 
 	encounterPanel.mountActions(gameContainer);

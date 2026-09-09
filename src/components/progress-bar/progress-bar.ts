@@ -13,7 +13,8 @@ const CLOUD_SVG =
 	'<path d="M8 16C4 16 2 13.5 2 11C2 8.5 4 6.5 6.5 6.5C7 3.5 9.5 1 13 1C16.5 1 19 3.2 19.7 6.2C20 6.1 20.4 6 20.8 6C24.3 6 27 8.6 27 11.8C27 15 24.3 17 20.8 17" fill="[fill]" stroke="none" />' +
 	"</svg>";
 
-const RAINBOW = ["#FF8FC7", "#FFB98F", "#FFF48F", "#8FFFC9", "#8FD9FF", "#C896FF"];
+const RAINBOW = ["#FF6B6B", "#FF8FC7", "#FFB98F", "#FFF48F", "#8FFFC9", "#8FD9FF", "#C896FF"];
+const TAPS_TO_FILL = RAINBOW.length;
 
 export class ProgressBar {
 	container: HTMLElement;
@@ -24,12 +25,10 @@ export class ProgressBar {
 	fx: SVGSVGElement;
 	cloud: HTMLElement;
 	slots: HTMLElement[] = [];
+	tapCount = 0;
 
 	constructor(
 		parent: HTMLElement,
-		public min: number,
-		public max: number,
-		public value: number,
 		public encounterPanel: EncounterPanel,
 		public slotCount = 8,
 	) {
@@ -52,28 +51,32 @@ export class ProgressBar {
 		this.container = el("div.progress-bar", [this.track, this.fx as unknown as HTMLElement, this.cloud]);
 		this.wrap = el("div.progress-bar-wrap", [this.inventory, this.container]);
 
-		this.setValue(value, false);
+		this.render();
 
 		mount(parent, this.wrap);
 	}
 
 	getProgress() {
-		return Math.min(100, Math.max(0, ((this.value - this.min) / (this.max - this.min)) * 100));
+		return Math.min(100, Math.max(0, (this.tapCount / TAPS_TO_FILL) * 100));
 	}
 
-	setValue(value: number, triggerBeam = true) {
-		this.value = value;
+	private render() {
 		const to = this.getProgress();
-
 		this.progress.style.width = `${to}%`;
 		this.cloud.style.setProperty("--cloud-progress-scale", `${1 + (to / 100) * 0.3}`);
+	}
 
-		if (!triggerBeam) return;
+	// registers one win: advances the bar by one rainbow color and always fires the
+	// beam/loot, with a bonus roll once the bar fills after TAPS_TO_FILL taps
+	tap() {
+		this.tapCount++;
+		const colorCount = this.tapCount;
+		const boosted = this.tapCount >= TAPS_TO_FILL;
 
-		const boosted = to >= 100;
+		this.render();
 
 		if (boosted) {
-			this.value = this.min;
+			this.tapCount = 0;
 			setTimeout(() => {
 				this.progress.style.transition = "none";
 				this.progress.style.width = "0%";
@@ -83,10 +86,10 @@ export class ProgressBar {
 			}, 300);
 		}
 
-		setTimeout(() => this.cloudBurst(boosted), 200);
+		setTimeout(() => this.cloudBurst(colorCount, boosted), 200);
 	}
 
-	private cloudBurst(boosted = false) {
+	private cloudBurst(colorCount: number, boosted: boolean) {
 		const w = this.container.offsetWidth;
 		const h = this.container.offsetHeight;
 		const inset = -parseFloat(getComputedStyle(this.fx).left);
@@ -109,10 +112,11 @@ export class ProgressBar {
 			{ duration: 1450, easing: "cubic-bezier(.34,1.2,.64,1)" },
 		);
 
-		setTimeout(() => this.spawnItemAtNextSlot(boosted), 250);
+		setTimeout(() => this.spawnItemAtNextSlot(colorCount, boosted), 250);
 	}
 
-	private spawnItemAtNextSlot(boosted = false) {
+	private spawnItemAtNextSlot(colorCount: number, boosted: boolean) {
+		const colors = RAINBOW.slice(0, colorCount);
 		const slotIndex = randomInteger(0, this.slots.length - 1);
 		const slot = this.slots[slotIndex];
 
@@ -131,12 +135,12 @@ export class ProgressBar {
 		const endY = (slotRect.top + slotRect.height / 2 - originRect.top) / scale;
 
 		playSound(sounds.beam);
-		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width / scale, slotRect.height / scale);
+		this.drawRainbowBeam(startX, startY, endX, endY, slotRect.width / scale, slotRect.height / scale, colors);
 
 		// conic-gradient angles are measured clockwise from north (0deg = up), unlike atan2's
 		// east-based/counter-clockwise convention, so convert the beam's direction into that space
 		const beamAngleDeg = (Math.atan2(endY - startY, endX - startX) * 180) / Math.PI + 90 + 180;
-		this.burnSlot(slot, beamAngleDeg);
+		this.burnSlot(slot, beamAngleDeg, colors);
 
 		setTimeout(() => {
 			this.renderSlotItem(slot, state.inventory.value[slotIndex]);
@@ -159,9 +163,10 @@ export class ProgressBar {
 
 	// tints the slot with the beam's colors and flashes its border/glow, fading out
 	// on the same curve as the rainbow beam so both effects read as one animation
-	private burnSlot(slot: HTMLElement, angleDeg: number): HTMLElement {
+	private burnSlot(slot: HTMLElement, angleDeg: number, colors: string[]): HTMLElement {
 		const overlay = el("div.inventory-slot-overlay");
-		overlay.style.background = `conic-gradient(from ${angleDeg}deg, ${RAINBOW.join(", ")})`;
+		const gradientColors = colors.length > 1 ? colors.join(", ") : `${colors[0]}, ${colors[0]}`;
+		overlay.style.background = `conic-gradient(from ${angleDeg}deg, ${gradientColors})`;
 		mount(slot, overlay);
 
 		// lift above the beam (which itself renders above every other slot) while it's the target
@@ -195,7 +200,15 @@ export class ProgressBar {
 		return overlay;
 	}
 
-	private drawRainbowBeam(startX: number, startY: number, endX: number, endY: number, slotW: number, slotH: number) {
+	private drawRainbowBeam(
+		startX: number,
+		startY: number,
+		endX: number,
+		endY: number,
+		slotW: number,
+		slotH: number,
+		colors: string[],
+	) {
 		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg") as unknown as SVGSVGElement;
 		svg.classList.add("progress-rainbow-beam");
 
@@ -209,9 +222,9 @@ export class ProgressBar {
 
 		// solid wedge from the cloud (narrow) to the slot (wide), with color bands running
 		// lengthwise along the beam (radial, cloud to slot) rather than stacked across its width
-		RAINBOW.forEach((color, i) => {
-			const t0 = i / RAINBOW.length - 0.5;
-			const t1 = (i + 1) / RAINBOW.length - 0.5;
+		colors.forEach((color, i) => {
+			const t0 = i / colors.length - 0.5;
+			const t1 = (i + 1) / colors.length - 0.5;
 			const e0x = endX + nx * halfW * 2 * t0;
 			const e0y = endY + ny * halfW * 2 * t0;
 			const e1x = endX + nx * halfW * 2 * t1;
