@@ -4,6 +4,7 @@ import { combatTick, CombatEvent, createPlayerFighter, createStormling } from ".
 import { state } from "../../systems/state";
 import { getItemScore, getQualityGlow, Item, RARITY_COLORS, STAT_LABELS, Stat, STATS } from "../../systems/items";
 import { createButton, ButtonElement } from "../button/button";
+import { burstFromStadium } from "../../systems/confetti";
 
 const TICK_MS = 400;
 
@@ -11,12 +12,13 @@ export class EncounterPanel {
 	content: HTMLElement;
 	actions: HTMLElement;
 	magicButton: ButtonElement;
+	private fadeAnim: Animation | null = null;
 
 	constructor(private onMagic: () => void) {
 		this.content = el("div.encounter-content");
 		this.actions = el("div.encounter-actions");
 
-		this.magicButton = createButton("Magic", () => this.onMagic(), "primary", "md", true);
+		this.magicButton = createButton("Magic", () => this.tapMagic(), "primary", "md", true);
 		mount(this.actions, this.magicButton);
 	}
 
@@ -28,8 +30,34 @@ export class EncounterPanel {
 		mount(parent, this.actions);
 	}
 
+	private tapMagic() {
+		this.magicButton.face.disabled = true;
+
+		const svg = this.magicButton.querySelector("svg.button-confetti") as SVGSVGElement | null;
+		if (svg) {
+			const w = this.magicButton.offsetWidth;
+			const h = this.magicButton.offsetHeight;
+			const inset = -parseFloat(getComputedStyle(svg).left);
+			burstFromStadium(svg, inset + w / 2, inset + h / 2, w, h, -90, 320, 60, 2, 1.8, 1.8);
+		}
+
+		setTimeout(() => {
+			this.fadeAnim = this.magicButton.animate([{ opacity: 1 }, { opacity: 0 }], {
+				duration: 1000,
+				fill: "forwards",
+			});
+		}, 250);
+
+		this.onMagic();
+	}
+
 	setMagicEnabled(enabled: boolean) {
 		this.magicButton.face.disabled = !enabled;
+
+		if (enabled) {
+			this.fadeAnim?.cancel();
+			this.fadeAnim = null;
+		}
 	}
 
 	private clearContent() {
@@ -126,23 +154,27 @@ export class EncounterPanel {
 
 		const rows = STATS.map((stat) => diffRow(stat, oldItem, newItem)).filter((row): row is HTMLElement => row != null);
 
-		mount(
-			this.content,
-			el("div.loot-view", [
-				el("div.loot-compare", [
-					el("div.loot-side", [
-						el("div.loot-side-label", "Current"),
-						oldItem ? itemCard(oldItem) : el("div.loot-empty", "Empty"),
-					]),
-					el("div.loot-side", [el("div.loot-side-label", "New"), itemCard(newItem)]),
-				]),
-				el("div.loot-diffs", rows),
-				el(
-					"div.loot-score-delta" + (scoreDelta >= 0 ? ".up" : ".down"),
-					`Score: ${oldScore} → ${newScore} (${scoreDelta >= 0 ? "+" : ""}${scoreDelta})`,
-				),
+		const viewChildren: HTMLElement[] = [
+			el("div.loot-title", "Loot!"),
+			el("div.loot-compare", [
+				el("div.loot-side", [el("div.loot-side-label", "Current"), itemCard(oldItem)]),
+				el("div.loot-vs", "→"),
+				el("div.loot-side", [el("div.loot-side-label", "New"), itemCard(newItem)]),
 			]),
+		];
+
+		if (rows.length > 0) {
+			viewChildren.push(el("div.loot-diffs", rows));
+		}
+
+		viewChildren.push(
+			el(
+				"div.loot-score-delta" + (scoreDelta >= 0 ? ".up" : ".down"),
+				`Score ${oldScore} → ${newScore} (${scoreDelta >= 0 ? "+" : ""}${scoreDelta})`,
+			),
 		);
+
+		mount(this.content, el("div.loot-view", viewChildren));
 
 		const resolve = () => {
 			this.clearContent();
@@ -173,7 +205,16 @@ export class EncounterPanel {
 	}
 }
 
-function itemCard(item: Item): HTMLElement {
+function itemCard(item: Item | null): HTMLElement {
+	if (!item) {
+		return el("div.loot-card", [
+			el("div.loot-emoji.empty", "?"),
+			el("div.loot-rarity", " "),
+			el("div.loot-stats", el("div.loot-stat", "Empty slot")),
+			el("div.loot-score", "Score: 0"),
+		]);
+	}
+
 	const emoji = el("div.loot-emoji", item.emoji);
 	emoji.style.borderColor = RARITY_COLORS[item.rarity];
 	emoji.style.boxShadow = getQualityGlow(item.quality);

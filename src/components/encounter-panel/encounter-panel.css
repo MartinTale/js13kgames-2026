@@ -11,7 +11,10 @@
 
 .encounter-actions {
 	justify-content: center;
+	align-items: center;
 	gap: 8px;
+	height: 40px;
+	box-sizing: border-box;
 }
 
 .combat-view,
@@ -88,52 +91,70 @@
 	margin-top: 4px;
 }
 
+.loot-title {
+	display: block;
+	text-align: center;
+	font-size: 16px;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+
 .loot-compare {
 	justify-content: center;
-	gap: 12px;
+	align-items: flex-start;
+	gap: 10px;
+}
+
+.loot-vs {
+	align-self: center;
+	font-size: 18px;
+	font-weight: bold;
+	opacity: 0.6;
+	padding-top: 34px;
 }
 
 .loot-side {
 	flex-direction: column;
 	align-items: center;
 	gap: 6px;
+	width: 110px;
 }
 
 .loot-side-label {
+	display: block;
 	font-size: 11px;
-	opacity: 0.7;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	opacity: 0.6;
 }
 
 .loot-card {
 	flex-direction: column;
 	align-items: center;
 	gap: 4px;
-	min-width: 100px;
-}
-
-.loot-empty {
-	width: 44px;
-	height: 44px;
-	border: 2px dashed var(--shadow);
-	border-radius: 8px;
-	justify-content: center;
-	align-items: center;
-	font-size: 10px;
-	opacity: 0.6;
+	width: 100%;
 }
 
 .loot-emoji {
-	width: 44px;
-	height: 44px;
-	font-size: 26px;
+	width: 52px;
+	height: 52px;
+	font-size: 28px;
 	justify-content: center;
 	align-items: center;
 	border: 2px solid var(--shadow);
-	border-radius: 8px;
+	border-radius: 10px;
 	background-color: rgba(255, 255, 255, 0.05);
 }
 
+.loot-emoji.empty {
+	color: var(--shadow);
+	opacity: 0.5;
+	border-style: dashed;
+}
+
 .loot-rarity {
+	display: block;
+	height: 13px;
 	font-size: 10px;
 	text-transform: capitalize;
 	opacity: 0.8;
@@ -141,6 +162,7 @@
 
 .loot-stats {
 	display: block;
+	min-height: 15px;
 	font-size: 11px;
 }
 
@@ -149,17 +171,17 @@
 }
 
 .loot-score {
-	font-size: 11px;
+	font-size: 12px;
 	font-weight: bold;
 }
 
 .loot-diffs {
 	display: block;
-	max-height: 90px;
+	max-height: 80px;
 	overflow-y: auto;
 	font-size: 11px;
-	text-align: left;
-	margin-top: 8px;
+	text-align: center;
+	margin-top: 10px;
 	border-top: 1px solid var(--shadow);
 	padding-top: 8px;
 }
@@ -179,9 +201,9 @@
 .loot-score-delta {
 	display: block;
 	text-align: center;
-	font-size: 13px;
+	font-size: 14px;
 	font-weight: bold;
-	margin-top: 8px;
+	margin-top: 10px;
 }
 
 .loot-score-delta.up {
