@@ -134,25 +134,25 @@ export class ProgressBar {
 		// conic-gradient angles are measured clockwise from north (0deg = up), unlike atan2's
 		// east-based/counter-clockwise convention, so convert the beam's direction into that space
 		const beamAngleDeg = (Math.atan2(endY - startY, endX - startX) * 180) / Math.PI + 90 + 180;
-		const overlay = this.burnSlot(slot, beamAngleDeg);
+		this.burnSlot(slot, beamAngleDeg);
 
 		setTimeout(() => {
-			this.renderSlotItem(slot, overlay, state.inventory.value[slotIndex]);
+			this.renderSlotItem(slot, state.inventory.value[slotIndex]);
 
 			showLootPopup(gameContainer, slotIndex, item, () => {
-				this.renderSlotItem(slot, overlay, state.inventory.value[slotIndex]);
+				this.renderSlotItem(slot, state.inventory.value[slotIndex]);
 			});
 		}, 220);
 	}
 
-	private renderSlotItem(slot: HTMLElement, overlay: HTMLElement, item: Item | null) {
+	private renderSlotItem(slot: HTMLElement, item: Item | null) {
 		slot.querySelector(".inventory-slot-item")?.remove();
 		if (!item) return;
 
 		const itemEl = el("span.inventory-slot-item", item.emoji);
 		itemEl.style.borderColor = RARITY_COLORS[item.rarity];
 		itemEl.style.boxShadow = getQualityGlow(item.quality);
-		slot.insertBefore(itemEl, overlay);
+		mount(slot, itemEl);
 	}
 
 	// tints the slot with the beam's colors and flashes its border/glow, fading out
