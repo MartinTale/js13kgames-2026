@@ -13,6 +13,7 @@ export type State = {
 	level: Signal<number>;
 	depth: Signal<number>;
 	inventory: Signal<(Item | null)[]>;
+	tapsToFill: Signal<number>;
 };
 
 export const emptyState: State = {
@@ -23,6 +24,7 @@ export const emptyState: State = {
 	level: createSignal(0),
 	depth: createSignal(1),
 	inventory: createSignal(Array(8).fill(null)),
+	tapsToFill: createSignal(3),
 };
 
 export let state: State;
