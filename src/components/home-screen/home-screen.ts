@@ -21,7 +21,6 @@ export class HomeScreen {
 		const actions = el("div.home-actions", [depthRow, this.magicButton]);
 
 		this.bar = new ProgressBar(onLoot);
-		this.bar.container.style.margin = "10px 10px 20px";
 
 		this.element = el("div.home-screen", [this.bar.wrap, actions]);
 	}

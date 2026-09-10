@@ -49,7 +49,8 @@ export class ProgressBar {
 		const inventoryPanel = el("div.inventory-panel", this.inventory);
 
 		this.container = el("div.progress-bar", [this.track, this.fx as unknown as HTMLElement, this.cloud]);
-		this.wrap = el("div.progress-bar-wrap", [inventoryPanel, this.container]);
+		const progressPanel = el("div.progress-bar-panel", this.container);
+		this.wrap = el("div.progress-bar-wrap", [inventoryPanel, progressPanel]);
 
 		this.render();
 	}
