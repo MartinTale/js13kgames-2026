@@ -80,11 +80,11 @@
 	position: absolute;
 	top: 50%;
 	right: -10px;
-	width: 52px;
-	height: 52px;
+	width: 78px;
+	height: 78px;
 	z-index: 1002;
 	--cloud-progress-scale: 1;
-	transform: translate(50%, -50%) scale(var(--cloud-progress-scale));
+	transform: translate(50%, -50%) scale(var(--cloud-progress-scale)) rotate(-8deg);
 	transition: transform 0.25s ease-out;
 	filter: drop-shadow(0 0 4px #fff);
 }
