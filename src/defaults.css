@@ -58,6 +58,32 @@ body {
 	inset: 0;
 }
 
+body::before {
+	content: "";
+	position: fixed;
+	inset: -20%;
+	z-index: -1;
+	background:
+		radial-gradient(ellipse 60% 40% at 20% 15%, color-mix(in oklch, var(--color) 35%, transparent), transparent 70%),
+		radial-gradient(ellipse 55% 35% at 80% 25%, color-mix(in oklch, var(--shadow) 30%, transparent), transparent 70%),
+		radial-gradient(ellipse 50% 40% at 50% 85%, color-mix(in oklch, var(--color) 25%, transparent), transparent 70%);
+	filter: blur(40px);
+	animation: aurora-drift 18s ease-in-out infinite alternate;
+	pointer-events: none;
+}
+
+@keyframes aurora-drift {
+	0% {
+		transform: translate(-3%, -2%) scale(1);
+	}
+	50% {
+		transform: translate(3%, 2%) scale(1.08);
+	}
+	100% {
+		transform: translate(-2%, 3%) scale(1.03);
+	}
+}
+
 small {
 	width: 100%;
 	display: block;
