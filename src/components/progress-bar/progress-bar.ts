@@ -102,10 +102,10 @@ export class ProgressBar {
 		// then shrinks back down to its resting size
 		this.cloud.animate(
 			[
-				{ transform: "translate(50%, -50%) scale(1) rotate(-8deg)" },
-				{ transform: "translate(50%, -50%) scale(1.5) rotate(-26deg)", offset: 0.2 },
-				{ transform: "translate(50%, -50%) scale(1.4) rotate(-18deg)", offset: 0.85 },
-				{ transform: "translate(50%, -50%) scale(1) rotate(-8deg)" },
+				{ transform: "translate(50%, -50%) scale(1) rotate(16deg)" },
+				{ transform: "translate(50%, -50%) scale(1.5) rotate(-2deg)", offset: 0.2 },
+				{ transform: "translate(50%, -50%) scale(1.4) rotate(6deg)", offset: 0.85 },
+				{ transform: "translate(50%, -50%) scale(1) rotate(16deg)" },
 			],
 			{ duration: 1450, easing: "cubic-bezier(.34,1.2,.64,1)" },
 		);

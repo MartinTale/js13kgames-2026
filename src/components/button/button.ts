@@ -17,7 +17,7 @@ export type Button = {
 // so callers can still set text / attach tweens to the actual clickable face
 export type ButtonElement = HTMLElement & { face: HTMLButtonElement };
 
-function burst(wrapper: HTMLElement, count: number) {
+function burst(wrapper: HTMLElement, count: number, sizeScale: number) {
 	const svg = wrapper.querySelector("svg.button-confetti") as SVGSVGElement;
 	if (!svg) return;
 
@@ -27,7 +27,7 @@ function burst(wrapper: HTMLElement, count: number) {
 	const h = wrapper.offsetHeight;
 	const inset = -parseFloat(getComputedStyle(svg).left);
 
-	burstFromStadium(svg, inset + w / 2, inset + h / 2, w, h, -90, 220, count);
+	burstFromStadium(svg, inset + w / 2, inset + h / 2, w, h, -90, 220, count, sizeScale);
 }
 
 function ripple(face: HTMLButtonElement, clientX: number, clientY: number) {
@@ -59,6 +59,7 @@ export function createButton(
 	size: ButtonSize = "md",
 	withEffects = false,
 	particleCount = 12,
+	particleSizeScale = 1,
 ): ButtonElement {
 	const face = el("button." + type + "." + size) as HTMLButtonElement;
 	if (typeof content === "string") {
@@ -86,7 +87,7 @@ export function createButton(
 	face.onpointerdown = (e) => {
 		playSound(sounds.tap);
 		if (withEffects) {
-			burst(wrapper, particleCount);
+			burst(wrapper, particleCount, particleSizeScale);
 			ripple(face, e.clientX, e.clientY);
 		}
 	};

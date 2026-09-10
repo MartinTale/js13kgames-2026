@@ -11,7 +11,7 @@ export class HomeScreen {
 	magicButton: ButtonElement;
 
 	constructor(onMagic: () => void, onLoot: LootHandler) {
-		this.magicButton = createButton("Magic", onMagic, "primary", "md", true, 24);
+		this.magicButton = createButton("Magic", onMagic, "primary", "md", true, 18, 1.5);
 		this.depthLabel = el("div.home-depth");
 
 		const actions = el("div.home-actions", [this.magicButton, this.depthLabel]);
