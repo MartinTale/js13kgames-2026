@@ -88,8 +88,8 @@
 	position: absolute;
 	top: 50%;
 	right: -10px;
-	width: 78px;
-	height: 78px;
+	width: 66px;
+	height: 66px;
 	z-index: 1002;
 	--cloud-progress-scale: 1;
 	transform: translate(50%, -50%) scale(var(--cloud-progress-scale)) rotate(8deg);
