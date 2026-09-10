@@ -9,7 +9,7 @@ import { state } from "../../systems/state";
 
 export type LootHandler = (slotIndex: number, item: Item) => void;
 
-const CLOUD_SVG =
+export const CLOUD_SVG =
 	'<svg viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg">' +
 	'<path d="M8 16C4 16 2 13.5 2 11C2 8.5 4 6.5 6.5 6.5C7 3.5 9.5 1 13 1C16.5 1 19 3.2 19.7 6.2C20 6.1 20.4 6 20.8 6C24.3 6 27 8.6 27 11.8C27 15 24.3 17 20.8 17" fill="[fill]" stroke="none" />' +
 	"</svg>";
@@ -102,10 +102,10 @@ export class ProgressBar {
 		// then shrinks back down to its resting size
 		this.cloud.animate(
 			[
-				{ transform: "translate(50%, -50%) scale(1) rotate(16deg)" },
-				{ transform: "translate(50%, -50%) scale(1.5) rotate(-2deg)", offset: 0.2 },
-				{ transform: "translate(50%, -50%) scale(1.4) rotate(6deg)", offset: 0.85 },
-				{ transform: "translate(50%, -50%) scale(1) rotate(16deg)" },
+				{ transform: "translate(50%, -50%) scale(1) rotate(8deg)" },
+				{ transform: "translate(50%, -50%) scale(1.5) rotate(-10deg)", offset: 0.2 },
+				{ transform: "translate(50%, -50%) scale(1.4) rotate(-2deg)", offset: 0.85 },
+				{ transform: "translate(50%, -50%) scale(1) rotate(8deg)" },
 			],
 			{ duration: 1450, easing: "cubic-bezier(.34,1.2,.64,1)" },
 		);

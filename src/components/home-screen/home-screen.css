@@ -13,8 +13,17 @@
 }
 
 .home-depth {
-	font-size: 12px;
+	gap: 4px;
+}
+
+.home-depth-cloud {
+	width: 18px;
+	height: 18px;
+	filter: drop-shadow(0 0 2px #fff);
+}
+
+.home-depth-value {
+	font-size: 13px;
 	font-weight: bold;
 	letter-spacing: 0.5px;
-	opacity: 0.75;
 }

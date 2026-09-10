@@ -1,7 +1,7 @@
 import "./home-screen.css";
-import { el } from "../../helpers/dom";
+import { el, svgEl } from "../../helpers/dom";
 import { createButton, ButtonElement } from "../button/button";
-import { ProgressBar, LootHandler } from "../progress-bar/progress-bar";
+import { ProgressBar, LootHandler, CLOUD_SVG } from "../progress-bar/progress-bar";
 import { state } from "../../systems/state";
 
 export class HomeScreen {
@@ -12,9 +12,13 @@ export class HomeScreen {
 
 	constructor(onMagic: () => void, onLoot: LootHandler) {
 		this.magicButton = createButton("Magic", onMagic, "primary", "md", true, 18, 1.5);
-		this.depthLabel = el("div.home-depth");
 
-		const actions = el("div.home-actions", [this.magicButton, this.depthLabel]);
+		const depthCloud = svgEl(CLOUD_SVG.replace("[fill]", "#fff"));
+		depthCloud.classList.add("home-depth-cloud");
+		this.depthLabel = el("span.home-depth-value");
+
+		const depthRow = el("div.home-depth", [depthCloud, this.depthLabel]);
+		const actions = el("div.home-actions", [depthRow, this.magicButton]);
 
 		this.bar = new ProgressBar(onLoot);
 		this.bar.container.style.margin = "10px 10px 20px";
@@ -27,6 +31,6 @@ export class HomeScreen {
 	}
 
 	refreshDepth() {
-		this.depthLabel.textContent = `Cloud ${state.depth.value}`;
+		this.depthLabel.textContent = `${state.depth.value}`;
 	}
 }
