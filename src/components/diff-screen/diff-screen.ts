@@ -53,7 +53,7 @@ function itemCard(item: Item | null): HTMLElement {
 		]);
 	}
 
-	const emoji = el("div.diff-emoji", item.emoji);
+	const emoji = el("div.diff-emoji.emoji-glyph", item.emoji);
 	emoji.style.borderColor = RARITY_COLORS[item.rarity];
 	emoji.style.boxShadow = getQualityGlow(item.quality);
 

@@ -25,7 +25,7 @@ export class RevealScreen {
 		this.onTap = onContinue;
 		this.body.replaceChildren();
 
-		const emoji = el("div.reveal-emoji", item.emoji);
+		const emoji = el("div.reveal-emoji.emoji-glyph", item.emoji);
 		emoji.style.borderColor = RARITY_COLORS[item.rarity];
 		emoji.style.boxShadow = getQualityGlow(item.quality);
 

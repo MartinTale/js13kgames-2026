@@ -152,7 +152,7 @@ export class ProgressBar {
 		slot.querySelector(".inventory-slot-item")?.remove();
 		if (!item) return;
 
-		const itemEl = el("span.inventory-slot-item", item.emoji);
+		const itemEl = el("span.inventory-slot-item.emoji-glyph", item.emoji);
 		itemEl.style.borderColor = RARITY_COLORS[item.rarity];
 		itemEl.style.boxShadow = getQualityGlow(item.quality);
 		mount(slot, itemEl);

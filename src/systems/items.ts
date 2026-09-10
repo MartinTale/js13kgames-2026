@@ -39,12 +39,13 @@ const QUALITY_TABLE_BOOSTED: Record<Quality, [number, number, number, number]> =
 	prismatic: [100, 105, 2.9, 5],
 };
 
-// Unicode 13-safe (2020 or earlier) so glyphs render consistently across browsers
-const EMOJI_POOL: Record<Rarity, string[]> = {
-	common: ["☁️", "🍀", "🌙", "🐚", "🌸", "🍯", "🌤️", "🌱", "💧", "🍃"],
-	rare: ["⭐", "🧿", "🔮", "🪄", "❄️", "🔥", "🌊", "🌻", "🦋", "🎐"],
-	epic: ["🌈", "🦄", "✨", "💎", "⚡", "👑", "🌟", "🔱", "🪐", "🎇"],
-};
+// Unicode 13-safe (2020 or earlier) so glyphs render consistently across browsers;
+// shared across all rarities - border color + glow communicate rarity/quality, not the emoji
+const EMOJI_POOL = [
+	"☁️", "🍀", "🌙", "🐚", "🌸", "🍯", "🌤️", "🌱", "💧", "🍃",
+	"⭐", "🧿", "🔮", "🪄", "❄️", "🔥", "🌊", "🌻", "🦋", "🎐",
+	"🌈", "🦄", "✨", "💎", "⚡", "👑", "🌟", "🔱", "🪐", "🎇",
+];
 
 export type Item = {
 	emoji: string;
@@ -101,7 +102,7 @@ export function generateItem(depth: number, boosted = false): Item {
 		affixes[stat] = Math.max(1, Math.round(base * rarityMultiplier * statMultiplier));
 	}
 
-	const emoji = EMOJI_POOL[rarity][randomInteger(0, EMOJI_POOL[rarity].length - 1)];
+	const emoji = EMOJI_POOL[randomInteger(0, EMOJI_POOL.length - 1)];
 
 	return { emoji, rarity, quality, depth, affixes };
 }

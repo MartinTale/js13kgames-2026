@@ -7,6 +7,19 @@
 	--vh: 1vh;
 }
 
+/* Twemoji fallback for consistent emoji glyphs - per js13k rules, a live-loaded web
+   font is only allowed as an emoji/character fallback, so .emoji-glyph puts it last
+   in the stack: native emoji renders immediately and unaffected if this never loads */
+@font-face {
+	font-family: emoji;
+	src: url(//xem.github.io/unicode13/Twemoji.ttf);
+	font-display: swap;
+}
+
+.emoji-glyph {
+	font-family: "Comic Sans MS", Times, serif, emoji;
+}
+
 body,
 body * {
 	text-shadow: 0 0 3px #000;
