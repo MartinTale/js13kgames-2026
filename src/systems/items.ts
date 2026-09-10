@@ -39,10 +39,11 @@ const QUALITY_TABLE_BOOSTED: Record<Quality, [number, number, number, number]> =
 	prismatic: [100, 105, 2.9, 5],
 };
 
+// Unicode 13-safe (2020 or earlier) so glyphs render consistently across browsers
 const EMOJI_POOL: Record<Rarity, string[]> = {
-	common: ["☁️", "🍀", "🌙", "🐚", "🌸", "🍯"],
-	rare: ["⭐", "🧿", "🔮", "🪄", "❄️", "🔥"],
-	epic: ["🌈", "🦄", "✨", "💎", "⚡", "👑"],
+	common: ["☁️", "🍀", "🌙", "🐚", "🌸", "🍯", "🌤️", "🌱", "💧", "🍃"],
+	rare: ["⭐", "🧿", "🔮", "🪄", "❄️", "🔥", "🌊", "🌻", "🦋", "🎐"],
+	epic: ["🌈", "🦄", "✨", "💎", "⚡", "👑", "🌟", "🔱", "🪐", "🎇"],
 };
 
 export type Item = {
