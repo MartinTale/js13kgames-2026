@@ -11,15 +11,15 @@ export class HomeScreen {
 	magicButton: ButtonElement;
 
 	constructor(onMagic: () => void, onLoot: LootHandler) {
-		this.depthLabel = el("div.screen-depth");
 		this.magicButton = createButton("Magic", onMagic, "primary", "md", true);
+		this.depthLabel = el("div.home-depth");
 
-		const actions = el("div.home-actions", this.magicButton);
+		const actions = el("div.home-actions", [this.magicButton, this.depthLabel]);
 
 		this.bar = new ProgressBar(onLoot);
 		this.bar.container.style.margin = "10px 10px 20px";
 
-		this.element = el("div.home-screen", [this.depthLabel, this.bar.wrap, actions]);
+		this.element = el("div.home-screen", [this.bar.wrap, actions]);
 	}
 
 	setMagicEnabled(enabled: boolean) {
@@ -27,6 +27,6 @@ export class HomeScreen {
 	}
 
 	refreshDepth() {
-		this.depthLabel.textContent = `Depth ${state.depth.value}`;
+		this.depthLabel.textContent = `Cloud ${state.depth.value}`;
 	}
 }

@@ -1,9 +1,19 @@
 .home-screen {
-	justify-content: center;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: center;
 	flex: 1;
 }
 
 .home-actions {
-	justify-content: center;
-	margin-top: auto;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.home-depth {
+	font-size: 12px;
+	font-weight: bold;
+	letter-spacing: 0.5px;
+	opacity: 0.75;
 }
