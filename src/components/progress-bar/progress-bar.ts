@@ -46,9 +46,10 @@ export class ProgressBar {
 				return slot;
 			}),
 		);
+		const inventoryPanel = el("div.inventory-panel", this.inventory);
 
 		this.container = el("div.progress-bar", [this.track, this.fx as unknown as HTMLElement, this.cloud]);
-		this.wrap = el("div.progress-bar-wrap", [this.inventory, this.container]);
+		this.wrap = el("div.progress-bar-wrap", [inventoryPanel, this.container]);
 
 		this.render();
 	}

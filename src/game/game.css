@@ -6,7 +6,8 @@
 	box-sizing: border-box;
 	padding-bottom: 24px;
 	background-color: var(--bg);
-	border: 2px solid var(--color);
+	border-left: 2px solid var(--color);
+	border-right: 2px solid var(--color);
 	border-radius: 16px;
 	box-shadow:
 		0 0 25px var(--shadow),
