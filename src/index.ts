@@ -86,56 +86,30 @@ window.addEventListener("DOMContentLoaded", () => {
 	const revealScreen = new RevealScreen();
 	const diffScreen = new DiffScreen();
 
-	const homeScreen = new HomeScreen(
-		() => {
-			homeScreen.setMagicEnabled(false);
+	const homeScreen = new HomeScreen(() => {
+		homeScreen.setMagicEnabled(false);
 
-			setTimeout(() => {
-				screens.show("battle").then(() => {
-					battleScreen.refreshDepth();
+		setTimeout(() => {
+			screens.show("battle").then(() => {
+				battleScreen.refreshDepth();
 
-					battleScreen.run((won) => {
-						homeScreen.setMagicEnabled(true);
+				battleScreen.run((won) => {
+					homeScreen.setMagicEnabled(true);
 
-						if (!won) {
-							screens.show("home");
-							return;
-						}
-
+					if (won) {
 						state.level.value += 1;
 						if (state.level.value % 3 === 0) {
 							state.depth.value += 1;
 						}
+					}
 
-						screens.show("home").then(() => {
-							homeScreen.refreshDepth();
-							homeScreen.bar.tap();
-						});
-					});
-				});
-			}, 500);
-		},
-		(slotIndex, item) => {
-			revealScreen.refreshDepth();
-			screens.show("reveal").then(() => {
-				revealScreen.show(item, () => {
-					diffScreen.refreshDepth();
-					screens.show("diff").then(() => {
-						diffScreen.show(slotIndex, item, (equip) => {
-							if (equip) {
-								const inventory = [...state.inventory.value];
-								inventory[slotIndex] = item;
-								state.inventory.value = inventory;
-							}
-
-							homeScreen.bar.renderSlotItem(slotIndex, state.inventory.value[slotIndex]);
-							screens.show("home");
-						});
+					screens.show("home").then(() => {
+						homeScreen.refreshDepth();
 					});
 				});
 			});
-		},
-	);
+		}, 500);
+	});
 
 	homeScreen.refreshDepth();
 
