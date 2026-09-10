@@ -178,10 +178,10 @@ export class ProgressBar {
 		const overlayAnim = overlay.animate(keyframes, { duration: 1200, easing: "cubic-bezier(.2,.8,.3,1)" });
 		const glowAnim = slot.animate(
 			[
-				{ boxShadow: "0 0 0 rgba(255, 255, 255, 0)", borderColor: "var(--shadow)", offset: 0 },
-				{ boxShadow: "0 0 16px 4px var(--shadow)", borderColor: "#fff", offset: 0.2 },
-				{ boxShadow: "0 0 16px 4px var(--shadow)", borderColor: "#fff", offset: 0.75 },
-				{ boxShadow: "0 0 0 rgba(255, 255, 255, 0)", borderColor: "var(--shadow)", offset: 1 },
+				{ boxShadow: "0 0 0 rgba(255, 255, 255, 0)", borderColor: "#fff", offset: 0 },
+				{ boxShadow: "0 0 16px 4px #fff", borderColor: "#fff", offset: 0.2 },
+				{ boxShadow: "0 0 16px 4px #fff", borderColor: "#fff", offset: 0.75 },
+				{ boxShadow: "0 0 0 rgba(255, 255, 255, 0)", borderColor: "#fff", offset: 1 },
 			],
 			{ duration: 1200, easing: "cubic-bezier(.2,.8,.3,1)" },
 		);
