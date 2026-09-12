@@ -13,8 +13,6 @@ import { createScaleableContainer } from "./components/scaleable-container/scale
 import { ScreenManager } from "./components/screen-manager/screen-manager";
 import { HomeScreen } from "./components/home-screen/home-screen";
 import { BattleScreen } from "./components/battle-screen/battle-screen";
-import { RevealScreen } from "./components/reveal-screen/reveal-screen";
-import { DiffScreen } from "./components/diff-screen/diff-screen";
 import { generateItem } from "./systems/items";
 import { randomInteger } from "./helpers/numbers";
 
@@ -85,8 +83,6 @@ window.addEventListener("DOMContentLoaded", () => {
 	const screens = new ScreenManager(gameContainer);
 
 	const battleScreen = new BattleScreen();
-	const revealScreen = new RevealScreen();
-	const diffScreen = new DiffScreen();
 
 	const homeScreen = new HomeScreen(gameContainer, () => {
 		homeScreen.setMagicEnabled(false);
@@ -96,9 +92,8 @@ window.addEventListener("DOMContentLoaded", () => {
 				battleScreen.refreshDepth();
 
 				battleScreen.run((won) => {
-					homeScreen.setMagicEnabled(true);
-
 					if (!won) {
+						homeScreen.setMagicEnabled(true);
 						screens.show("home").then(() => {
 							homeScreen.refreshDepth();
 						});
@@ -112,13 +107,13 @@ window.addEventListener("DOMContentLoaded", () => {
 					const targetSlot = randomInteger(0, state.inventory.value.length - 1);
 
 					screens.show("home").then(async () => {
-						await homeScreen.levelUp(targetSlot, screens.container);
-
-						revealScreen.refreshDepth();
-						screens.show("reveal").then(() => {
-							revealScreen.show(item, () => {
-								resolveLoot(targetSlot, item);
-							});
+						await homeScreen.levelUp();
+						homeScreen.showLoot(targetSlot, item, (equip) => {
+							if (equip) equipItem(targetSlot, item);
+							homeScreen.hideLoot();
+							homeScreen.refreshStats();
+							homeScreen.refreshInventory();
+							homeScreen.setMagicEnabled(true);
 						});
 					});
 				});
@@ -126,36 +121,10 @@ window.addEventListener("DOMContentLoaded", () => {
 		}, 500);
 	});
 
-	function resolveLoot(targetSlot: number, item: ReturnType<typeof generateItem>) {
-		const inventory = state.inventory.value;
-
-		if (inventory[targetSlot] === null) {
-			equipItem(targetSlot, item);
-			backToHome();
-			return;
-		}
-
-		diffScreen.refreshDepth();
-		screens.show("diff").then(() => {
-			diffScreen.show(targetSlot, item, (equip) => {
-				if (equip) equipItem(targetSlot, item);
-				backToHome();
-			});
-		});
-	}
-
 	function equipItem(slot: number, item: ReturnType<typeof generateItem>) {
 		const inventory = [...state.inventory.value];
 		inventory[slot] = item;
 		state.inventory.value = inventory;
-	}
-
-	function backToHome() {
-		screens.show("home").then(() => {
-			homeScreen.refreshDepth();
-			homeScreen.refreshStats();
-			homeScreen.refreshInventory();
-		});
 	}
 
 	homeScreen.refreshDepth();
@@ -164,8 +133,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	screens.register("home", homeScreen.element);
 	screens.register("battle", battleScreen.element);
-	screens.register("reveal", revealScreen.element);
-	screens.register("diff", diffScreen.element);
 	screens.show("home");
 
 	setRealViewportValues();

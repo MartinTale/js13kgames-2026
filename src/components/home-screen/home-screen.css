@@ -30,8 +30,6 @@
 }
 
 .home-stats-panel {
-	flex-direction: column;
-	gap: 6px;
 	padding: 10px 14px;
 	margin-bottom: 12px;
 	border-radius: 10px;
@@ -81,6 +79,9 @@
 	background-color: rgba(0, 0, 0, 0.25);
 	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.55);
 	cursor: pointer;
+	transition:
+		opacity 300ms ease,
+		transform 300ms ease;
 }
 
 .home-slot.empty {
@@ -89,26 +90,131 @@
 	cursor: default;
 }
 
-.home-slot.beam-target {
-	z-index: 1001;
+.home-slot.dimmed {
+	opacity: 0.25;
 }
 
-.loot-beam-overlay {
-	position: absolute;
-	inset: 0;
-	border-radius: 6px;
+.home-slot.highlighted {
+	opacity: 1;
+	transform: scale(1.25);
+	z-index: 1;
+	box-shadow: 0 0 12px 2px var(--shadow);
+}
+
+.home-button-slot {
+	min-height: 44px;
+}
+
+.home-loot-choice {
+	gap: 8px;
+}
+
+.home-loot-panel {
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	max-height: 0;
+	overflow: hidden;
 	opacity: 0;
-	pointer-events: none;
+	transition:
+		max-height 300ms ease,
+		opacity 300ms ease,
+		margin-bottom 300ms ease;
 }
 
-.loot-beam {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 1px;
-	height: 1px;
-	z-index: 999;
-	pointer-events: none;
-	overflow: visible;
-	filter: blur(0.5px) drop-shadow(0 0 6px var(--shadow));
+.home-loot-panel.active {
+	max-height: 260px;
+	opacity: 1;
+	margin-bottom: 12px;
+}
+
+.home-loot-compare {
+	align-items: flex-start;
+	gap: 10px;
+}
+
+.home-loot-side {
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.home-loot-side-label {
+	font-size: 9px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	opacity: 0.6;
+}
+
+.home-loot-vs {
+	align-self: center;
+	font-size: 14px;
+	font-weight: bold;
+	opacity: 0.6;
+	padding-top: 30px;
+}
+
+.loot-card {
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.loot-emoji {
+	width: 56px;
+	height: 56px;
+	font-size: 30px;
+	justify-content: center;
+	align-items: center;
+	border: 3px solid var(--shadow);
+	border-radius: 14px;
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
+.loot-emoji.empty {
+	color: var(--shadow);
+	opacity: 0.5;
+	border-style: dashed;
+}
+
+.loot-rarity {
+	display: block;
+	font-size: 12px;
+	text-transform: capitalize;
+	opacity: 0.85;
+}
+
+.loot-found {
+	display: block;
+	font-size: 10px;
+	opacity: 0.6;
+}
+
+.loot-stats {
+	display: block;
+	text-align: center;
+	font-size: 12px;
+}
+
+.loot-stat {
+	display: block;
+}
+
+.loot-score-row {
+	flex-direction: column;
+	align-items: center;
+	margin-top: 2px;
+}
+
+.loot-score {
+	font-size: 18px;
+	font-weight: bold;
+	line-height: 1.1;
+}
+
+.loot-score-label {
+	font-size: 9px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	opacity: 0.6;
 }

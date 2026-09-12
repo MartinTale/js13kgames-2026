@@ -3,17 +3,12 @@ import { el, svgEl } from "../../helpers/dom";
 import { createButton, ButtonElement } from "../button/button";
 import { CLOUD_SVG } from "../progress-bar/progress-bar";
 import { state } from "../../systems/state";
-import { createItemCard, RARITY_COLORS, STAT_LABELS, STATS } from "../../systems/items";
+import { createItemCard, Item, RARITY_COLORS, STAT_LABELS, STATS } from "../../systems/items";
 import { getInventoryStats } from "../../systems/combat";
 import { openModal } from "../modal/modal";
-import { fireLootBeam } from "../../systems/loot-beam";
 import { playSound, sounds } from "../../systems/music";
 
 const INVENTORY_SIZE = 8;
-const STAT_ROWS: (typeof STATS[number])[][] = [
-	["power", "guard", "crit"],
-	["dodge", "vitality"],
-];
 
 export class HomeScreen {
 	element: HTMLElement;
@@ -22,12 +17,15 @@ export class HomeScreen {
 	private depthCloud: HTMLElement;
 	private statValues: Partial<Record<(typeof STATS)[number], HTMLElement>> = {};
 	private slots: HTMLElement[] = [];
+	private lootPanel: HTMLElement;
+	private buttonSlot: HTMLElement;
 
 	constructor(
 		private container: HTMLElement,
-		onMagic: () => void,
+		private onMagic: () => void,
 	) {
 		this.magicButton = createButton("Magic", onMagic, "primary", "md", true, 18, 1.5);
+		this.buttonSlot = el("div.home-button-slot", this.magicButton);
 
 		this.depthCloud = svgEl(CLOUD_SVG.replace("[fill]", "#fff"));
 		this.depthCloud.classList.add("home-depth-cloud");
@@ -35,17 +33,17 @@ export class HomeScreen {
 
 		const depthRow = el("div.home-depth", [this.depthCloud, this.depthLabel]);
 
-		const statsRows = STAT_ROWS.map((row) =>
-			el(
-				"div.home-stats-row",
-				row.map((stat) => {
-					const value = el("span.home-stat-value", "0");
-					this.statValues[stat] = value;
-					return el("div.home-stat", [el("span.home-stat-label", STAT_LABELS[stat]), value]);
-				}),
-			),
+		this.lootPanel = el("div.home-loot-panel");
+
+		const statsRow = el(
+			"div.home-stats-row",
+			STATS.map((stat) => {
+				const value = el("span.home-stat-value", "0");
+				this.statValues[stat] = value;
+				return el("div.home-stat", [el("span.home-stat-label", STAT_LABELS[stat]), value]);
+			}),
 		);
-		const statsPanel = el("div.home-stats-panel", statsRows);
+		const statsPanel = el("div.home-stats-panel", statsRow);
 
 		this.slots = Array.from({ length: INVENTORY_SIZE }, (_, index) => {
 			const slot = el("div.home-slot.empty");
@@ -54,7 +52,13 @@ export class HomeScreen {
 		});
 		const inventoryPanel = el("div.home-inventory-panel", this.slots);
 
-		const actions = el("div.home-actions", [depthRow, statsPanel, inventoryPanel, this.magicButton]);
+		const actions = el("div.home-actions", [
+			this.lootPanel,
+			depthRow,
+			statsPanel,
+			inventoryPanel,
+			this.buttonSlot,
+		]);
 
 		this.element = el("div.home-screen", [actions]);
 	}
@@ -67,14 +71,8 @@ export class HomeScreen {
 		this.depthLabel.textContent = `${state.depth.value}`;
 	}
 
-	// bumps the cloud level with a pop animation, then beams loot into slotIndex;
-	// resolves once the beam lands, before the caller reveals what the item is
-	async levelUp(slotIndex: number, beamContainer: HTMLElement) {
-		await this.bumpDepth();
-		await this.playLootBeam(slotIndex, beamContainer);
-	}
-
-	private bumpDepth(): Promise<void> {
+	// bumps the cloud level with a pop animation; resolves once it settles
+	levelUp(): Promise<void> {
 		this.refreshDepth();
 		playSound(sounds.cloudPop);
 
@@ -87,11 +85,7 @@ export class HomeScreen {
 			{ duration: 500, easing: "cubic-bezier(.34,1.2,.64,1)" },
 		);
 		this.depthLabel.animate(
-			[
-				{ transform: "scale(1)" },
-				{ transform: "scale(1.5)", offset: 0.3 },
-				{ transform: "scale(1)" },
-			],
+			[{ transform: "scale(1)" }, { transform: "scale(1.5)", offset: 0.3 }, { transform: "scale(1)" }],
 			{ duration: 500, easing: "cubic-bezier(.34,1.2,.64,1)" },
 		);
 
@@ -112,11 +106,43 @@ export class HomeScreen {
 		state.inventory.value.forEach((_, index) => this.refreshSlot(index));
 	}
 
-	// fires the rainbow beam from the depth cloud to slotIndex; the slot's icon
-	// isn't updated here since the item isn't revealed/equipped yet at this point
-	playLootBeam(slotIndex: number, beamContainer: HTMLElement): Promise<void> {
-		const slot = this.slots[slotIndex];
-		return fireLootBeam(beamContainer, this.depthCloud, slot, "game");
+	// shows the found item (or a keep/equip choice vs the occupied slot) in a panel
+	// above the cloud, dims every slot but the target and scales it up
+	showLoot(slotIndex: number, item: Item, onResolved: (equip: boolean) => void) {
+		const currentItem = state.inventory.value[slotIndex];
+
+		this.slots.forEach((slot, index) => slot.classList.toggle("dimmed", index !== slotIndex));
+		this.slots[slotIndex].classList.add("highlighted");
+
+		if (!currentItem) {
+			this.lootPanel.replaceChildren(createItemCard(item, "loot"));
+			this.lootPanel.classList.add("active");
+			this.buttonSlot.replaceChildren(createButton("Equip", () => onResolved(true), "primary", "md"));
+			return;
+		}
+
+		this.lootPanel.replaceChildren(
+			el("div.home-loot-compare", [
+				el("div.home-loot-side", [el("span.home-loot-side-label", "Current"), createItemCard(currentItem, "loot")]),
+				el("div.home-loot-vs", "→"),
+				el("div.home-loot-side", [el("span.home-loot-side-label", "New"), createItemCard(item, "loot")]),
+			]),
+		);
+		this.lootPanel.classList.add("active");
+
+		const keepButton = createButton("Keep", () => onResolved(false), "normal", "md");
+		const equipButton = createButton("Equip", () => onResolved(true), "primary", "md");
+		this.buttonSlot.replaceChildren(el("div.home-loot-choice", [keepButton, equipButton]));
+	}
+
+	// clears the loot panel/highlight and restores the Magic button
+	hideLoot() {
+		this.lootPanel.classList.remove("active");
+		this.lootPanel.replaceChildren();
+		this.slots.forEach((slot) => slot.classList.remove("dimmed", "highlighted"));
+
+		this.magicButton = createButton("Magic", this.onMagic, "primary", "md", true, 18, 1.5);
+		this.buttonSlot.replaceChildren(this.magicButton);
 	}
 
 	private refreshSlot(index: number) {
@@ -133,6 +159,6 @@ export class HomeScreen {
 		const item = state.inventory.value[index];
 		if (!item) return;
 
-		openModal(this.container, "Item", createItemCard(item, "diff"), [], null);
+		openModal(this.container, "Item", createItemCard(item, "loot"), [], null);
 	}
 }

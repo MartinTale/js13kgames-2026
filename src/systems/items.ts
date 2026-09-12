@@ -4,11 +4,11 @@ import { el } from "../helpers/dom";
 export type Stat = "power" | "guard" | "crit" | "dodge" | "vitality";
 export const STATS: Stat[] = ["power", "guard", "crit", "dodge", "vitality"];
 export const STAT_LABELS: Record<Stat, string> = {
-	power: "Power",
-	guard: "Guard",
-	crit: "Crit",
-	dodge: "Dodge",
-	vitality: "Vitality",
+	power: "ATK",
+	guard: "DEF",
+	crit: "CRIT",
+	dodge: "DODGE",
+	vitality: "HP",
 };
 
 export type Rarity = "common" | "rare" | "epic";
@@ -22,6 +22,14 @@ const RARITY_WEIGHTS: Record<Rarity, number> = { common: 65, rare: 27, epic: 8 }
 const RARITY_WEIGHTS_BOOSTED: Record<Rarity, number> = { common: 30, rare: 45, epic: 25 };
 
 export type Quality = "dull" | "shiny" | "glowing" | "radiant" | "iridescent" | "prismatic";
+export const QUALITY_LABELS: Record<Quality, string> = {
+	dull: "Poor",
+	shiny: "Common",
+	glowing: "Good",
+	radiant: "Great",
+	iridescent: "Perfect",
+	prismatic: "Flawless",
+};
 // [minRoll, maxRoll, statMultiplier, weight]
 const QUALITY_TABLE: Record<Quality, [number, number, number, number]> = {
 	dull: [70, 79, 0.7, 22],
@@ -134,7 +142,7 @@ export function createItemCard(item: Item | null, cls: string): HTMLElement {
 
 	return el(`div.${cls}-card`, [
 		emoji,
-		el(`div.${cls}-rarity`, `${item.rarity} · ${item.quality}`),
+		el(`div.${cls}-rarity`, `${item.rarity} · ${QUALITY_LABELS[item.quality]}`),
 		el(`div.${cls}-found`, `Cloud ${item.depth}`),
 		stats,
 		el(`div.${cls}-score-row`, [el(`div.${cls}-score`, `${getItemScore(item)}`), el(`div.${cls}-score-label`, "Sparkles")]),
