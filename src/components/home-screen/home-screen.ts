@@ -3,7 +3,7 @@ import { el, svgEl } from "../../helpers/dom";
 import { createButton, ButtonElement } from "../button/button";
 import { CLOUD_SVG } from "../progress-bar/progress-bar";
 import { state } from "../../systems/state";
-import { createItemCard, Item, RARITY_COLORS, STAT_LABELS, STATS } from "../../systems/items";
+import { createItemCard, getUpgradeCost, Item, RARITY_COLORS, STAT_LABELS, STATS, upgradeItem } from "../../systems/items";
 import { getEffectiveStats, getInventoryStats } from "../../systems/combat";
 import { playSound, sounds } from "../../systems/music";
 import { BattleScreen } from "../battle-screen/battle-screen";
@@ -14,6 +14,7 @@ export class HomeScreen {
 	element: HTMLElement;
 	depthLabel: HTMLElement;
 	magicButton: ButtonElement;
+	private dustValue: HTMLElement;
 	private depthCloud: HTMLElement;
 	private statValues: Partial<Record<(typeof STATS)[number], HTMLElement>> = {};
 	private slots: HTMLElement[] = [];
@@ -33,6 +34,9 @@ export class HomeScreen {
 		this.depthLabel = el("span.home-depth-value");
 
 		const depthRow = el("div.home-depth", [this.depthCloud, this.depthLabel]);
+
+		this.dustValue = el("span.home-dust-value", "0");
+		const dustRow = el("div.home-dust", [el("span.home-dust-icon", "✨"), this.dustValue, el("span", "Magic Dust")]);
 
 		this.featurePanelInner = el("div.home-feature-panel-inner");
 		this.featurePanel = el("div.home-feature-panel", this.featurePanelInner);
@@ -55,7 +59,14 @@ export class HomeScreen {
 		});
 		const inventoryPanel = el("div.home-inventory-panel", this.slots);
 
-		const actions = el("div.home-actions", [this.featurePanel, depthRow, statsPanel, inventoryPanel, this.buttonSlot]);
+		const actions = el("div.home-actions", [
+			this.featurePanel,
+			depthRow,
+			dustRow,
+			statsPanel,
+			inventoryPanel,
+			this.buttonSlot,
+		]);
 
 		this.element = el("div.home-screen", [actions]);
 	}
@@ -141,6 +152,10 @@ export class HomeScreen {
 
 	refreshDepth() {
 		this.depthLabel.textContent = `${state.depth.value}`;
+	}
+
+	refreshDust() {
+		this.dustValue.textContent = `${state.magicDust.value}`;
 	}
 
 	// bumps the cloud level with a pop animation; resolves once it settles
@@ -238,8 +253,10 @@ export class HomeScreen {
 		slot.style.borderColor = item ? RARITY_COLORS[item.rarity] : "";
 	}
 
-	// idle only: tapping a filled slot opens it inline in the feature panel;
-	// tapping the same slot again (or any slot while empty) closes it
+	// idle only: tapping a filled slot opens it inline in the feature panel
+	// (dimming every other slot, like the loot/diff view), with an Upgrade
+	// action spending Magic Dust; tapping the same slot again (or any slot
+	// while empty) closes it
 	private async openSlot(index: number) {
 		if (!this.idle) return;
 
@@ -248,14 +265,48 @@ export class HomeScreen {
 
 		if (this.viewingSlot === index) {
 			this.viewingSlot = null;
-			this.slots[index].classList.remove("highlighted");
+			this.slots.forEach((slot) => slot.classList.remove("dimmed", "highlighted"));
+			this.buttonSlot.replaceChildren(this.magicButton);
 			await this.fadeOutContent();
 			return;
 		}
 
-		if (this.viewingSlot !== null) this.slots[this.viewingSlot].classList.remove("highlighted");
 		this.viewingSlot = index;
+		this.slots.forEach((slot, i) => slot.classList.toggle("dimmed", i !== index));
 		this.slots[index].classList.add("highlighted");
 		await this.crossfadeContent(createItemCard(item, "loot"));
+		this.renderUpgradeAction(index);
+	}
+
+	// shows the Upgrade button for the item currently being viewed, spending
+	// Magic Dust to bump its primary stat; re-renders in place after a purchase
+	private renderUpgradeAction(index: number) {
+		const item = state.inventory.value[index];
+		if (!item || this.viewingSlot !== index) return;
+
+		const cost = getUpgradeCost(item);
+		const canAfford = state.magicDust.value >= cost;
+
+		const upgradeButton = createButton(
+			"Upgrade",
+			() => {
+				state.magicDust.value -= cost;
+				const inventory = [...state.inventory.value];
+				inventory[index] = upgradeItem(item);
+				state.inventory.value = inventory;
+
+				this.refreshDust();
+				this.refreshStats();
+				this.refreshSlot(index);
+				this.crossfadeContent(createItemCard(inventory[index]!, "loot")).then(() => this.renderUpgradeAction(index));
+			},
+			canAfford ? "success" : "disabled",
+			"md",
+		);
+		upgradeButton.face.disabled = !canAfford;
+
+		this.buttonSlot.replaceChildren(
+			el("div.home-item-view-actions", [upgradeButton, el("span.home-upgrade-cost", `✨ ${cost} Magic Dust`)]),
+		);
 	}
 }

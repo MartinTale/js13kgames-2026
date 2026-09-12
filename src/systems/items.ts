@@ -55,6 +55,7 @@ export type Item = {
 	depth: number;
 	primaryStat: Stat;
 	affixes: Partial<Record<Stat, number>>;
+	upgradeLevel: number;
 };
 
 function weightedPick<key extends string>(weights: Record<key, number>): key {
@@ -114,12 +115,35 @@ export function generateItem(depth: number, boosted = false): Item {
 
 	const emoji = EMOJI_POOL[randomInteger(0, EMOJI_POOL.length - 1)];
 
-	return { emoji, rarity, quality, qualityRoll, depth, primaryStat, affixes };
+	return { emoji, rarity, quality, qualityRoll, depth, primaryStat, affixes, upgradeLevel: 0 };
 }
 
 export function getItemScore(item: Item | null): number {
 	if (!item) return 0;
 	return Object.values(item.affixes).reduce((sum, value) => sum + (value || 0), 0);
+}
+
+const UPGRADE_BASE_COST = 5;
+const UPGRADE_COST_GROWTH = 1.5;
+const UPGRADE_STAT_GROWTH = 0.15;
+
+// dust cost to upgrade the item at its current level - grows so repeated
+// upgrades on one item get progressively pricier
+export function getUpgradeCost(item: Item): number {
+	return Math.round(UPGRADE_BASE_COST * Math.pow(UPGRADE_COST_GROWTH, item.upgradeLevel || 0));
+}
+
+// spends nothing itself - caller deducts dust; bumps the primary stat by a
+// fixed fraction of its current value and increments the item's upgrade level
+export function upgradeItem(item: Item): Item {
+	const currentValue = item.affixes[item.primaryStat] || 0;
+	const increase = Math.max(1, Math.round(currentValue * UPGRADE_STAT_GROWTH));
+
+	return {
+		...item,
+		affixes: { ...item.affixes, [item.primaryStat]: currentValue + increase },
+		upgradeLevel: (item.upgradeLevel || 0) + 1,
+	};
 }
 
 // compareItem: when given, each stat line and the score are colored by how item's
@@ -167,7 +191,10 @@ export function createItemCard(item: Item | null, cls: string, label = "Item Fou
 	return el(`div.${cls}-card`, [
 		...labelEl,
 		emoji,
-		el(`div.${cls}-rarity`, `${item.rarity} (${item.qualityRoll}%)`),
+		el(
+			`div.${cls}-rarity`,
+			`${item.rarity} (${item.qualityRoll}%)${item.upgradeLevel > 0 ? ` +${item.upgradeLevel}` : ""}`,
+		),
 		el(`div.${cls}-found`, `Found on Cloud ${item.depth}`),
 		stats,
 		el(`div.${cls}-score-row`, [scoreEl, el(`div.${cls}-score-label`, "Sparkles")]),

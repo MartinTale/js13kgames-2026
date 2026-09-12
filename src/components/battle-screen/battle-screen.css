@@ -141,3 +141,8 @@
 	font-weight: bold;
 	margin-top: 4px;
 }
+
+.combat-line.dust {
+	color: var(--shadow);
+	opacity: 0.85;
+}

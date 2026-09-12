@@ -2,8 +2,11 @@ import "./battle-screen.css";
 import { el } from "../../helpers/dom";
 import { combatTick, CombatEvent, createPlayerFighter, createStormling } from "../../systems/combat";
 import { state } from "../../systems/state";
+import { randomInteger } from "../../helpers/numbers";
 
 const TICK_MS = 400;
+const DUST_ON_LOSS: [number, number] = [1, 2];
+const DUST_ON_WIN: [number, number] = [3, 5];
 
 export class BattleScreen {
 	element: HTMLElement;
@@ -78,6 +81,12 @@ export class BattleScreen {
 				const won = enemy.hp <= 0 && player.hp > 0;
 				logLine(won ? `${enemy.name} is defeated!` : `You were defeated...`, won ? "win" : "loss");
 				updateBars();
+
+				// every battle grants some Magic Dust, win or lose - winning grants more
+				const [min, max] = won ? DUST_ON_WIN : DUST_ON_LOSS;
+				const dust = randomInteger(min, max);
+				state.magicDust.value += dust;
+				logLine(`+${dust} Magic Dust`, "dust");
 
 				onDone(won);
 				return;

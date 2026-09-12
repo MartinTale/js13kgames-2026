@@ -82,6 +82,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		homeScreen.setMagicEnabled(false);
 
 		const won = await homeScreen.runBattle();
+		homeScreen.refreshDust();
 
 		if (!won) {
 			homeScreen.hideBattle();
@@ -112,6 +113,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	}
 
 	homeScreen.refreshDepth();
+	homeScreen.refreshDust();
 	homeScreen.refreshStats();
 	homeScreen.refreshInventory();
 

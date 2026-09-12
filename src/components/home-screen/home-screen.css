@@ -26,6 +26,21 @@
 	margin-bottom: 4px;
 }
 
+.home-dust {
+	gap: 4px;
+	margin-bottom: 8px;
+	font-size: 12px;
+	opacity: 0.85;
+}
+
+.home-dust-icon {
+	font-size: 14px;
+}
+
+.home-dust-value {
+	font-weight: bold;
+}
+
 .home-depth-cloud {
 	width: 36px;
 	height: 36px;
@@ -115,6 +130,17 @@
 
 .home-loot-choice {
 	gap: 8px;
+}
+
+.home-item-view-actions {
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.home-upgrade-cost {
+	font-size: 10px;
+	opacity: 0.7;
 }
 
 /* always takes all free space above the cloud, so battle, loot, and the idle

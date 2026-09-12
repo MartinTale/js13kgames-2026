@@ -14,6 +14,7 @@ export type State = {
 	depth: Signal<number>;
 	inventory: Signal<(Item | null)[]>;
 	tapsToFill: Signal<number>;
+	magicDust: Signal<number>;
 };
 
 export const emptyState: State = {
@@ -25,6 +26,7 @@ export const emptyState: State = {
 	depth: createSignal(1),
 	inventory: createSignal(Array(8).fill(null)),
 	tapsToFill: createSignal(3),
+	magicDust: createSignal(0),
 };
 
 export let state: State;
