@@ -135,7 +135,7 @@ export function createItemCard(item: Item | null, cls: string): HTMLElement {
 	return el(`div.${cls}-card`, [
 		emoji,
 		el(`div.${cls}-rarity`, `${item.rarity} · ${item.quality}`),
-		el(`div.${cls}-found`, `Depth ${item.depth}`),
+		el(`div.${cls}-found`, `Cloud ${item.depth}`),
 		stats,
 		el(`div.${cls}-score-row`, [el(`div.${cls}-score`, `${getItemScore(item)}`), el(`div.${cls}-score-label`, "Sparkles")]),
 	]);

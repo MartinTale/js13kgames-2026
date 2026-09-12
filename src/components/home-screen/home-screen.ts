@@ -18,6 +18,7 @@ export class HomeScreen {
 	element: HTMLElement;
 	depthLabel: HTMLElement;
 	magicButton: ButtonElement;
+	private depthCloud: HTMLElement;
 	private statValues: Partial<Record<(typeof STATS)[number], HTMLElement>> = {};
 	private slots: HTMLElement[] = [];
 
@@ -27,11 +28,11 @@ export class HomeScreen {
 	) {
 		this.magicButton = createButton("Magic", onMagic, "primary", "md", true, 18, 1.5);
 
-		const depthCloud = svgEl(CLOUD_SVG.replace("[fill]", "#fff"));
-		depthCloud.classList.add("home-depth-cloud");
+		this.depthCloud = svgEl(CLOUD_SVG.replace("[fill]", "#fff"));
+		this.depthCloud.classList.add("home-depth-cloud");
 		this.depthLabel = el("span.home-depth-value");
 
-		const depthRow = el("div.home-depth", [depthCloud, this.depthLabel]);
+		const depthRow = el("div.home-depth", [this.depthCloud, this.depthLabel]);
 
 		const statsRows = STAT_ROWS.map((row) =>
 			el(
@@ -43,16 +44,16 @@ export class HomeScreen {
 				}),
 			),
 		);
-		const statsPanel = el("div.home-stats", statsRows);
+		const statsPanel = el("div.home-stats-panel", statsRows);
 
 		this.slots = Array.from({ length: INVENTORY_SIZE }, (_, index) => {
 			const slot = el("div.home-slot.empty");
 			slot.onclick = () => this.openSlot(index);
 			return slot;
 		});
-		const inventoryGrid = el("div.home-inventory", this.slots);
+		const inventoryPanel = el("div.home-inventory-panel", this.slots);
 
-		const actions = el("div.home-actions", [depthRow, statsPanel, inventoryGrid, this.magicButton]);
+		const actions = el("div.home-actions", [depthRow, statsPanel, inventoryPanel, this.magicButton]);
 
 		this.element = el("div.home-screen", [actions]);
 	}
@@ -80,11 +81,11 @@ export class HomeScreen {
 		});
 	}
 
-	// fires the rainbow beam from the Magic button to slotIndex, then refreshes
+	// fires the rainbow beam from the depth cloud to slotIndex, then refreshes
 	// that slot's icon/border once the beam lands (see loot-beam's BEAM_DURATION)
 	playLootBeam(slotIndex: number, beamContainer: HTMLElement) {
 		const slot = this.slots[slotIndex];
-		fireLootBeam(beamContainer, this.magicButton, slot, "game");
+		fireLootBeam(beamContainer, this.depthCloud, slot, "game");
 
 		setTimeout(() => this.refreshSlot(slotIndex), 220);
 	}

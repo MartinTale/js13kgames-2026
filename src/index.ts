@@ -106,9 +106,7 @@ window.addEventListener("DOMContentLoaded", () => {
 					}
 
 					state.level.value += 1;
-					if (state.level.value % 3 === 0) {
-						state.depth.value += 1;
-					}
+					state.depth.value += 1;
 
 					const item = generateItem(state.depth.value);
 

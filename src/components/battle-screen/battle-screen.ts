@@ -17,7 +17,7 @@ export class BattleScreen {
 	}
 
 	refreshDepth() {
-		this.depthLabel.textContent = `Depth ${state.depth.value}`;
+		this.depthLabel.textContent = `Cloud ${state.depth.value}`;
 	}
 
 	run(onDone: (won: boolean) => void) {

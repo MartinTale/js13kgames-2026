@@ -18,7 +18,7 @@ export class RevealScreen {
 	}
 
 	refreshDepth() {
-		this.depthLabel.textContent = `Depth ${state.depth.value}`;
+		this.depthLabel.textContent = `Cloud ${state.depth.value}`;
 	}
 
 	show(item: Item, onContinue: () => void) {

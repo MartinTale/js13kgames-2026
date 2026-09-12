@@ -18,7 +18,7 @@ export class DiffScreen {
 	}
 
 	refreshDepth() {
-		this.depthLabel.textContent = `Depth ${state.depth.value}`;
+		this.depthLabel.textContent = `Cloud ${state.depth.value}`;
 	}
 
 	show(slotIndex: number, newItem: Item, onResolved: (equip: boolean) => void) {
