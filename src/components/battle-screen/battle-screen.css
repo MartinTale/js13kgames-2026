@@ -73,6 +73,12 @@
 	text-align: left;
 	border-top: 1px solid var(--shadow);
 	padding-top: 8px;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.combat-log::-webkit-scrollbar {
+	display: none;
 }
 
 .combat-round {
