@@ -43,14 +43,6 @@ export class EdgeButton {
 			};
 		}
 
-		if (path === "emojiFont") {
-			this.renderState(state.emojiFont.value);
-			this.root.onclick = () => {
-				playSound(sounds.tap);
-				state.emojiFont.value = !state.emojiFont.value;
-				this.renderState(state.emojiFont.value);
-			};
-		}
 	}
 
 	public renderState = (newState: boolean) => {
@@ -60,10 +52,6 @@ export class EdgeButton {
 			if (zzfxX != null) {
 				newState ? zzfxX.resume() : zzfxX.suspend();
 			}
-		}
-
-		if (this.path === "emojiFont") {
-			document.body.classList.toggle("emoji-font-on", newState === true);
 		}
 	};
 }

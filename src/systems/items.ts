@@ -17,19 +17,12 @@ export const RARITY_COLORS: Record<Rarity, string> = {
 	rare: "#8FD9FF",
 	epic: "#C896FF",
 };
-const RARITY_AFFIX_COUNT: Record<Rarity, number> = { common: 1, rare: 2, epic: 3 };
+// total stats on the item: 1 guaranteed primary + N bonus stats by rarity
+const RARITY_BONUS_STATS: Record<Rarity, number> = { common: 0, rare: 1, epic: 2 };
 const RARITY_WEIGHTS: Record<Rarity, number> = { common: 65, rare: 27, epic: 8 };
 const RARITY_WEIGHTS_BOOSTED: Record<Rarity, number> = { common: 30, rare: 45, epic: 25 };
 
 export type Quality = "dull" | "shiny" | "glowing" | "radiant" | "iridescent" | "prismatic";
-export const QUALITY_LABELS: Record<Quality, string> = {
-	dull: "Poor",
-	shiny: "Common",
-	glowing: "Good",
-	radiant: "Great",
-	iridescent: "Perfect",
-	prismatic: "Flawless",
-};
 // [minRoll, maxRoll, statMultiplier, weight]
 const QUALITY_TABLE: Record<Quality, [number, number, number, number]> = {
 	dull: [70, 79, 0.7, 22],
@@ -60,7 +53,9 @@ export type Item = {
 	emoji: string;
 	rarity: Rarity;
 	quality: Quality;
+	qualityRoll: number;
 	depth: number;
+	primaryStat: Stat;
 	affixes: Partial<Record<Stat, number>>;
 };
 
@@ -79,13 +74,13 @@ function weightedPick<key extends string>(weights: Record<key, number>): key {
 	return entries[entries.length - 1][0];
 }
 
-function rollStats(count: number): Stat[] {
-	const pool = [...STATS];
+function rollStats(pool: Stat[], count: number): Stat[] {
+	const remaining = [...pool];
 	const picked: Stat[] = [];
 
-	for (let i = 0; i < count && pool.length > 0; i++) {
-		const index = randomInteger(0, pool.length - 1);
-		picked.push(pool.splice(index, 1)[0]);
+	for (let i = 0; i < count && remaining.length > 0; i++) {
+		const index = randomInteger(0, remaining.length - 1);
+		picked.push(remaining.splice(index, 1)[0]);
 	}
 
 	return picked;
@@ -99,21 +94,29 @@ export function generateItem(depth: number, boosted = false): Item {
 		) as Record<Quality, number>,
 	);
 
-	const [, , statMultiplier] = (boosted ? QUALITY_TABLE_BOOSTED : QUALITY_TABLE)[quality];
-	const affixCount = RARITY_AFFIX_COUNT[rarity];
+	const [minRoll, maxRoll, statMultiplier] = (boosted ? QUALITY_TABLE_BOOSTED : QUALITY_TABLE)[quality];
+	const qualityRoll = randomInteger(minRoll, maxRoll);
+	const bonusCount = RARITY_BONUS_STATS[rarity];
 	const rarityMultiplier = rarity === "common" ? 1 : rarity === "rare" ? 1.5 : 2.2;
 	const baseMin = 2 + depth * 0.6;
 	const baseMax = 4 + depth * 1.1;
 
-	const affixes: Partial<Record<Stat, number>> = {};
-	for (const stat of rollStats(affixCount)) {
+	const rollValue = () => {
 		const base = randomInteger(Math.round(baseMin), Math.round(baseMax));
-		affixes[stat] = Math.max(1, Math.round(base * rarityMultiplier * statMultiplier));
+		return Math.max(1, Math.round(base * rarityMultiplier * statMultiplier));
+	};
+
+	const [primaryStat] = rollStats(STATS, 1);
+	const affixes: Partial<Record<Stat, number>> = { [primaryStat]: rollValue() };
+
+	const bonusPool = STATS.filter((stat) => stat !== primaryStat);
+	for (const stat of rollStats(bonusPool, bonusCount)) {
+		affixes[stat] = rollValue();
 	}
 
 	const emoji = EMOJI_POOL[randomInteger(0, EMOJI_POOL.length - 1)];
 
-	return { emoji, rarity, quality, depth, affixes };
+	return { emoji, rarity, quality, qualityRoll, depth, primaryStat, affixes };
 }
 
 export function getItemScore(item: Item | null): number {
@@ -121,7 +124,9 @@ export function getItemScore(item: Item | null): number {
 	return Object.values(item.affixes).reduce((sum, value) => sum + (value || 0), 0);
 }
 
-export function createItemCard(item: Item | null, cls: string, label = "Item Found"): HTMLElement {
+// compareItem: when given, each stat line and the score are colored by how item's
+// value compares to compareItem's for that stat (green upgrade / red downgrade)
+export function createItemCard(item: Item | null, cls: string, label = "Item Found", compareItem?: Item | null): HTMLElement {
 	const labelEl = label ? [el(`div.${cls}-label`, label)] : [];
 
 	if (!item) {
@@ -139,16 +144,35 @@ export function createItemCard(item: Item | null, cls: string, label = "Item Fou
 
 	const stats = el(
 		`div.${cls}-stats`,
-		STATS.filter((stat) => item.affixes[stat]).map((stat) => el(`div.${cls}-stat`, `+${item.affixes[stat]} ${STAT_LABELS[stat]}`)),
+		STATS.filter((stat) => item.affixes[stat]).map((stat) => {
+			const line = el(`div.${cls}-stat`, `+${item.affixes[stat]} ${STAT_LABELS[stat]}`);
+			if (stat === item.primaryStat) line.classList.add("primary-stat");
+
+			if (compareItem !== undefined) {
+				const diff = (item.affixes[stat] || 0) - (compareItem?.affixes[stat] || 0);
+				if (diff > 0) line.classList.add("stat-up");
+				else if (diff < 0) line.classList.add("stat-down");
+			}
+
+			return line;
+		}),
 	);
+
+	const score = getItemScore(item);
+	const scoreEl = el(`div.${cls}-score`, `${score}`);
+	if (compareItem !== undefined) {
+		const compareScore = getItemScore(compareItem ?? null);
+		if (score > compareScore) scoreEl.classList.add("stat-up");
+		else if (score < compareScore) scoreEl.classList.add("stat-down");
+	}
 
 	return el(`div.${cls}-card`, [
 		...labelEl,
 		emoji,
-		el(`div.${cls}-rarity`, `${QUALITY_LABELS[item.quality]} ${item.rarity}`),
+		el(`div.${cls}-rarity`, `${item.rarity} (${item.qualityRoll}%)`),
 		el(`div.${cls}-found`, `Found on Cloud ${item.depth}`),
 		stats,
-		el(`div.${cls}-score-row`, [el(`div.${cls}-score`, `${getItemScore(item)}`), el(`div.${cls}-score-label`, "Sparkles")]),
+		el(`div.${cls}-score-row`, [scoreEl, el(`div.${cls}-score-label`, "Sparkles")]),
 	]);
 }
 

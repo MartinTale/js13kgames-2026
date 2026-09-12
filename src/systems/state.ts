@@ -4,13 +4,12 @@ import { Item } from "./items";
 
 const STATE_KEY = "js13k26_save";
 
-export type Path = "sound" | "screen" | "emojiFont";
+export type Path = "sound" | "screen";
 
 export type State = {
 	seed: Signal<number>;
 	lastProcessedAt: Signal<number>;
 	sound: Signal<boolean | null>;
-	emojiFont: Signal<boolean>;
 	level: Signal<number>;
 	depth: Signal<number>;
 	inventory: Signal<(Item | null)[]>;
@@ -22,7 +21,6 @@ export const emptyState: State = {
 	// seed: createSignal(Date.now()),
 	lastProcessedAt: createSignal(Date.now()),
 	sound: createSignal(null),
-	emojiFont: createSignal(false),
 	level: createSignal(0),
 	depth: createSignal(1),
 	inventory: createSignal(Array(8).fill(null)),
@@ -53,9 +51,24 @@ export function resetState() {
 	}, 500);
 }
 
+// btoa/atob only handle Latin1, but saved state (item emojis) can contain
+// characters outside that range, so UTF-8 encode/decode around them
+function encodeState(json: string): string {
+	return btoa(encodeURIComponent(json).replace(/%([0-9A-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16))));
+}
+
+function decodeState(encoded: string): string {
+	return decodeURIComponent(
+		atob(encoded)
+			.split("")
+			.map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
+			.join(""),
+	);
+}
+
 function loadState() {
 	const encodedState = localStorage.getItem(STATE_KEY);
-	const decodedState = encodedState ? atob(encodedState) : "{}";
+	const decodedState = encodedState ? decodeState(encodedState) : "{}";
 	const jsonState = JSON.parse(decodedState) as State | undefined;
 
 	state = Object.entries(emptyState).reduce((acc, [key, signal]) => {
@@ -83,6 +96,6 @@ function saveState() {
 		{} as Record<string, any>,
 	);
 
-	const encodedState = btoa(JSON.stringify(jsonState));
+	const encodedState = encodeState(JSON.stringify(jsonState));
 	localStorage.setItem(STATE_KEY, encodedState);
 }

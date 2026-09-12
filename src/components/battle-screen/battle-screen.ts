@@ -60,6 +60,7 @@ export class BattleScreen {
 		const logLine = (text: string, cls = "") => {
 			const target = roundBody ?? log;
 			target.append(el(`div.combat-line${cls ? "." + cls : ""}`, text));
+			log.scrollTop = log.scrollHeight;
 		};
 
 		updateBars();

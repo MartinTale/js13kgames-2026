@@ -42,7 +42,6 @@ window.addEventListener("DOMContentLoaded", () => {
 	);
 
 	soundToggle = new EdgeButton(bodyElement, SVGs.sound, "sound", 8, 8);
-	new EdgeButton(bodyElement, SVGs.emoji, "emojiFont", 120, -8);
 
 	if (import.meta.env.MODE === "development") {
 		new EdgeLinkButton(

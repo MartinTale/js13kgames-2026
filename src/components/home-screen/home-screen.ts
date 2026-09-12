@@ -110,11 +110,13 @@ export class HomeScreen {
 		});
 	}
 
-	// runs a battle inline in the feature panel above the cloud; once the fight
-	// resolves, shows Continue in the button slot and resolves the outcome on tap
+	// runs a battle inline in the feature panel above the cloud; Magic stays visible
+	// (just disabled) until the crossfade finishes, so it doesn't vanish instantly
+	// and can't be double-tapped. Once the fight resolves, shows Continue and
+	// resolves the outcome on tap
 	async runBattle(): Promise<boolean> {
-		this.buttonSlot.replaceChildren();
 		await this.crossfadeContent(this.battleScreen.element);
+		this.buttonSlot.replaceChildren();
 
 		return new Promise((resolve) => {
 			this.battleScreen.run((won) => {
@@ -190,13 +192,16 @@ export class HomeScreen {
 
 		await this.crossfadeContent(
 			el("div.home-loot-compare", [
-				el("div.home-loot-side", [el("span.home-loot-side-label", "Current"), createItemCard(currentItem, "loot", "")]),
+				el("div.home-loot-side", [
+					el("span.home-loot-side-label", "Current"),
+					createItemCard(currentItem, "loot", "", item),
+				]),
 				el("div.home-loot-vs", "→"),
-				el("div.home-loot-side", [el("span.home-loot-side-label", "New"), createItemCard(item, "loot", "")]),
+				el("div.home-loot-side", [el("span.home-loot-side-label", "New"), createItemCard(item, "loot", "", currentItem)]),
 			]),
 		);
 
-		const keepButton = createButton("Keep", () => onResolved(false), "normal", "md");
+		const keepButton = createButton("Keep Old", () => onResolved(false), "normal", "md");
 		const equipButton = createButton("Equip", () => onResolved(true), "success", "md");
 		this.buttonSlot.replaceChildren(el("div.home-loot-choice", [keepButton, equipButton]));
 	}
