@@ -60,12 +60,11 @@ export class HomeScreen {
 		const depthRow = el("div.home-depth", [this.depthCloud, this.depthLabel, dropRatesInfo]);
 
 		this.dustValue = el("span.home-dust-value", "0");
-		const upgradeInfo = infoButton(this.container, "Magic Dust", () =>
-			el(
-				"p",
-				"Earned every battle, win or lose. Spend it to boost an item's stats - each upgrade costs more.",
-			),
-		);
+		const upgradeInfo = infoButton(this.container, "Magic Dust", () => [
+			el("p", "Tap an item in your inventory to upgrade it."),
+			el("p", "Earned every battle, win or lose."),
+			el("p", "Spend it to boost an item's stats - each upgrade costs more."),
+		]);
 		const dustRow = el("div.home-dust", [
 			el("span.home-dust-icon", "✨"),
 			this.dustValue,
