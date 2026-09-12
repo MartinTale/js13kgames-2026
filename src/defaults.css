@@ -84,14 +84,6 @@ body::before {
 	}
 }
 
-/* the game container is a fixed 360px wide; below that the aurora glow has no
-   room to show as a border around it, so it just clutters the cramped view */
-@media (max-width: 360px) {
-	body::before {
-		display: none;
-	}
-}
-
 small {
 	width: 100%;
 	display: block;
