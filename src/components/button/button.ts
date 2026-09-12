@@ -3,7 +3,7 @@ import { el, mount } from "../../helpers/dom";
 import { playSound, sounds } from "../../systems/music";
 import { burstFromStadium } from "../../systems/confetti";
 
-export type ButtonType = "normal" | "primary" | "danger" | "disabled" | "secondary" | "outline" | "ghost";
+export type ButtonType = "normal" | "primary" | "success" | "danger" | "disabled" | "secondary" | "outline" | "ghost";
 export type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 export type Button = {

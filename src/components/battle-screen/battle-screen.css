@@ -1,5 +1,6 @@
 .combat-view {
 	flex-direction: column;
+	align-items: stretch;
 	box-sizing: border-box;
 	width: 100%;
 	height: 100%;
@@ -7,19 +8,21 @@
 }
 
 .hp-row {
-	display: block;
+	flex-direction: column;
+	align-items: stretch;
+	width: 100%;
 	margin-bottom: 8px;
 }
 
 .hp-label {
-	display: flex;
 	justify-content: space-between;
+	align-items: baseline;
+	width: 100%;
 	font-size: 13px;
 	margin-bottom: 4px;
 }
 
 .hp-track {
-	display: flex;
 	width: 100%;
 	height: 12px;
 	background-color: rgba(255, 255, 255, 0.1);
@@ -38,8 +41,10 @@
 }
 
 .combat-log {
-	display: block;
+	flex-direction: column;
+	align-items: stretch;
 	box-sizing: border-box;
+	width: 100%;
 	flex: 1;
 	min-height: 0;
 	overflow-y: auto;
@@ -53,6 +58,9 @@
 }
 
 .combat-round {
+	flex-direction: column;
+	align-items: stretch;
+	width: 100%;
 	margin-bottom: 8px;
 	padding-bottom: 8px;
 	border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
@@ -62,8 +70,15 @@
 	border-bottom: none;
 }
 
+.combat-round-body {
+	flex-direction: column;
+	align-items: stretch;
+	width: 100%;
+}
+
 .combat-round-label {
 	display: block;
+	text-align: left;
 	font-size: 9px;
 	font-weight: bold;
 	text-transform: uppercase;
@@ -74,6 +89,7 @@
 
 .combat-line {
 	display: block;
+	text-align: left;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;

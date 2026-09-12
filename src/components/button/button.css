@@ -110,6 +110,15 @@ button.disabled {
 	background: oklch(from #f04a4a calc(0.7 * l) c h);
 }
 
+.button-wrap.success button {
+	background: linear-gradient(to bottom, #a8f0c6, #4ad991);
+	color: #0f3822;
+}
+
+.button-wrap.success .button-depth {
+	background: oklch(from #4ad991 calc(0.7 * l) c h);
+}
+
 .button-wrap.normal button {
 	background: linear-gradient(to bottom, oklch(from var(--text) calc(l - 0.55) c h), oklch(from var(--text) calc(l - 0.65) c h));
 	color: var(--text);

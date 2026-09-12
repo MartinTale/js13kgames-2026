@@ -95,7 +95,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		const item = generateItem(state.depth.value);
 		const targetSlot = randomInteger(0, state.inventory.value.length - 1);
 
-		homeScreen.hideBattle();
 		await homeScreen.levelUp();
 		homeScreen.showLoot(targetSlot, item, (equip) => {
 			if (equip) equipItem(targetSlot, item);

@@ -19,6 +19,7 @@ export class HomeScreen {
 	private statValues: Partial<Record<(typeof STATS)[number], HTMLElement>> = {};
 	private slots: HTMLElement[] = [];
 	private featurePanel: HTMLElement;
+	private featurePanelInner: HTMLElement;
 	private battleScreen: BattleScreen;
 	private buttonSlot: HTMLElement;
 	private actions: HTMLElement;
@@ -36,7 +37,8 @@ export class HomeScreen {
 
 		const depthRow = el("div.home-depth", [this.depthCloud, this.depthLabel]);
 
-		this.featurePanel = el("div.home-feature-panel");
+		this.featurePanelInner = el("div.home-feature-panel-inner");
+		this.featurePanel = el("div.home-feature-panel", this.featurePanelInner);
 		this.battleScreen = new BattleScreen();
 
 		const statsRow = el(
@@ -77,12 +79,35 @@ export class HomeScreen {
 		this.actions.classList.remove("expanded");
 	}
 
+	// fades the panel's current content out, swaps it, then fades the new content in -
+	// keeps the panel's own size/expanded state untouched so nothing jumps mid-transition
+	private crossfadeContent(content: HTMLElement | HTMLElement[]): Promise<void> {
+		return new Promise((resolve) => {
+			const fadeOut = this.featurePanelInner.animate([{ opacity: 1 }, { opacity: 0 }], {
+				duration: 180,
+				easing: "ease",
+				fill: "forwards",
+			});
+
+			fadeOut.onfinish = () => {
+				this.featurePanelInner.replaceChildren(...(Array.isArray(content) ? content : [content]));
+
+				const fadeIn = this.featurePanelInner.animate([{ opacity: 0 }, { opacity: 1 }], {
+					duration: 220,
+					easing: "ease",
+					fill: "forwards",
+				});
+				fadeIn.onfinish = () => resolve();
+			};
+		});
+	}
+
 	// runs a battle inline in the feature panel above the cloud; once the fight
 	// resolves, shows Continue in the button slot and resolves the outcome on tap
-	runBattle(): Promise<boolean> {
+	async runBattle(): Promise<boolean> {
 		this.buttonSlot.replaceChildren();
-		this.featurePanel.replaceChildren(this.battleScreen.element);
 		this.expandPanel();
+		await this.crossfadeContent(this.battleScreen.element);
 
 		return new Promise((resolve) => {
 			this.battleScreen.run((won) => {
@@ -94,7 +119,7 @@ export class HomeScreen {
 	// clears the feature panel and restores the Magic button
 	hideBattle() {
 		this.collapsePanel();
-		this.featurePanel.replaceChildren();
+		this.featurePanelInner.replaceChildren();
 		this.buttonSlot.replaceChildren(this.magicButton);
 	}
 
@@ -141,39 +166,40 @@ export class HomeScreen {
 		state.inventory.value.forEach((_, index) => this.refreshSlot(index));
 	}
 
-	// shows the found item (or a keep/equip choice vs the occupied slot) in a panel
-	// above the cloud, dimming every slot but the target
-	showLoot(slotIndex: number, item: Item, onResolved: (equip: boolean) => void) {
+	// crossfades to the found item (or a keep/equip choice vs the occupied slot)
+	// in the feature panel above the cloud, dimming every slot but the target
+	async showLoot(slotIndex: number, item: Item, onResolved: (equip: boolean) => void) {
 		const currentItem = state.inventory.value[slotIndex];
 
 		this.slots.forEach((slot, index) => slot.classList.toggle("dimmed", index !== slotIndex));
 		this.slots[slotIndex].classList.add("highlighted");
 
+		this.expandPanel();
+		this.buttonSlot.replaceChildren();
+
 		if (!currentItem) {
-			this.featurePanel.replaceChildren(createItemCard(item, "loot"));
-			this.expandPanel();
-			this.buttonSlot.replaceChildren(createButton("Equip", () => onResolved(true), "primary", "md"));
+			await this.crossfadeContent(createItemCard(item, "loot"));
+			this.buttonSlot.replaceChildren(createButton("Equip", () => onResolved(true), "success", "md"));
 			return;
 		}
 
-		this.featurePanel.replaceChildren(
+		await this.crossfadeContent(
 			el("div.home-loot-compare", [
-				el("div.home-loot-side", [el("span.home-loot-side-label", "Current"), createItemCard(currentItem, "loot")]),
+				el("div.home-loot-side", [el("span.home-loot-side-label", "Current"), createItemCard(currentItem, "loot", "")]),
 				el("div.home-loot-vs", "→"),
-				el("div.home-loot-side", [el("span.home-loot-side-label", "New"), createItemCard(item, "loot")]),
+				el("div.home-loot-side", [el("span.home-loot-side-label", "New"), createItemCard(item, "loot", "")]),
 			]),
 		);
-		this.expandPanel();
 
 		const keepButton = createButton("Keep", () => onResolved(false), "normal", "md");
-		const equipButton = createButton("Equip", () => onResolved(true), "primary", "md");
+		const equipButton = createButton("Equip", () => onResolved(true), "success", "md");
 		this.buttonSlot.replaceChildren(el("div.home-loot-choice", [keepButton, equipButton]));
 	}
 
 	// clears the feature panel/highlight and restores the Magic button
 	hideLoot() {
 		this.collapsePanel();
-		this.featurePanel.replaceChildren();
+		this.featurePanelInner.replaceChildren();
 		this.slots.forEach((slot) => slot.classList.remove("dimmed", "highlighted"));
 
 		this.buttonSlot.replaceChildren(this.magicButton);

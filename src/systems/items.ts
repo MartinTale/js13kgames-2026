@@ -121,12 +121,14 @@ export function getItemScore(item: Item | null): number {
 	return Object.values(item.affixes).reduce((sum, value) => sum + (value || 0), 0);
 }
 
-export function createItemCard(item: Item | null, cls: string): HTMLElement {
+export function createItemCard(item: Item | null, cls: string, label = "Item Found"): HTMLElement {
+	const labelEl = label ? [el(`div.${cls}-label`, label)] : [];
+
 	if (!item) {
 		return el(`div.${cls}-card`, [
+			...labelEl,
 			el(`div.${cls}-emoji.empty`),
-			el(`div.${cls}-rarity`, " "),
-			el(`div.${cls}-stats`, el(`div.${cls}-stat`, "Empty slot")),
+			el(`div.${cls}-rarity`, "Empty Slot"),
 			el(`div.${cls}-score-row`, [el(`div.${cls}-score`, "0"), el(`div.${cls}-score-label`, "Sparkles")]),
 		]);
 	}
@@ -137,13 +139,14 @@ export function createItemCard(item: Item | null, cls: string): HTMLElement {
 
 	const stats = el(
 		`div.${cls}-stats`,
-		STATS.filter((stat) => item.affixes[stat]).map((stat) => el(`div.${cls}-stat`, `${STAT_LABELS[stat]} +${item.affixes[stat]}`)),
+		STATS.filter((stat) => item.affixes[stat]).map((stat) => el(`div.${cls}-stat`, `+${item.affixes[stat]} ${STAT_LABELS[stat]}`)),
 	);
 
 	return el(`div.${cls}-card`, [
+		...labelEl,
 		emoji,
-		el(`div.${cls}-rarity`, `${item.rarity} · ${QUALITY_LABELS[item.quality]}`),
-		el(`div.${cls}-found`, `Cloud ${item.depth}`),
+		el(`div.${cls}-rarity`, `${QUALITY_LABELS[item.quality]} ${item.rarity}`),
+		el(`div.${cls}-found`, `Found on Cloud ${item.depth}`),
 		stats,
 		el(`div.${cls}-score-row`, [el(`div.${cls}-score`, `${getItemScore(item)}`), el(`div.${cls}-score-label`, "Sparkles")]),
 	]);

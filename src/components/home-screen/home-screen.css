@@ -19,6 +19,7 @@
 .home-actions.expanded {
 	flex: 1;
 	min-height: 0;
+	margin-top: 0;
 }
 
 .home-depth {
@@ -118,10 +119,6 @@
 }
 
 .home-feature-panel {
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 4px;
 	width: calc(100% + 24px);
 	margin-left: -12px;
 	margin-right: -12px;
@@ -154,6 +151,16 @@
 	min-height: 0;
 }
 
+.home-feature-panel-inner {
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: center;
+	gap: 4px;
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+}
+
 .home-loot-compare {
 	align-items: flex-start;
 	gap: 10px;
@@ -183,18 +190,27 @@
 .loot-card {
 	flex-direction: column;
 	align-items: center;
-	gap: 4px;
+	gap: 6px;
+}
+
+.loot-label {
+	font-size: 10px;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	opacity: 0.55;
 }
 
 .loot-emoji {
-	width: 56px;
-	height: 56px;
-	font-size: 30px;
+	width: 64px;
+	height: 64px;
+	font-size: 34px;
 	justify-content: center;
 	align-items: center;
 	border: 3px solid var(--shadow);
-	border-radius: 14px;
+	border-radius: 16px;
 	background-color: rgba(255, 255, 255, 0.05);
+	margin: 4px 0;
 }
 
 .loot-emoji.empty {
@@ -204,22 +220,22 @@
 }
 
 .loot-rarity {
-	display: block;
-	font-size: 12px;
+	font-size: 14px;
+	font-weight: bold;
 	text-transform: capitalize;
-	opacity: 0.85;
 }
 
 .loot-found {
-	display: block;
 	font-size: 10px;
 	opacity: 0.6;
+	margin-bottom: 4px;
 }
 
 .loot-stats {
-	display: block;
-	text-align: center;
-	font-size: 12px;
+	flex-direction: column;
+	align-items: flex-start;
+	font-size: 13px;
+	gap: 2px;
 }
 
 .loot-stat {
@@ -229,11 +245,11 @@
 .loot-score-row {
 	flex-direction: column;
 	align-items: center;
-	margin-top: 2px;
+	margin-top: 6px;
 }
 
 .loot-score {
-	font-size: 18px;
+	font-size: 22px;
 	font-weight: bold;
 	line-height: 1.1;
 }
