@@ -25,12 +25,46 @@ export const sounds = {
 };
 
 // cheerful looping melody (C major pentatonic) over a soft root-note bass -
-// two instruments (lead triangle, soft sine bass), one pattern, looped by zzfxP
+// two instruments (lead triangle, soft sine bass), one pattern, looped by
+// zzfxP. 4 bars (A-A'-B-A'') so it doesn't repeat as quickly, ends back on
+// the root note (C) to match the opening note, and closes with two rest
+// steps so the last note's release fully decays before the loop wraps
+// (avoids a click/pop at the seam - the previous 1-bar version cut the
+// tail off mid-release)
 const leadInstrument = [musicVolume * 0.5, 0, 220, , 0.02, 0.3, 1, 1.2, , , , , , , , , , 0.85, 0.02];
 const bassInstrument = [musicVolume * 0.6, 0, 110, , 0.05, 0.4, , 0.9, , , , , , , , , , 0.9, 0.04];
 
-const leadPattern = [, , 12, , 16, , 19, , 21, , 19, , 16, , 14, , 12, , 14, , 16, , 19, , 21, , 24, , 21, , 19, , 16];
-const bassPattern = [, , 12, , , , , , 19, , , , , , , , 14, , , , , , , , 12, , , , , , , ,];
+const C = 12,
+	D = 14,
+	E = 16,
+	F = 17,
+	G = 19,
+	A = 21,
+	C5 = 24;
+
+// each note plays for 2 sixteenth-steps (note, then a rest step) so both
+// channels line up on the same step count
+function buildSteps(notes: (number | undefined)[]): (number | undefined)[] {
+	return [, , ...notes.flatMap((n) => [n, undefined])];
+}
+
+const leadNotes = [
+	C, E, G, A, G, E, D, C, // bar A
+	D, E, G, A, C5, A, G, E, // bar A'
+	G, A, C5, A, G, E, D, E, // bar B
+	C, D, E, G, A, G, E, C, // bar A'' - ends on root, matches opening note
+	, , // trailing rest so the final note's release fully decays before the loop wraps
+];
+const bassNotes = [
+	C, , , , G, , , , // bar A: root, fifth
+	D, , , , G, , , , // bar A'
+	F, , , , C, , , , // bar B (subdominant colour)
+	C, , , , C, , , , // bar A'' - settle back on root for the loop
+	, , // trailing rest, matches lead's tail
+];
+
+const leadPattern = buildSteps(leadNotes);
+const bassPattern = buildSteps(bassNotes);
 
 export const music = zzfxM([leadInstrument, bassInstrument], [[leadPattern, bassPattern]], [0], 110);
 
