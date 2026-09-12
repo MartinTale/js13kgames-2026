@@ -42,16 +42,26 @@
 }
 
 .home-drop-rates {
-	flex-direction: column;
-	gap: 6px;
+	display: grid;
+	grid-template-columns: auto auto;
+	column-gap: 16px;
+	row-gap: 8px;
 	width: 100%;
+	justify-content: center;
 }
 
 .home-drop-rate-row {
-	justify-content: space-between;
-	width: 100%;
+	display: contents;
 	font-weight: bold;
 	text-transform: capitalize;
+}
+
+.home-drop-rate-label {
+	text-align: left;
+}
+
+.home-drop-rate-value {
+	text-align: right;
 }
 
 .home-dust {

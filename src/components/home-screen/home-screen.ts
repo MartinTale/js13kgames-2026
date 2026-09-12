@@ -63,7 +63,7 @@ export class HomeScreen {
 		const upgradeInfo = infoButton(this.container, "Magic Dust", () =>
 			el(
 				"p",
-				"Every battle earns Magic Dust, win or lose. Spend it to upgrade an equipped item, boosting all of its stats. Cost rises each time you upgrade the same item.",
+				"Earned every battle, win or lose. Spend it to boost an item's stats - each upgrade costs more.",
 			),
 		);
 		const dustRow = el("div.home-dust", [
