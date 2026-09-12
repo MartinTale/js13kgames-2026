@@ -22,7 +22,6 @@ export class HomeScreen {
 	private featurePanelInner: HTMLElement;
 	private battleScreen: BattleScreen;
 	private buttonSlot: HTMLElement;
-	private actions: HTMLElement;
 
 	constructor(
 		private container: HTMLElement,
@@ -58,29 +57,14 @@ export class HomeScreen {
 		});
 		const inventoryPanel = el("div.home-inventory-panel", this.slots);
 
-		this.actions = el("div.home-actions", [
-			this.featurePanel,
-			depthRow,
-			statsPanel,
-			inventoryPanel,
-			this.buttonSlot,
-		]);
+		const actions = el("div.home-actions", [this.featurePanel, depthRow, statsPanel, inventoryPanel, this.buttonSlot]);
 
-		this.element = el("div.home-screen", [this.actions]);
+		this.element = el("div.home-screen", [actions]);
 	}
 
-	private panelExpanded = false;
-
-	// fades the panel's current content out (skipped if the panel isn't visible yet -
-	// there's nothing to fade from), swaps it, expands/keeps the panel sized, then
-	// fades the new content in - one continuous transition, no size-then-content jump
+	// the panel is always full size; only its content fades. Fades the current
+	// content out (skipped when empty - nothing to fade from), swaps, fades in.
 	private crossfadeContent(content: HTMLElement | HTMLElement[]): Promise<void> {
-		const wasExpanded = this.panelExpanded;
-
-		this.featurePanel.classList.add("active");
-		this.actions.classList.add("expanded");
-		this.panelExpanded = true;
-
 		return new Promise((resolve) => {
 			const swap = () => {
 				this.featurePanelInner.replaceChildren(...(Array.isArray(content) ? content : [content]));
@@ -93,7 +77,7 @@ export class HomeScreen {
 				fadeIn.onfinish = () => resolve();
 			};
 
-			if (!wasExpanded) {
+			if (!this.featurePanelInner.hasChildNodes()) {
 				swap();
 				return;
 			}
@@ -107,11 +91,9 @@ export class HomeScreen {
 		});
 	}
 
-	// fades the panel's current content out to empty - no fade-in, since the panel
-	// collapses right after; a no-op if the panel isn't showing anything
+	// fades the current content out and leaves the panel empty (still full size)
 	private fadeOutContent(): Promise<void> {
-		if (!this.panelExpanded) {
-			this.featurePanelInner.replaceChildren();
+		if (!this.featurePanelInner.hasChildNodes()) {
 			return Promise.resolve();
 		}
 
@@ -128,12 +110,6 @@ export class HomeScreen {
 		});
 	}
 
-	private collapsePanel() {
-		this.featurePanel.classList.remove("active");
-		this.actions.classList.remove("expanded");
-		this.panelExpanded = false;
-	}
-
 	// runs a battle inline in the feature panel above the cloud; once the fight
 	// resolves, shows Continue in the button slot and resolves the outcome on tap
 	async runBattle(): Promise<boolean> {
@@ -147,10 +123,9 @@ export class HomeScreen {
 		});
 	}
 
-	// fades the panel content out, then collapses it and restores the Magic button
+	// fades the panel content out and restores the Magic button
 	async hideBattle() {
 		await this.fadeOutContent();
-		this.collapsePanel();
 		this.buttonSlot.replaceChildren(this.magicButton);
 	}
 
@@ -226,11 +201,9 @@ export class HomeScreen {
 		this.buttonSlot.replaceChildren(el("div.home-loot-choice", [keepButton, equipButton]));
 	}
 
-	// fades the panel content out, then collapses it, clears the slot
-	// highlight, and restores the Magic button
+	// fades the panel content out, clears the slot highlight, and restores the Magic button
 	async hideLoot() {
 		await this.fadeOutContent();
-		this.collapsePanel();
 		this.slots.forEach((slot) => slot.classList.remove("dimmed", "highlighted"));
 		this.buttonSlot.replaceChildren(this.magicButton);
 	}

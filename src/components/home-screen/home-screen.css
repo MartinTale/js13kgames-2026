@@ -3,24 +3,22 @@
 	justify-content: flex-end;
 	align-items: center;
 	flex: 1;
+	min-height: 0;
+	overflow: hidden;
 	width: 100%;
 	box-sizing: border-box;
 }
 
 .home-actions {
+	flex: 1;
+	min-height: 0;
 	flex-direction: column;
 	align-items: center;
 	gap: 4px;
 	width: 100%;
 	box-sizing: border-box;
 	padding: 0 12px;
-	margin: 16px 0 20px;
-}
-
-.home-actions.expanded {
-	flex: 1;
-	min-height: 0;
-	margin-top: 0;
+	margin: 0 0 20px;
 }
 
 .home-depth {
@@ -119,28 +117,19 @@
 	gap: 8px;
 }
 
+/* always takes all free space above the cloud, so battle, loot, and the idle
+   empty state are the same size and content only ever crossfades in place */
 .home-feature-panel {
 	width: calc(100% + 24px);
-	margin-left: -12px;
-	margin-right: -12px;
+	margin: 0 -12px 12px;
 	box-sizing: border-box;
-	flex: 0 0 auto;
-	max-height: 0;
-	padding: 0 14px;
+	flex: 1 1 auto;
+	min-height: 0;
+	padding: 14px;
 	overflow: hidden;
-	opacity: 0;
 	border-radius: 0;
 	background-color: rgba(0, 0, 0, 0.2);
 	box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.45);
-}
-
-.home-feature-panel.active {
-	flex: 1 1 auto;
-	max-height: none;
-	min-height: 0;
-	opacity: 1;
-	padding: 14px;
-	margin-bottom: 12px;
 }
 
 .home-feature-panel-inner {
