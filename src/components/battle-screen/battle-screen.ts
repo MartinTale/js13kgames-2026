@@ -2,7 +2,6 @@ import "./battle-screen.css";
 import { el } from "../../helpers/dom";
 import { combatTick, CombatEvent, createPlayerFighter, createStormling } from "../../systems/combat";
 import { state } from "../../systems/state";
-import { createButton } from "../button/button";
 
 const TICK_MS = 400;
 
@@ -13,6 +12,7 @@ export class BattleScreen {
 		this.element = el("div.combat-view");
 	}
 
+	// calls onDone(won) once the fight resolves - the log stays visible, caller decides when to move on
 	run(onDone: (won: boolean) => void) {
 		this.element.replaceChildren();
 
@@ -38,8 +38,22 @@ export class BattleScreen {
 			enemyHpText.textContent = `${Math.max(0, enemy.hp)}/${enemy.maxHp}`;
 		};
 
+		let round = 0;
+		let roundBody: HTMLElement | null = null;
+
+		// starts a new "Round N" block, so each player+enemy exchange reads as
+		// one visually separated group in the log
+		const startRound = () => {
+			round++;
+			roundBody = el("div.combat-round-body");
+			log.append(el("div.combat-round", [el("div.combat-round-label", `Round ${round}`), roundBody]));
+			log.scrollTop = log.scrollHeight;
+		};
+
+		// intro/outro lines render loose, above/after the round blocks
 		const logLine = (text: string, cls = "") => {
-			log.append(el(`div.combat-line${cls ? "." + cls : ""}`, text));
+			const target = roundBody ?? log;
+			target.append(el(`div.combat-line${cls ? "." + cls : ""}`, text));
 			log.scrollTop = log.scrollHeight;
 		};
 
@@ -48,6 +62,8 @@ export class BattleScreen {
 
 		let playerActs = true;
 		const interval = setInterval(() => {
+			if (playerActs) startRound();
+
 			const event: CombatEvent | null = combatTick(player, enemy, playerActs);
 			playerActs = !playerActs;
 
@@ -57,10 +73,7 @@ export class BattleScreen {
 				logLine(won ? `${enemy.name} is defeated!` : `You were defeated...`, won ? "win" : "loss");
 				updateBars();
 
-				setTimeout(() => {
-					const continueButton = createButton("Continue", () => onDone(won), "primary", "md");
-					this.element.append(el("div.combat-continue", continueButton));
-				}, 600);
+				onDone(won);
 				return;
 			}
 

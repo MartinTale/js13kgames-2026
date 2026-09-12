@@ -21,6 +21,7 @@ export class HomeScreen {
 	private featurePanel: HTMLElement;
 	private battleScreen: BattleScreen;
 	private buttonSlot: HTMLElement;
+	private actions: HTMLElement;
 
 	constructor(
 		private container: HTMLElement,
@@ -55,7 +56,7 @@ export class HomeScreen {
 		});
 		const inventoryPanel = el("div.home-inventory-panel", this.slots);
 
-		const actions = el("div.home-actions", [
+		this.actions = el("div.home-actions", [
 			this.featurePanel,
 			depthRow,
 			statsPanel,
@@ -63,23 +64,36 @@ export class HomeScreen {
 			this.buttonSlot,
 		]);
 
-		this.element = el("div.home-screen", [actions]);
+		this.element = el("div.home-screen", [this.actions]);
 	}
 
-	// runs a battle inline in the feature panel above the cloud; resolves with the outcome
+	private expandPanel() {
+		this.featurePanel.classList.add("active", "grown");
+		this.actions.classList.add("expanded");
+	}
+
+	private collapsePanel() {
+		this.featurePanel.classList.remove("active", "grown");
+		this.actions.classList.remove("expanded");
+	}
+
+	// runs a battle inline in the feature panel above the cloud; once the fight
+	// resolves, shows Continue in the button slot and resolves the outcome on tap
 	runBattle(): Promise<boolean> {
 		this.buttonSlot.replaceChildren();
 		this.featurePanel.replaceChildren(this.battleScreen.element);
-		this.featurePanel.classList.add("active");
+		this.expandPanel();
 
 		return new Promise((resolve) => {
-			this.battleScreen.run((won) => resolve(won));
+			this.battleScreen.run((won) => {
+				this.buttonSlot.replaceChildren(createButton("Continue", () => resolve(won), "primary", "md"));
+			});
 		});
 	}
 
 	// clears the feature panel and restores the Magic button
 	hideBattle() {
-		this.featurePanel.classList.remove("active");
+		this.collapsePanel();
 		this.featurePanel.replaceChildren();
 		this.buttonSlot.replaceChildren(this.magicButton);
 	}
@@ -137,7 +151,7 @@ export class HomeScreen {
 
 		if (!currentItem) {
 			this.featurePanel.replaceChildren(createItemCard(item, "loot"));
-			this.featurePanel.classList.add("active");
+			this.expandPanel();
 			this.buttonSlot.replaceChildren(createButton("Equip", () => onResolved(true), "primary", "md"));
 			return;
 		}
@@ -149,7 +163,7 @@ export class HomeScreen {
 				el("div.home-loot-side", [el("span.home-loot-side-label", "New"), createItemCard(item, "loot")]),
 			]),
 		);
-		this.featurePanel.classList.add("active");
+		this.expandPanel();
 
 		const keepButton = createButton("Keep", () => onResolved(false), "normal", "md");
 		const equipButton = createButton("Equip", () => onResolved(true), "primary", "md");
@@ -158,7 +172,7 @@ export class HomeScreen {
 
 	// clears the feature panel/highlight and restores the Magic button
 	hideLoot() {
-		this.featurePanel.classList.remove("active");
+		this.collapsePanel();
 		this.featurePanel.replaceChildren();
 		this.slots.forEach((slot) => slot.classList.remove("dimmed", "highlighted"));
 
