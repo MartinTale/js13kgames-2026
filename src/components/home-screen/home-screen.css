@@ -91,12 +91,11 @@
 }
 
 .home-slot.dimmed {
-	opacity: 0.25;
+	opacity: 0.1;
 }
 
 .home-slot.highlighted {
 	opacity: 1;
-	transform: scale(1.25);
 	z-index: 1;
 	box-shadow: 0 0 12px 2px var(--shadow);
 }
