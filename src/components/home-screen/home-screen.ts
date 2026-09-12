@@ -5,7 +5,6 @@ import { CLOUD_SVG } from "../progress-bar/progress-bar";
 import { state } from "../../systems/state";
 import { createItemCard, Item, RARITY_COLORS, STAT_LABELS, STATS } from "../../systems/items";
 import { getInventoryStats } from "../../systems/combat";
-import { openModal } from "../modal/modal";
 import { playSound, sounds } from "../../systems/music";
 import { BattleScreen } from "../battle-screen/battle-screen";
 
@@ -22,11 +21,10 @@ export class HomeScreen {
 	private featurePanelInner: HTMLElement;
 	private battleScreen: BattleScreen;
 	private buttonSlot: HTMLElement;
+	private idle = true;
+	private viewingSlot: number | null = null;
 
-	constructor(
-		private container: HTMLElement,
-		onMagic: () => void,
-	) {
+	constructor(onMagic: () => void) {
 		this.magicButton = createButton("Magic", onMagic, "primary", "md", true, 18, 1.5);
 		this.buttonSlot = el("div.home-button-slot", this.magicButton);
 
@@ -115,6 +113,11 @@ export class HomeScreen {
 	// and can't be double-tapped. Once the fight resolves, shows Continue and
 	// resolves the outcome on tap
 	async runBattle(): Promise<boolean> {
+		this.idle = false;
+		if (this.viewingSlot !== null) {
+			this.slots[this.viewingSlot].classList.remove("highlighted");
+			this.viewingSlot = null;
+		}
 		await this.crossfadeContent(this.battleScreen.element);
 		this.buttonSlot.replaceChildren();
 
@@ -129,6 +132,7 @@ export class HomeScreen {
 	async hideBattle() {
 		await this.fadeOutContent();
 		this.buttonSlot.replaceChildren(this.magicButton);
+		this.idle = true;
 	}
 
 	setMagicEnabled(enabled: boolean) {
@@ -177,6 +181,7 @@ export class HomeScreen {
 	// crossfades to the found item (or a keep/equip choice vs the occupied slot)
 	// in the feature panel above the cloud, dimming every slot but the target
 	async showLoot(slotIndex: number, item: Item, onResolved: (equip: boolean) => void) {
+		this.idle = false;
 		const currentItem = state.inventory.value[slotIndex];
 
 		this.slots.forEach((slot, index) => slot.classList.toggle("dimmed", index !== slotIndex));
@@ -186,7 +191,7 @@ export class HomeScreen {
 
 		if (!currentItem) {
 			await this.crossfadeContent(createItemCard(item, "loot"));
-			this.buttonSlot.replaceChildren(createButton("Equip", () => onResolved(true), "success", "md"));
+			this.buttonSlot.replaceChildren(createButton("Equip New", () => onResolved(true), "success", "md"));
 			return;
 		}
 
@@ -202,7 +207,7 @@ export class HomeScreen {
 		);
 
 		const keepButton = createButton("Keep Old", () => onResolved(false), "normal", "md");
-		const equipButton = createButton("Equip", () => onResolved(true), "success", "md");
+		const equipButton = createButton("Equip New", () => onResolved(true), "success", "md");
 		this.buttonSlot.replaceChildren(el("div.home-loot-choice", [keepButton, equipButton]));
 	}
 
@@ -211,6 +216,7 @@ export class HomeScreen {
 		await this.fadeOutContent();
 		this.slots.forEach((slot) => slot.classList.remove("dimmed", "highlighted"));
 		this.buttonSlot.replaceChildren(this.magicButton);
+		this.idle = true;
 	}
 
 	private refreshSlot(index: number) {
@@ -223,10 +229,24 @@ export class HomeScreen {
 		slot.style.borderColor = item ? RARITY_COLORS[item.rarity] : "";
 	}
 
-	private openSlot(index: number) {
+	// idle only: tapping a filled slot opens it inline in the feature panel;
+	// tapping the same slot again (or any slot while empty) closes it
+	private async openSlot(index: number) {
+		if (!this.idle) return;
+
 		const item = state.inventory.value[index];
 		if (!item) return;
 
-		openModal(this.container, "Item", createItemCard(item, "loot"), [], null);
+		if (this.viewingSlot === index) {
+			this.viewingSlot = null;
+			this.slots[index].classList.remove("highlighted");
+			await this.fadeOutContent();
+			return;
+		}
+
+		if (this.viewingSlot !== null) this.slots[this.viewingSlot].classList.remove("highlighted");
+		this.viewingSlot = index;
+		this.slots[index].classList.add("highlighted");
+		await this.crossfadeContent(createItemCard(item, "loot"));
 	}
 }

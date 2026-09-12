@@ -42,12 +42,9 @@ const QUALITY_TABLE_BOOSTED: Record<Quality, [number, number, number, number]> =
 };
 
 // Unicode 13-safe (2020 or earlier) so glyphs render consistently across browsers;
-// shared across all rarities - border color + glow communicate rarity/quality, not the emoji
-const EMOJI_POOL = [
-	"☁️", "🍀", "🌙", "🐚", "🌸", "🍯", "🌤️", "🌱", "💧", "🍃",
-	"⭐", "🧿", "🔮", "🪄", "❄️", "🔥", "🌊", "🌻", "🦋", "🎐",
-	"🌈", "🦄", "✨", "💎", "⚡", "👑", "🌟", "🔱", "🪐", "🎇",
-];
+// shared across all rarities - border color + glow communicate rarity/quality, not the emoji.
+// Unicorn/rainbow themed, purely cosmetic - not tied to any particular stat
+const EMOJI_POOL = ["🦄", "🌈", "☁️", "✨", "⭐", "💖", "🍀", "🔮"];
 
 export type Item = {
 	emoji: string;

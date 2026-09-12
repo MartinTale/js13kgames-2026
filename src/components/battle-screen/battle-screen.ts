@@ -84,10 +84,13 @@ export class BattleScreen {
 			}
 
 			if (event.dodged) {
-				logLine(`${event.defender} dodges ${event.attacker}'s attack!`);
+				const verb = event.defender === "You" ? "dodge" : "dodges";
+				const possessive = event.attacker === "You" ? "your" : `${event.attacker}'s`;
+				logLine(`${event.defender} ${verb} ${possessive} attack!`);
 			} else {
+				const verb = event.attacker === "You" ? "hit" : "hits";
 				logLine(
-					`${event.attacker} hits ${event.defender} for ${event.damage}${event.crit ? " (crit!)" : ""}`,
+					`${event.attacker} ${verb} ${event.defender} for ${event.damage}${event.crit ? " (crit!)" : ""}`,
 					event.crit ? "crit" : "",
 				);
 			}
