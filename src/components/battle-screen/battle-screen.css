@@ -71,3 +71,8 @@
 	font-weight: bold;
 	margin-top: 4px;
 }
+
+.combat-continue {
+	justify-content: center;
+	margin-top: 10px;
+}

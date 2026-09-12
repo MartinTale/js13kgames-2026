@@ -2,6 +2,7 @@ import "./battle-screen.css";
 import { el } from "../../helpers/dom";
 import { combatTick, CombatEvent, createPlayerFighter, createStormling } from "../../systems/combat";
 import { state } from "../../systems/state";
+import { createButton } from "../button/button";
 
 const TICK_MS = 400;
 
@@ -56,7 +57,10 @@ export class BattleScreen {
 				logLine(won ? `${enemy.name} is defeated!` : `You were defeated...`, won ? "win" : "loss");
 				updateBars();
 
-				setTimeout(() => onDone(won), 1200);
+				setTimeout(() => {
+					const continueButton = createButton("Continue", () => onDone(won), "primary", "md");
+					this.element.append(el("div.combat-continue", continueButton));
+				}, 600);
 				return;
 			}
 
