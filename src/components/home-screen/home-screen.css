@@ -125,6 +125,7 @@
 }
 
 .home-button-slot {
+	position: relative;
 	min-height: 44px;
 }
 
@@ -133,14 +134,18 @@
 }
 
 .home-item-view-actions {
-	flex-direction: column;
-	align-items: center;
-	gap: 4px;
+	position: relative;
 }
 
 .home-upgrade-cost {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	margin-top: 4px;
 	font-size: 10px;
 	opacity: 0.7;
+	white-space: nowrap;
 }
 
 /* always takes all free space above the cloud, so battle, loot, and the idle
