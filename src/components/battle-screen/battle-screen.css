@@ -18,7 +18,8 @@
 	align-items: stretch;
 	width: 100%;
 	box-sizing: border-box;
-	background: oklch(from var(--bg) l c h / 0.92);
+	padding-bottom: 12px;
+	background: rgba(0, 0, 0, 0.2);
 	z-index: 1;
 }
 
@@ -26,7 +27,7 @@
 	flex-direction: column;
 	align-items: stretch;
 	width: 100%;
-	margin-bottom: 8px;
+	margin-bottom: 14px;
 }
 
 .hp-label {
@@ -34,7 +35,7 @@
 	align-items: baseline;
 	width: 100%;
 	font-size: 13px;
-	margin-bottom: 4px;
+	margin-bottom: 6px;
 }
 
 .hp-track {

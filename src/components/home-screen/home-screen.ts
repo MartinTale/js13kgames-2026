@@ -107,6 +107,27 @@ export class HomeScreen {
 		});
 	}
 
+	// fades the panel's current content out to empty - no fade-in, since the panel
+	// collapses right after; a no-op if the panel isn't showing anything
+	private fadeOutContent(): Promise<void> {
+		if (!this.panelExpanded) {
+			this.featurePanelInner.replaceChildren();
+			return Promise.resolve();
+		}
+
+		return new Promise((resolve) => {
+			const fadeOut = this.featurePanelInner.animate([{ opacity: 1 }, { opacity: 0 }], {
+				duration: 180,
+				easing: "ease",
+				fill: "forwards",
+			});
+			fadeOut.onfinish = () => {
+				this.featurePanelInner.replaceChildren();
+				resolve();
+			};
+		});
+	}
+
 	private collapsePanel() {
 		this.featurePanel.classList.remove("active");
 		this.actions.classList.remove("expanded");
@@ -126,10 +147,10 @@ export class HomeScreen {
 		});
 	}
 
-	// clears the feature panel and restores the Magic button
-	hideBattle() {
+	// fades the panel content out, then collapses it and restores the Magic button
+	async hideBattle() {
+		await this.fadeOutContent();
 		this.collapsePanel();
-		this.featurePanelInner.replaceChildren();
 		this.buttonSlot.replaceChildren(this.magicButton);
 	}
 
@@ -205,12 +226,12 @@ export class HomeScreen {
 		this.buttonSlot.replaceChildren(el("div.home-loot-choice", [keepButton, equipButton]));
 	}
 
-	// clears the feature panel/highlight and restores the Magic button
-	hideLoot() {
+	// fades the panel content out, then collapses it, clears the slot
+	// highlight, and restores the Magic button
+	async hideLoot() {
+		await this.fadeOutContent();
 		this.collapsePanel();
-		this.featurePanelInner.replaceChildren();
 		this.slots.forEach((slot) => slot.classList.remove("dimmed", "highlighted"));
-
 		this.buttonSlot.replaceChildren(this.magicButton);
 	}
 
