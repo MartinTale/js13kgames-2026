@@ -65,7 +65,9 @@ export function createPlayerFighter(inventory: (Item | null)[], depth: number): 
 
 export function createStormling(depth: number): Fighter {
 	const name = STORMLINGS[randomInteger(0, STORMLINGS.length - 1)];
-	const scale = 1 + (depth - 1) * 0.15;
+	// gentle compounding on top of the linear terms below - a higher rate here
+	// double-counts depth growth and outpaces player gear power by ~depth 20
+	const scale = 1 + (depth - 1) * 0.08;
 
 	return {
 		name,

@@ -69,6 +69,18 @@ export class HomeScreen {
 		]);
 
 		this.element = el("div.home-screen", [actions]);
+
+		// tapping anywhere outside the inventory grid/feature panel closes the
+		// open item view - only relevant while idle, since that's the only
+		// time openSlot can have set viewingSlot
+		this.element.addEventListener("click", (e) => {
+			if (this.viewingSlot === null) return;
+			const target = e.target as HTMLElement;
+			if (inventoryPanel.contains(target) || this.featurePanel.contains(target) || this.buttonSlot.contains(target)) {
+				return;
+			}
+			this.closeItemView();
+		});
 	}
 
 	// the panel is always full size; only its content fades. Fades the current
@@ -255,8 +267,8 @@ export class HomeScreen {
 
 	// idle only: tapping a filled slot opens it inline in the feature panel
 	// (dimming every other slot, like the loot/diff view), with an Upgrade
-	// action spending Magic Dust; tapping the same slot again (or any slot
-	// while empty) closes it
+	// action spending Magic Dust; tapping the same slot again, tapping outside
+	// the inventory/feature panel, or emptying the inventory closes it
 	private async openSlot(index: number) {
 		if (!this.idle) return;
 
@@ -264,10 +276,7 @@ export class HomeScreen {
 		if (!item) return;
 
 		if (this.viewingSlot === index) {
-			this.viewingSlot = null;
-			this.slots.forEach((slot) => slot.classList.remove("dimmed", "highlighted"));
-			this.buttonSlot.replaceChildren(this.magicButton);
-			await this.fadeOutContent();
+			await this.closeItemView();
 			return;
 		}
 
@@ -276,6 +285,13 @@ export class HomeScreen {
 		this.slots[index].classList.add("highlighted");
 		await this.crossfadeContent(createItemCard(item, "loot"));
 		this.renderUpgradeAction(index);
+	}
+
+	private async closeItemView() {
+		this.viewingSlot = null;
+		this.slots.forEach((slot) => slot.classList.remove("dimmed", "highlighted"));
+		this.buttonSlot.replaceChildren(this.magicButton);
+		await this.fadeOutContent();
 	}
 
 	// shows the Upgrade button for the item currently being viewed, spending
