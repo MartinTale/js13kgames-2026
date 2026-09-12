@@ -21,7 +21,7 @@ export const RARITY_COLORS: Record<Rarity, string> = {
 };
 // total stats on the item: 1 guaranteed primary + N bonus stats by rarity
 const RARITY_BONUS_STATS: Record<Rarity, number> = { common: 0, rare: 1, epic: 2, legendary: 3 };
-const RARITY_WEIGHTS: Record<Rarity, number> = { common: 65, rare: 27, epic: 7.5, legendary: 0.5 };
+const RARITY_WEIGHTS: Record<Rarity, number> = { common: 60, rare: 30, epic: 9, legendary: 1 };
 const RARITY_WEIGHTS_BOOSTED: Record<Rarity, number> = { common: 28, rare: 44, epic: 24, legendary: 4 };
 
 export type AbilityId = "lifesteal" | "thorns" | "secondWind";
