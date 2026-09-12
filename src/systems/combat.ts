@@ -1,5 +1,5 @@
 import { randomInteger } from "../helpers/numbers";
-import { Item, Stat, STATS } from "./items";
+import { AbilityId, Item, Stat, STATS } from "./items";
 
 export const BASE_HP = 100;
 
@@ -13,6 +13,8 @@ export type Fighter = {
 	critDamage: number;
 	dodge: number;
 	depth: number;
+	abilities: AbilityId[];
+	usedSecondWind?: boolean;
 };
 
 const STORMLINGS = ["Thunderhead", "Sleetfang", "Grimcloud", "Hailmane", "Fogspite", "Squallhorn"];
@@ -49,6 +51,7 @@ const BASE_PLAYER_POWER = 12;
 
 export function createPlayerFighter(inventory: (Item | null)[], depth: number): Fighter {
 	const stats = getInventoryStats(inventory);
+	const abilities = inventory.filter((item): item is Item => !!item?.ability).map((item) => item.ability!);
 
 	return {
 		name: "You",
@@ -60,6 +63,7 @@ export function createPlayerFighter(inventory: (Item | null)[], depth: number): 
 		critDamage: 1.5 + stats.critDamage / 20,
 		dodge: softCap(stats.dodge, DODGE_K, DODGE_CAP),
 		depth,
+		abilities,
 	};
 }
 
@@ -79,6 +83,7 @@ export function createStormling(depth: number): Fighter {
 		critDamage: 1.5,
 		dodge: softCap(depth * 8, DODGE_K, DODGE_CAP),
 		depth,
+		abilities: [],
 	};
 }
 
@@ -94,7 +99,19 @@ export function getEffectiveStats(totals: Record<Stat, number>, depth: number) {
 	};
 }
 
-export type CombatEvent = { attacker: string; defender: string; damage: number; crit: boolean; dodged: boolean };
+const LIFESTEAL_PCT = 0.15;
+const THORNS_PCT = 0.2;
+
+export type CombatEvent = {
+	attacker: string;
+	defender: string;
+	damage: number;
+	crit: boolean;
+	dodged: boolean;
+	healed?: number;
+	reflected?: number;
+	savedByAbility?: boolean;
+};
 
 function resolveHit(attacker: Fighter, defender: Fighter): CombatEvent {
 	const dodged = randomInteger(1, 10000) / 100 <= defender.dodge;
@@ -106,11 +123,35 @@ function resolveHit(attacker: Fighter, defender: Fighter): CombatEvent {
 	const crit = randomInteger(1, 10000) / 100 <= attacker.crit;
 	const defReduction = softCap(defender.guard, DEF_K_PER_DEPTH * Math.max(1, defender.depth), 100) / 100;
 	const rawDamage = Math.max(1, attacker.power * (1 - defReduction));
-	const damage = Math.max(1, Math.round(crit ? rawDamage * attacker.critDamage : rawDamage));
+	let damage = Math.max(1, Math.round(crit ? rawDamage * attacker.critDamage : rawDamage));
+
+	// Second Wind: if this hit would be lethal and hasn't been used yet this
+	// battle, survive at 1 HP instead
+	let savedByAbility = false;
+	if (defender.abilities.includes("secondWind") && !defender.usedSecondWind && damage >= defender.hp) {
+		damage = defender.hp - 1;
+		defender.usedSecondWind = true;
+		savedByAbility = true;
+	}
 
 	defender.hp = Math.max(0, defender.hp - damage);
 
-	return { attacker: attacker.name, defender: defender.name, damage, crit, dodged: false };
+	const healed = attacker.abilities.includes("lifesteal") ? Math.round(damage * LIFESTEAL_PCT) : 0;
+	if (healed > 0) attacker.hp = Math.min(attacker.maxHp, attacker.hp + healed);
+
+	const reflected = defender.abilities.includes("thorns") ? Math.round(damage * THORNS_PCT) : 0;
+	if (reflected > 0) attacker.hp = Math.max(0, attacker.hp - reflected);
+
+	return {
+		attacker: attacker.name,
+		defender: defender.name,
+		damage,
+		crit,
+		dodged: false,
+		healed: healed || undefined,
+		reflected: reflected || undefined,
+		savedByAbility: savedByAbility || undefined,
+	};
 }
 
 // alternates attacker each tick; returns null once one side is defeated

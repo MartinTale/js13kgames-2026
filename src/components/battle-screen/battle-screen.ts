@@ -106,6 +106,10 @@ export class BattleScreen {
 					event.crit ? "crit" : "",
 				);
 				playSound(event.crit ? sounds.crit : sounds.hit);
+
+				if (event.savedByAbility) logLine(`${event.defender} survives with Second Wind!`, "ability");
+				if (event.healed) logLine(`${event.attacker} heals ${event.healed} from Vampiric`, "ability");
+				if (event.reflected) logLine(`${event.attacker} takes ${event.reflected} from Thorned`, "ability");
 			}
 
 			updateBars();

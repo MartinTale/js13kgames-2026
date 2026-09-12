@@ -12,16 +12,25 @@ export const STAT_LABELS: Record<Stat, string> = {
 	vitality: "HP",
 };
 
-export type Rarity = "common" | "rare" | "epic";
+export type Rarity = "common" | "rare" | "epic" | "legendary";
 export const RARITY_COLORS: Record<Rarity, string> = {
 	common: "#9CA3AF",
 	rare: "#8FD9FF",
 	epic: "#C896FF",
+	legendary: "#FFB84D",
 };
 // total stats on the item: 1 guaranteed primary + N bonus stats by rarity
-const RARITY_BONUS_STATS: Record<Rarity, number> = { common: 0, rare: 1, epic: 2 };
-const RARITY_WEIGHTS: Record<Rarity, number> = { common: 65, rare: 27, epic: 8 };
-const RARITY_WEIGHTS_BOOSTED: Record<Rarity, number> = { common: 30, rare: 45, epic: 25 };
+const RARITY_BONUS_STATS: Record<Rarity, number> = { common: 0, rare: 1, epic: 2, legendary: 3 };
+const RARITY_WEIGHTS: Record<Rarity, number> = { common: 65, rare: 27, epic: 7.5, legendary: 0.5 };
+const RARITY_WEIGHTS_BOOSTED: Record<Rarity, number> = { common: 28, rare: 44, epic: 24, legendary: 4 };
+
+export type AbilityId = "lifesteal" | "thorns" | "secondWind";
+export const ABILITIES: Record<AbilityId, { name: string; description: string }> = {
+	lifesteal: { name: "Vampiric", description: "Heal 15% of damage you deal" },
+	thorns: { name: "Thorned", description: "Reflect 20% of damage you take" },
+	secondWind: { name: "Second Wind", description: "Survive one killing blow per battle at 1 HP" },
+};
+const ABILITY_IDS = Object.keys(ABILITIES) as AbilityId[];
 
 export type Quality = "dull" | "shiny" | "glowing" | "radiant" | "iridescent" | "prismatic";
 // [minRoll, maxRoll, statMultiplier, weight]
@@ -56,6 +65,7 @@ export type Item = {
 	primaryStat: Stat;
 	affixes: Partial<Record<Stat, number>>;
 	upgradeLevel: number;
+	ability?: AbilityId;
 };
 
 function weightedPick<key extends string>(weights: Record<key, number>): key {
@@ -115,7 +125,7 @@ export function generateItem(depth: number): Item {
 	const [minRoll, maxRoll, statMultiplier] = QUALITY_TABLE[quality];
 	const qualityRoll = randomInteger(minRoll, maxRoll);
 	const bonusCount = RARITY_BONUS_STATS[rarity];
-	const rarityMultiplier = rarity === "common" ? 1 : rarity === "rare" ? 1.5 : 2.2;
+	const rarityMultiplier = { common: 1, rare: 1.5, epic: 2.2, legendary: 3 }[rarity];
 	const baseMin = 2 + depth * 0.6;
 	const baseMax = 4 + depth * 1.1;
 
@@ -133,8 +143,9 @@ export function generateItem(depth: number): Item {
 	}
 
 	const emoji = EMOJI_POOL[randomInteger(0, EMOJI_POOL.length - 1)];
+	const ability = rarity === "legendary" ? ABILITY_IDS[randomInteger(0, ABILITY_IDS.length - 1)] : undefined;
 
-	return { emoji, rarity, quality, qualityRoll, depth, primaryStat, affixes, upgradeLevel: 0 };
+	return { emoji, rarity, quality, qualityRoll, depth, primaryStat, affixes, upgradeLevel: 0, ability };
 }
 
 export function getItemScore(item: Item | null): number {
@@ -220,15 +231,28 @@ export function createItemCard(
 		else if (score < compareScore) scoreEl.classList.add("stat-down");
 	}
 
+	const rarityEl = el(
+		`div.${cls}-rarity`,
+		`${item.rarity} (${item.qualityRoll}%)${item.upgradeLevel > 0 ? ` +${item.upgradeLevel}` : ""}`,
+	);
+	rarityEl.style.color = RARITY_COLORS[item.rarity];
+
+	const abilityEl = item.ability
+		? [
+				el(`div.${cls}-ability`, [
+					el("span.ability-name", `${ABILITIES[item.ability].name}: `),
+					el("span", ABILITIES[item.ability].description),
+				]),
+			]
+		: [];
+
 	return el(`div.${cls}-card`, [
 		...labelEl,
 		emoji,
-		el(
-			`div.${cls}-rarity`,
-			`${item.rarity} (${item.qualityRoll}%)${item.upgradeLevel > 0 ? ` +${item.upgradeLevel}` : ""}`,
-		),
+		rarityEl,
 		el(`div.${cls}-found`, `Found on Cloud ${item.depth}`),
 		stats,
+		...abilityEl,
 		el(`div.${cls}-score-row`, [scoreEl, el(`div.${cls}-score-label`, "Sparkles")]),
 	]);
 }

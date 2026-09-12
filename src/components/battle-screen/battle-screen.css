@@ -130,6 +130,10 @@
 	color: #ffd54f;
 }
 
+.combat-line.ability {
+	color: #ffb84d;
+}
+
 .combat-line.win {
 	color: #8fffc9;
 	font-weight: bold;
