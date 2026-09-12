@@ -16,7 +16,11 @@ export class EdgeButton {
 	) {
 		this.root = el("div.edge-button", svgEl(icon, "#fff"));
 		this.root.style.top = `${top}px`;
-		this.root.style.right = `${right}px`;
+		if (right < 0) {
+			this.root.style.left = `${Math.abs(right)}px`;
+		} else {
+			this.root.style.right = `${right}px`;
+		}
 
 		mount(container, this.root);
 
@@ -38,6 +42,15 @@ export class EdgeButton {
 				this.renderState(state.sound.value as boolean);
 			};
 		}
+
+		if (path === "emojiFont") {
+			this.renderState(state.emojiFont.value);
+			this.root.onclick = () => {
+				playSound(sounds.tap);
+				state.emojiFont.value = !state.emojiFont.value;
+				this.renderState(state.emojiFont.value);
+			};
+		}
 	}
 
 	public renderState = (newState: boolean) => {
@@ -47,6 +60,10 @@ export class EdgeButton {
 			if (zzfxX != null) {
 				newState ? zzfxX.resume() : zzfxX.suspend();
 			}
+		}
+
+		if (this.path === "emojiFont") {
+			document.body.classList.toggle("emoji-font-on", newState === true);
 		}
 	};
 }

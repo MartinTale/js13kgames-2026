@@ -69,27 +69,20 @@ export class HomeScreen {
 		this.element = el("div.home-screen", [this.actions]);
 	}
 
-	private expandPanel() {
-		this.featurePanel.classList.add("active", "grown");
-		this.actions.classList.add("expanded");
-	}
+	private panelExpanded = false;
 
-	private collapsePanel() {
-		this.featurePanel.classList.remove("active", "grown");
-		this.actions.classList.remove("expanded");
-	}
-
-	// fades the panel's current content out, swaps it, then fades the new content in -
-	// keeps the panel's own size/expanded state untouched so nothing jumps mid-transition
+	// fades the panel's current content out (skipped if the panel isn't visible yet -
+	// there's nothing to fade from), swaps it, expands/keeps the panel sized, then
+	// fades the new content in - one continuous transition, no size-then-content jump
 	private crossfadeContent(content: HTMLElement | HTMLElement[]): Promise<void> {
-		return new Promise((resolve) => {
-			const fadeOut = this.featurePanelInner.animate([{ opacity: 1 }, { opacity: 0 }], {
-				duration: 180,
-				easing: "ease",
-				fill: "forwards",
-			});
+		const wasExpanded = this.panelExpanded;
 
-			fadeOut.onfinish = () => {
+		this.featurePanel.classList.add("active");
+		this.actions.classList.add("expanded");
+		this.panelExpanded = true;
+
+		return new Promise((resolve) => {
+			const swap = () => {
 				this.featurePanelInner.replaceChildren(...(Array.isArray(content) ? content : [content]));
 
 				const fadeIn = this.featurePanelInner.animate([{ opacity: 0 }, { opacity: 1 }], {
@@ -99,14 +92,31 @@ export class HomeScreen {
 				});
 				fadeIn.onfinish = () => resolve();
 			};
+
+			if (!wasExpanded) {
+				swap();
+				return;
+			}
+
+			const fadeOut = this.featurePanelInner.animate([{ opacity: 1 }, { opacity: 0 }], {
+				duration: 180,
+				easing: "ease",
+				fill: "forwards",
+			});
+			fadeOut.onfinish = swap;
 		});
+	}
+
+	private collapsePanel() {
+		this.featurePanel.classList.remove("active");
+		this.actions.classList.remove("expanded");
+		this.panelExpanded = false;
 	}
 
 	// runs a battle inline in the feature panel above the cloud; once the fight
 	// resolves, shows Continue in the button slot and resolves the outcome on tap
 	async runBattle(): Promise<boolean> {
 		this.buttonSlot.replaceChildren();
-		this.expandPanel();
 		await this.crossfadeContent(this.battleScreen.element);
 
 		return new Promise((resolve) => {
@@ -174,7 +184,6 @@ export class HomeScreen {
 		this.slots.forEach((slot, index) => slot.classList.toggle("dimmed", index !== slotIndex));
 		this.slots[slotIndex].classList.add("highlighted");
 
-		this.expandPanel();
 		this.buttonSlot.replaceChildren();
 
 		if (!currentItem) {

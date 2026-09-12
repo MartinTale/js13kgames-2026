@@ -9,7 +9,8 @@
 
 /* Twemoji fallback for consistent emoji glyphs - per js13k rules, a live-loaded web
    font is only allowed as an emoji/character fallback, so .emoji-glyph puts it last
-   in the stack: native emoji renders immediately and unaffected if this never loads */
+   in the stack: native emoji renders immediately and unaffected if this never loads.
+   Opt-in only (body.emoji-font-on) - default is system emoji, zero external requests */
 @font-face {
 	font-family: emoji;
 	src: url(//xem.github.io/unicode13/Twemoji.ttf);
@@ -17,6 +18,10 @@
 }
 
 .emoji-glyph {
+	font-family: "Comic Sans MS", Times, serif;
+}
+
+body.emoji-font-on .emoji-glyph {
 	font-family: "Comic Sans MS", Times, serif, emoji;
 }
 

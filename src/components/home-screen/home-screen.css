@@ -132,24 +132,15 @@
 	border-radius: 0;
 	background-color: rgba(0, 0, 0, 0.2);
 	box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.45);
-	transition:
-		max-height 300ms ease,
-		opacity 300ms ease,
-		padding 300ms ease,
-		margin-bottom 300ms ease;
 }
 
 .home-feature-panel.active {
-	max-height: 320px;
-	opacity: 1;
-	padding: 14px;
-	margin-bottom: 12px;
-}
-
-.home-feature-panel.grown {
 	flex: 1 1 auto;
 	max-height: none;
 	min-height: 0;
+	opacity: 1;
+	padding: 14px;
+	margin-bottom: 12px;
 }
 
 .home-feature-panel-inner {

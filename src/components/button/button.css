@@ -26,7 +26,7 @@ button {
 	position: relative;
 	z-index: 2;
 	overflow: hidden;
-	border: 0;
+	border: 1px solid oklch(from var(--color) calc(l - 0.15) c h);
 	margin: 0;
 	padding: 10px 20px;
 	font: inherit;
@@ -34,11 +34,10 @@ button {
 	font-size: 16px;
 	border-radius: 999px;
 	color: var(--text);
+	text-shadow: none;
 	cursor: pointer;
 	background: var(--color);
-	box-shadow:
-		0 2px 0 rgba(0, 0, 0, 0.2),
-		0 4px 10px rgba(0, 0, 0, 0.25);
+	box-shadow: 0 2px 0 oklch(from var(--color) calc(l - 0.2) c h);
 	transition:
 		box-shadow 140ms ease,
 		filter 140ms ease;
@@ -81,7 +80,7 @@ button.icon {
 }
 
 .button-wrap:active button {
-	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+	box-shadow: none;
 	filter: brightness(0.96);
 }
 
@@ -93,16 +92,22 @@ button.disabled {
 .button-wrap.danger button {
 	background: #f04a4a;
 	color: #fff;
+	border-color: oklch(from #f04a4a calc(l - 0.15) c h);
+	box-shadow: 0 2px 0 oklch(from #f04a4a calc(l - 0.2) c h);
 }
 
 .button-wrap.success button {
 	background: #4ad991;
 	color: #0f3822;
+	border-color: oklch(from #4ad991 calc(l - 0.15) c h);
+	box-shadow: 0 2px 0 oklch(from #4ad991 calc(l - 0.2) c h);
 }
 
 .button-wrap.normal button {
 	background: oklch(from var(--text) calc(l - 0.6) c h);
 	color: var(--text);
+	border-color: oklch(from var(--text) calc(l - 0.7) c h);
+	box-shadow: 0 2px 0 oklch(from var(--text) calc(l - 0.75) c h);
 }
 
 /* secondary/outline/ghost are flat: no shadow, no press-slide */

@@ -4,12 +4,13 @@ import { Item } from "./items";
 
 const STATE_KEY = "js13k26_save";
 
-export type Path = "sound" | "screen";
+export type Path = "sound" | "screen" | "emojiFont";
 
 export type State = {
 	seed: Signal<number>;
 	lastProcessedAt: Signal<number>;
 	sound: Signal<boolean | null>;
+	emojiFont: Signal<boolean>;
 	level: Signal<number>;
 	depth: Signal<number>;
 	inventory: Signal<(Item | null)[]>;
@@ -21,6 +22,7 @@ export const emptyState: State = {
 	// seed: createSignal(Date.now()),
 	lastProcessedAt: createSignal(Date.now()),
 	sound: createSignal(null),
+	emojiFont: createSignal(false),
 	level: createSignal(0),
 	depth: createSignal(1),
 	inventory: createSignal(Array(8).fill(null)),
