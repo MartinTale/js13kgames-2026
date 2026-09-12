@@ -227,7 +227,17 @@ export class HomeScreen {
 
 		if (!currentItem) {
 			await this.crossfadeContent(createItemCard(item, "loot"));
-			this.buttonSlot.replaceChildren(createButton("Equip New", () => onResolved(true), "success", "md"));
+			this.buttonSlot.replaceChildren(
+				createButton(
+					"Equip New",
+					() => {
+						playSound(sounds.buy);
+						onResolved(true);
+					},
+					"success",
+					"md",
+				),
+			);
 			return;
 		}
 
@@ -243,7 +253,15 @@ export class HomeScreen {
 		);
 
 		const keepButton = createButton("Keep Old", () => onResolved(false), "normal", "md");
-		const equipButton = createButton("Equip New", () => onResolved(true), "success", "md");
+		const equipButton = createButton(
+			"Equip New",
+			() => {
+				playSound(sounds.buy);
+				onResolved(true);
+			},
+			"success",
+			"md",
+		);
 		this.buttonSlot.replaceChildren(el("div.home-loot-choice", [keepButton, equipButton]));
 	}
 
@@ -306,6 +324,7 @@ export class HomeScreen {
 		const upgradeButton = createButton(
 			"Upgrade",
 			() => {
+				playSound(sounds.buy);
 				state.magicDust.value -= cost;
 				const inventory = [...state.inventory.value];
 				inventory[index] = upgradeItem(item);

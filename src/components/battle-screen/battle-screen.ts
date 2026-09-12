@@ -3,6 +3,7 @@ import { el } from "../../helpers/dom";
 import { combatTick, CombatEvent, createPlayerFighter, createStormling } from "../../systems/combat";
 import { state } from "../../systems/state";
 import { randomInteger } from "../../helpers/numbers";
+import { playSound, sounds } from "../../systems/music";
 
 const TICK_MS = 400;
 const DUST_ON_LOSS: [number, number] = [1, 2];
@@ -81,6 +82,7 @@ export class BattleScreen {
 				const won = enemy.hp <= 0 && player.hp > 0;
 				logLine(won ? `${enemy.name} is defeated!` : `You were defeated...`, won ? "win" : "loss");
 				updateBars();
+				playSound(won ? sounds.win : sounds.loss);
 
 				// every battle grants some Magic Dust, win or lose - winning grants more
 				const [min, max] = won ? DUST_ON_WIN : DUST_ON_LOSS;
@@ -96,12 +98,14 @@ export class BattleScreen {
 				const verb = event.defender === "You" ? "dodge" : "dodges";
 				const possessive = event.attacker === "You" ? "your" : `${event.attacker}'s`;
 				logLine(`${event.defender} ${verb} ${possessive} attack!`);
+				playSound(sounds.dodge);
 			} else {
 				const verb = event.attacker === "You" ? "hit" : "hits";
 				logLine(
 					`${event.attacker} ${verb} ${event.defender} for ${event.damage}${event.crit ? " (crit!)" : ""}`,
 					event.crit ? "crit" : "",
 				);
+				playSound(event.crit ? sounds.crit : sounds.hit);
 			}
 
 			updateBars();
