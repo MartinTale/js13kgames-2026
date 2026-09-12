@@ -70,8 +70,7 @@ export function createButton(
 		mount(face, content);
 	}
 
-	const depth = el("span.button-depth");
-	const children: HTMLElement[] = [depth];
+	const children: HTMLElement[] = [];
 
 	if (withEffects) {
 		const confetti = document.createElementNS("http://www.w3.org/2000/svg", "svg") as unknown as HTMLElement;

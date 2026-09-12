@@ -25,11 +25,18 @@ export class BattleScreen {
 		const enemyHpText = el("span", `${enemy.hp}/${enemy.maxHp}`);
 		const log = el("div.combat-log");
 
-		this.element.append(
+		const hpPanel = el("div.hp-panel", [
 			el("div.hp-row", [el("span.hp-label", [el("span", player.name), playerHpText]), el("div.hp-track", playerBar)]),
 			el("div.hp-row", [el("span.hp-label", [el("span", enemy.name), enemyHpText]), el("div.hp-track", enemyBar)]),
-			log,
-		);
+		]);
+
+		this.element.append(hpPanel, log);
+
+		// hpPanel is absolutely positioned so the log can scroll independently beneath
+		// it; push the log down by its measured height once it's laid out
+		requestAnimationFrame(() => {
+			log.style.marginTop = `${hpPanel.offsetHeight}px`;
+		});
 
 		const updateBars = () => {
 			playerBar.style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
@@ -47,14 +54,12 @@ export class BattleScreen {
 			round++;
 			roundBody = el("div.combat-round-body");
 			log.append(el("div.combat-round", [el("div.combat-round-label", `Round ${round}`), roundBody]));
-			log.scrollTop = log.scrollHeight;
 		};
 
 		// intro/outro lines render loose, above/after the round blocks
 		const logLine = (text: string, cls = "") => {
 			const target = roundBody ?? log;
 			target.append(el(`div.combat-line${cls ? "." + cls : ""}`, text));
-			log.scrollTop = log.scrollHeight;
 		};
 
 		updateBars();

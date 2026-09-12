@@ -3,22 +3,15 @@
 	display: inline-flex;
 	margin: 0 0.5rem;
 	cursor: pointer;
-	transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+	transition: transform 160ms ease;
 }
 
 .button-wrap:hover {
-	transform: scale(1.02);
+	transform: translateY(-1px);
 }
 
 .button-wrap:active {
-	transform: scale(0.98);
-}
-
-.button-depth {
-	position: absolute;
-	inset: 2px 0 -2px 0;
-	border-radius: 999px;
-	background: oklch(from var(--color) calc(0.7 * l) c h);
+	transform: translateY(1px);
 }
 
 .button-confetti {
@@ -42,14 +35,13 @@ button {
 	border-radius: 999px;
 	color: var(--text);
 	cursor: pointer;
-	background: linear-gradient(to bottom, oklch(from var(--color) calc(l + 0.1) c h), var(--color));
+	background: var(--color);
 	box-shadow:
-		0 6px 14px rgba(0, 0, 0, 0.35),
-		inset 0 1px 0 rgba(255, 255, 255, 0.45),
-		inset 0 -2px 3px rgba(0, 0, 0, 0.15);
+		0 2px 0 rgba(0, 0, 0, 0.2),
+		0 4px 10px rgba(0, 0, 0, 0.25);
 	transition:
-		transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1),
-		filter 160ms ease;
+		box-shadow 140ms ease,
+		filter 140ms ease;
 }
 
 button.sm {
@@ -79,21 +71,18 @@ button.icon {
 .button-ripple {
 	position: absolute;
 	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.72);
+	background: rgba(255, 255, 255, 0.5);
 	pointer-events: none;
 	transform: translate(-50%, -50%) scale(0.05);
 }
 
 .button-wrap:hover button {
-	filter: brightness(1.06);
+	filter: brightness(1.08);
 }
 
 .button-wrap:active button {
-	transform: translateY(2px);
-	box-shadow:
-		0 2px 6px rgba(0, 0, 0, 0.35),
-		inset 0 1px 0 rgba(255, 255, 255, 0.2),
-		inset 0 2px 4px rgba(0, 0, 0, 0.25);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+	filter: brightness(0.96);
 }
 
 button.disabled {
@@ -102,39 +91,21 @@ button.disabled {
 }
 
 .button-wrap.danger button {
-	background: linear-gradient(to bottom, #ff9e9e, #f04a4a);
+	background: #f04a4a;
 	color: #fff;
 }
 
-.button-wrap.danger .button-depth {
-	background: oklch(from #f04a4a calc(0.7 * l) c h);
-}
-
 .button-wrap.success button {
-	background: linear-gradient(to bottom, #a8f0c6, #4ad991);
+	background: #4ad991;
 	color: #0f3822;
 }
 
-.button-wrap.success .button-depth {
-	background: oklch(from #4ad991 calc(0.7 * l) c h);
-}
-
 .button-wrap.normal button {
-	background: linear-gradient(to bottom, oklch(from var(--text) calc(l - 0.55) c h), oklch(from var(--text) calc(l - 0.65) c h));
+	background: oklch(from var(--text) calc(l - 0.6) c h);
 	color: var(--text);
 }
 
-.button-wrap.normal .button-depth {
-	background: oklch(from var(--text) calc(l - 0.75) c h);
-}
-
-/* secondary/outline/ghost are flat: no 3D depth pill, no press-slide */
-.button-wrap.secondary .button-depth,
-.button-wrap.outline .button-depth,
-.button-wrap.ghost .button-depth {
-	display: none;
-}
-
+/* secondary/outline/ghost are flat: no shadow, no press-slide */
 .button-wrap.secondary:active button,
 .button-wrap.outline:active button,
 .button-wrap.ghost:active button {
