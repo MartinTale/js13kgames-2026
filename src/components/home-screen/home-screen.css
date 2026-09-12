@@ -278,6 +278,10 @@
 	font-weight: bold;
 }
 
+.loot-stat.stat-preview {
+	color: #6faa8a;
+}
+
 .loot-stat.stat-up {
 	color: #8fffc9;
 }

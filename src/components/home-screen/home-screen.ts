@@ -301,7 +301,7 @@ export class HomeScreen {
 		this.viewingSlot = index;
 		this.slots.forEach((slot, i) => slot.classList.toggle("dimmed", i !== index));
 		this.slots[index].classList.add("highlighted");
-		await this.crossfadeContent(createItemCard(item, "loot"));
+		await this.crossfadeContent(createItemCard(item, "loot", "Item Found", undefined, upgradeItem(item)));
 		this.renderUpgradeAction(index);
 	}
 
@@ -333,7 +333,10 @@ export class HomeScreen {
 				this.refreshDust();
 				this.refreshStats();
 				this.refreshSlot(index);
-				this.crossfadeContent(createItemCard(inventory[index]!, "loot")).then(() => this.renderUpgradeAction(index));
+				const upgraded = inventory[index]!;
+				this.crossfadeContent(createItemCard(upgraded, "loot", "Item Found", undefined, upgradeItem(upgraded))).then(() =>
+					this.renderUpgradeAction(index),
+				);
 			},
 			canAfford ? "success" : "disabled",
 			"md",

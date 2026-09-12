@@ -85,15 +85,34 @@ function rollStats(pool: Stat[], count: number): Stat[] {
 	return picked;
 }
 
-export function generateItem(depth: number, boosted = false): Item {
-	const rarity = weightedPick(boosted ? RARITY_WEIGHTS_BOOSTED : RARITY_WEIGHTS);
-	const quality = weightedPick(
-		Object.fromEntries(
-			Object.entries(boosted ? QUALITY_TABLE_BOOSTED : QUALITY_TABLE).map(([k, v]) => [k, v[3]]),
-		) as Record<Quality, number>,
-	);
+// 0 at depth 1, ramping smoothly toward 1 by depth ~35 - blends the base
+// weight tables toward their "boosted" counterparts so higher clouds drop
+// better rarity/quality more often, not just bigger numbers on the same odds
+const DEPTH_LUCK_RAMP_DEPTH = 35;
 
-	const [minRoll, maxRoll, statMultiplier] = (boosted ? QUALITY_TABLE_BOOSTED : QUALITY_TABLE)[quality];
+function depthLuck(depth: number): number {
+	return Math.min(1, Math.max(0, depth - 1) / DEPTH_LUCK_RAMP_DEPTH);
+}
+
+function blendWeights<key extends string>(base: Record<key, number>, boosted: Record<key, number>, t: number): Record<key, number> {
+	const blended = {} as Record<key, number>;
+	for (const key of Object.keys(base) as key[]) {
+		blended[key] = base[key] + (boosted[key] - base[key]) * t;
+	}
+	return blended;
+}
+
+export function generateItem(depth: number): Item {
+	const luck = depthLuck(depth);
+	const rarity = weightedPick(blendWeights(RARITY_WEIGHTS, RARITY_WEIGHTS_BOOSTED, luck));
+	const qualityWeights = blendWeights(
+		Object.fromEntries(Object.entries(QUALITY_TABLE).map(([k, v]) => [k, v[3]])) as Record<Quality, number>,
+		Object.fromEntries(Object.entries(QUALITY_TABLE_BOOSTED).map(([k, v]) => [k, v[3]])) as Record<Quality, number>,
+		luck,
+	);
+	const quality = weightedPick(qualityWeights);
+
+	const [minRoll, maxRoll, statMultiplier] = QUALITY_TABLE[quality];
 	const qualityRoll = randomInteger(minRoll, maxRoll);
 	const bonusCount = RARITY_BONUS_STATS[rarity];
 	const rarityMultiplier = rarity === "common" ? 1 : rarity === "rare" ? 1.5 : 2.2;
@@ -133,22 +152,28 @@ export function getUpgradeCost(item: Item): number {
 	return Math.round(UPGRADE_BASE_COST * Math.pow(UPGRADE_COST_GROWTH, item.upgradeLevel || 0));
 }
 
-// spends nothing itself - caller deducts dust; bumps the primary stat by a
-// fixed fraction of its current value and increments the item's upgrade level
+// spends nothing itself - caller deducts dust; bumps every rolled stat on the
+// item by a fixed fraction of its current value and increments upgrade level
 export function upgradeItem(item: Item): Item {
-	const currentValue = item.affixes[item.primaryStat] || 0;
-	const increase = Math.max(1, Math.round(currentValue * UPGRADE_STAT_GROWTH));
+	const affixes: Partial<Record<Stat, number>> = {};
+	for (const [stat, value] of Object.entries(item.affixes) as [Stat, number][]) {
+		affixes[stat] = value + Math.max(1, Math.round(value * UPGRADE_STAT_GROWTH));
+	}
 
-	return {
-		...item,
-		affixes: { ...item.affixes, [item.primaryStat]: currentValue + increase },
-		upgradeLevel: (item.upgradeLevel || 0) + 1,
-	};
+	return { ...item, affixes, upgradeLevel: (item.upgradeLevel || 0) + 1 };
 }
 
 // compareItem: when given, each stat line and the score are colored by how item's
-// value compares to compareItem's for that stat (green upgrade / red downgrade)
-export function createItemCard(item: Item | null, cls: string, label = "Item Found", compareItem?: Item | null): HTMLElement {
+// value compares to compareItem's for that stat (green upgrade / red downgrade).
+// previewItem: when given (e.g. the result of upgradeItem(item)), each stat line
+// shows "current -> after" in muted green instead, previewing a pending purchase
+export function createItemCard(
+	item: Item | null,
+	cls: string,
+	label = "Item Found",
+	compareItem?: Item | null,
+	previewItem?: Item,
+): HTMLElement {
 	const labelEl = label ? [el(`div.${cls}-label`, label)] : [];
 
 	if (!item) {
@@ -167,8 +192,15 @@ export function createItemCard(item: Item | null, cls: string, label = "Item Fou
 	const stats = el(
 		`div.${cls}-stats`,
 		STATS.filter((stat) => item.affixes[stat]).map((stat) => {
-			const line = el(`div.${cls}-stat`, `+${item.affixes[stat]} ${STAT_LABELS[stat]}`);
+			const previewValue = previewItem?.affixes[stat];
+			const text =
+				previewValue !== undefined && previewValue !== item.affixes[stat]
+					? `+${item.affixes[stat]} → +${previewValue} ${STAT_LABELS[stat]}`
+					: `+${item.affixes[stat]} ${STAT_LABELS[stat]}`;
+
+			const line = el(`div.${cls}-stat`, text);
 			if (stat === item.primaryStat) line.classList.add("primary-stat");
+			if (previewValue !== undefined && previewValue !== item.affixes[stat]) line.classList.add("stat-preview");
 
 			if (compareItem !== undefined) {
 				const diff = (item.affixes[stat] || 0) - (compareItem?.affixes[stat] || 0);
