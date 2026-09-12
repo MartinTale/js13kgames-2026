@@ -12,12 +12,8 @@ export function startGameLoop() {
 
 function processGameState() {
 	const newProcessingTime = Date.now();
-	const secondsPassed = (newProcessingTime - state.lastProcessedAt.value) / 1000;
 
 	Object.values(tweens).forEach((updateTween) => updateTween(newProcessingTime));
-	// console.log(secondsPassed);
-
-	state.level.value += secondsPassed;
 
 	state.lastProcessedAt.value = newProcessingTime;
 	requestAnimationFrame(processGameState);

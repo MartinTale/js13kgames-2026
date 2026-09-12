@@ -1,6 +1,6 @@
 import "./reveal-screen.css";
 import { el } from "../../helpers/dom";
-import { getItemScore, getQualityGlow, Item, RARITY_COLORS, STAT_LABELS, STATS } from "../../systems/items";
+import { createItemCard, Item } from "../../systems/items";
 import { state } from "../../systems/state";
 
 export class RevealScreen {
@@ -25,23 +25,6 @@ export class RevealScreen {
 		this.onTap = onContinue;
 		this.body.replaceChildren();
 
-		const emoji = el("div.reveal-emoji.emoji-glyph", item.emoji);
-		emoji.style.borderColor = RARITY_COLORS[item.rarity];
-		emoji.style.boxShadow = getQualityGlow(item.quality);
-
-		const stats = el(
-			"div.reveal-stats",
-			STATS.filter((stat) => item.affixes[stat]).map((stat) =>
-				el("div.reveal-stat", `${STAT_LABELS[stat]} +${item.affixes[stat]}`),
-			),
-		);
-
-		this.body.append(
-			emoji,
-			el("div.reveal-rarity", `${item.rarity} · ${item.quality}`),
-			el("div.reveal-found", `Found at Depth ${item.depth}`),
-			stats,
-			el("div.reveal-score-row", [el("div.reveal-score", `${getItemScore(item)}`), el("div.reveal-score-label", "Sparkles")]),
-		);
+		this.body.append(createItemCard(item, "reveal"));
 	}
 }

@@ -27,3 +27,53 @@
 	font-weight: bold;
 	letter-spacing: 0.5px;
 }
+
+.home-stats {
+	flex-direction: column;
+	gap: 4px;
+	margin-bottom: 12px;
+}
+
+.home-stats-row {
+	gap: 10px;
+}
+
+.home-stat {
+	flex-direction: column;
+	gap: 1px;
+}
+
+.home-stat-label {
+	font-size: 9px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	opacity: 0.6;
+}
+
+.home-stat-value {
+	font-size: 13px;
+	font-weight: bold;
+}
+
+.home-inventory {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 6px;
+	margin-bottom: 16px;
+}
+
+.home-slot {
+	width: 40px;
+	height: 40px;
+	font-size: 22px;
+	border: 2px solid var(--shadow);
+	border-radius: 8px;
+	background-color: rgba(255, 255, 255, 0.05);
+	cursor: pointer;
+}
+
+.home-slot.empty {
+	opacity: 0.4;
+	border-style: dashed;
+	cursor: default;
+}

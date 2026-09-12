@@ -9,6 +9,12 @@
 	gap: 8px;
 }
 
+.reveal-card {
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
 .reveal-emoji {
 	width: 96px;
 	height: 96px;

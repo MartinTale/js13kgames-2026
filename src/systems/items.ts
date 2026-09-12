@@ -1,4 +1,5 @@
 import { randomInteger } from "../helpers/numbers";
+import { el } from "../helpers/dom";
 
 export type Stat = "power" | "guard" | "crit" | "dodge" | "vitality";
 export const STATS: Stat[] = ["power", "guard", "crit", "dodge", "vitality"];
@@ -110,6 +111,34 @@ export function generateItem(depth: number, boosted = false): Item {
 export function getItemScore(item: Item | null): number {
 	if (!item) return 0;
 	return Object.values(item.affixes).reduce((sum, value) => sum + (value || 0), 0);
+}
+
+export function createItemCard(item: Item | null, cls: string): HTMLElement {
+	if (!item) {
+		return el(`div.${cls}-card`, [
+			el(`div.${cls}-emoji.empty`),
+			el(`div.${cls}-rarity`, " "),
+			el(`div.${cls}-stats`, el(`div.${cls}-stat`, "Empty slot")),
+			el(`div.${cls}-score-row`, [el(`div.${cls}-score`, "0"), el(`div.${cls}-score-label`, "Sparkles")]),
+		]);
+	}
+
+	const emoji = el(`div.${cls}-emoji.emoji-glyph`, item.emoji);
+	emoji.style.borderColor = RARITY_COLORS[item.rarity];
+	emoji.style.boxShadow = getQualityGlow(item.quality);
+
+	const stats = el(
+		`div.${cls}-stats`,
+		STATS.filter((stat) => item.affixes[stat]).map((stat) => el(`div.${cls}-stat`, `${STAT_LABELS[stat]} +${item.affixes[stat]}`)),
+	);
+
+	return el(`div.${cls}-card`, [
+		emoji,
+		el(`div.${cls}-rarity`, `${item.rarity} · ${item.quality}`),
+		el(`div.${cls}-found`, `Depth ${item.depth}`),
+		stats,
+		el(`div.${cls}-score-row`, [el(`div.${cls}-score`, `${getItemScore(item)}`), el(`div.${cls}-score-label`, "Sparkles")]),
+	]);
 }
 
 export function getQualityGlow(quality: Quality): string {

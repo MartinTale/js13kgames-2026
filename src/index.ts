@@ -15,6 +15,7 @@ import { HomeScreen } from "./components/home-screen/home-screen";
 import { BattleScreen } from "./components/battle-screen/battle-screen";
 import { RevealScreen } from "./components/reveal-screen/reveal-screen";
 import { DiffScreen } from "./components/diff-screen/diff-screen";
+import { generateItem, getItemScore } from "./systems/items";
 
 export let bodyElement: HTMLElement;
 export let gameContainer: HTMLElement;
@@ -86,7 +87,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	const revealScreen = new RevealScreen();
 	const diffScreen = new DiffScreen();
 
-	const homeScreen = new HomeScreen(() => {
+	const homeScreen = new HomeScreen(gameContainer, () => {
 		homeScreen.setMagicEnabled(false);
 
 		setTimeout(() => {
@@ -96,22 +97,72 @@ window.addEventListener("DOMContentLoaded", () => {
 				battleScreen.run((won) => {
 					homeScreen.setMagicEnabled(true);
 
-					if (won) {
-						state.level.value += 1;
-						if (state.level.value % 3 === 0) {
-							state.depth.value += 1;
-						}
+					if (!won) {
+						screens.show("home").then(() => {
+							homeScreen.refreshDepth();
+						});
+						return;
 					}
 
-					screens.show("home").then(() => {
-						homeScreen.refreshDepth();
+					state.level.value += 1;
+					if (state.level.value % 3 === 0) {
+						state.depth.value += 1;
+					}
+
+					const item = generateItem(state.depth.value);
+
+					revealScreen.refreshDepth();
+					screens.show("reveal").then(() => {
+						revealScreen.show(item, () => {
+							resolveLoot(item);
+						});
 					});
 				});
 			});
 		}, 500);
 	});
 
+	function resolveLoot(item: ReturnType<typeof generateItem>) {
+		const inventory = state.inventory.value;
+		const emptySlot = inventory.findIndex((slot) => slot === null);
+
+		if (emptySlot !== -1) {
+			equipItem(emptySlot, item);
+			backToHome();
+			return;
+		}
+
+		const weakestSlot = inventory.reduce(
+			(weakest, slot, index) => (getItemScore(slot) < getItemScore(inventory[weakest]) ? index : weakest),
+			0,
+		);
+
+		diffScreen.refreshDepth();
+		screens.show("diff").then(() => {
+			diffScreen.show(weakestSlot, item, (equip) => {
+				if (equip) equipItem(weakestSlot, item);
+				backToHome();
+			});
+		});
+	}
+
+	function equipItem(slot: number, item: ReturnType<typeof generateItem>) {
+		const inventory = [...state.inventory.value];
+		inventory[slot] = item;
+		state.inventory.value = inventory;
+	}
+
+	function backToHome() {
+		screens.show("home").then(() => {
+			homeScreen.refreshDepth();
+			homeScreen.refreshStats();
+			homeScreen.refreshInventory();
+		});
+	}
+
 	homeScreen.refreshDepth();
+	homeScreen.refreshStats();
+	homeScreen.refreshInventory();
 
 	screens.register("home", homeScreen.element);
 	screens.register("battle", battleScreen.element);

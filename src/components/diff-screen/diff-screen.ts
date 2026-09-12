@@ -1,7 +1,7 @@
 import "./diff-screen.css";
 import { el } from "../../helpers/dom";
 import { createButton } from "../button/button";
-import { getItemScore, getQualityGlow, Item, RARITY_COLORS, STAT_LABELS, STATS } from "../../systems/items";
+import { createItemCard, Item } from "../../systems/items";
 import { state } from "../../systems/state";
 
 export class DiffScreen {
@@ -30,9 +30,9 @@ export class DiffScreen {
 		this.body.append(
 			el("div.diff-title", "Loot!"),
 			el("div.diff-compare", [
-				el("div.diff-side", [el("div.diff-side-label", "Current"), itemCard(oldItem)]),
+				el("div.diff-side", [el("div.diff-side-label", "Current"), createItemCard(oldItem, "diff")]),
 				el("div.diff-vs", "→"),
-				el("div.diff-side", [el("div.diff-side-label", "New"), itemCard(newItem)]),
+				el("div.diff-side", [el("div.diff-side-label", "New"), createItemCard(newItem, "diff")]),
 			]),
 		);
 
@@ -41,32 +41,4 @@ export class DiffScreen {
 
 		this.actions.append(keepButton, equipButton);
 	}
-}
-
-function itemCard(item: Item | null): HTMLElement {
-	if (!item) {
-		return el("div.diff-card", [
-			el("div.diff-emoji.empty"),
-			el("div.diff-rarity", " "),
-			el("div.diff-stats", el("div.diff-stat", "Empty slot")),
-			el("div.diff-score-row", [el("div.diff-score", "0"), el("div.diff-score-label", "Sparkles")]),
-		]);
-	}
-
-	const emoji = el("div.diff-emoji.emoji-glyph", item.emoji);
-	emoji.style.borderColor = RARITY_COLORS[item.rarity];
-	emoji.style.boxShadow = getQualityGlow(item.quality);
-
-	const stats = el(
-		"div.diff-stats",
-		STATS.filter((stat) => item.affixes[stat]).map((stat) => el("div.diff-stat", `${STAT_LABELS[stat]} +${item.affixes[stat]}`)),
-	);
-
-	return el("div.diff-card", [
-		emoji,
-		el("div.diff-rarity", `${item.rarity} · ${item.quality}`),
-		el("div.diff-found", `Depth ${item.depth}`),
-		stats,
-		el("div.diff-score-row", [el("div.diff-score", `${getItemScore(item)}`), el("div.diff-score-label", "Sparkles")]),
-	]);
 }
