@@ -78,7 +78,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		);
 	}
 
-	const homeScreen = new HomeScreen(async () => {
+	const homeScreen = new HomeScreen(gameContainer, async () => {
 		homeScreen.setMagicEnabled(false);
 
 		const won = await homeScreen.runBattle();

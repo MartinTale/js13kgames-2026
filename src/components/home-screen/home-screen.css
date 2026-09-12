@@ -26,6 +26,34 @@
 	margin-bottom: 4px;
 }
 
+.home-info-btn {
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	border: 1px solid var(--text);
+	font-size: 10px;
+	font-weight: bold;
+	opacity: 0.6;
+	cursor: pointer;
+}
+
+.home-info-btn:hover {
+	opacity: 1;
+}
+
+.home-drop-rates {
+	flex-direction: column;
+	gap: 6px;
+	width: 100%;
+}
+
+.home-drop-rate-row {
+	justify-content: space-between;
+	width: 100%;
+	font-weight: bold;
+	text-transform: capitalize;
+}
+
 .home-dust {
 	gap: 4px;
 	margin-bottom: 8px;

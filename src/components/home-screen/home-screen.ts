@@ -3,10 +3,30 @@ import { el, svgEl } from "../../helpers/dom";
 import { createButton, ButtonElement } from "../button/button";
 import { CLOUD_SVG } from "../progress-bar/progress-bar";
 import { state } from "../../systems/state";
-import { createItemCard, getUpgradeCost, Item, RARITY_COLORS, STAT_LABELS, STATS, upgradeItem } from "../../systems/items";
+import {
+	createItemCard,
+	getRarityOdds,
+	getUpgradeCost,
+	Item,
+	RARITY_COLORS,
+	STAT_LABELS,
+	STATS,
+	upgradeItem,
+} from "../../systems/items";
 import { getEffectiveStats, getInventoryStats } from "../../systems/combat";
 import { playSound, sounds } from "../../systems/music";
 import { BattleScreen } from "../battle-screen/battle-screen";
+import { openModal } from "../modal/modal";
+
+// small inline "info" button that opens a modal with the given content on tap
+function infoButton(container: HTMLElement, header: string, getContent: () => HTMLElement | HTMLElement[]): HTMLElement {
+	const btn = el("span.home-info-btn", "?");
+	btn.onclick = (e) => {
+		e.stopPropagation();
+		openModal(container, header, getContent(), [], null);
+	};
+	return btn;
+}
 
 const INVENTORY_SIZE = 8;
 
@@ -25,7 +45,10 @@ export class HomeScreen {
 	private idle = true;
 	private viewingSlot: number | null = null;
 
-	constructor(onMagic: () => void) {
+	constructor(
+		private container: HTMLElement,
+		onMagic: () => void,
+	) {
 		this.magicButton = createButton("Magic", onMagic, "primary", "md", true, 18, 1.5);
 		this.buttonSlot = el("div.home-button-slot", this.magicButton);
 
@@ -33,10 +56,22 @@ export class HomeScreen {
 		this.depthCloud.classList.add("home-depth-cloud");
 		this.depthLabel = el("span.home-depth-value");
 
-		const depthRow = el("div.home-depth", [this.depthCloud, this.depthLabel]);
+		const dropRatesInfo = infoButton(this.container, "Drop Rates", () => this.renderDropRatesInfo());
+		const depthRow = el("div.home-depth", [this.depthCloud, this.depthLabel, dropRatesInfo]);
 
 		this.dustValue = el("span.home-dust-value", "0");
-		const dustRow = el("div.home-dust", [el("span.home-dust-icon", "✨"), this.dustValue, el("span", "Magic Dust")]);
+		const upgradeInfo = infoButton(this.container, "Magic Dust", () =>
+			el(
+				"p",
+				"Every battle earns Magic Dust, win or lose. Spend it to upgrade an equipped item, boosting all of its stats. Cost rises each time you upgrade the same item.",
+			),
+		);
+		const dustRow = el("div.home-dust", [
+			el("span.home-dust-icon", "✨"),
+			this.dustValue,
+			el("span", "Magic Dust"),
+			upgradeInfo,
+		]);
 
 		this.featurePanelInner = el("div.home-feature-panel-inner");
 		this.featurePanel = el("div.home-feature-panel", this.featurePanelInner);
@@ -164,6 +199,23 @@ export class HomeScreen {
 
 	refreshDepth() {
 		this.depthLabel.textContent = `${state.depth.value}`;
+	}
+
+	// builds the current rarity-odds list for the info modal, read live each open
+	// so it reflects whatever cloud the player is on right now
+	private renderDropRatesInfo(): HTMLElement {
+		const odds = getRarityOdds(state.depth.value);
+		return el(
+			"div.home-drop-rates",
+			(Object.entries(odds) as [keyof typeof odds, number][]).map(([rarity, pct]) => {
+				const row = el("div.home-drop-rate-row", [
+					el("span.home-drop-rate-label", rarity),
+					el("span.home-drop-rate-value", `${pct.toFixed(1)}%`),
+				]);
+				row.style.color = RARITY_COLORS[rarity];
+				return row;
+			}),
+		);
 	}
 
 	refreshDust() {

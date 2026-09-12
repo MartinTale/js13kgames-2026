@@ -112,6 +112,13 @@ function blendWeights<key extends string>(base: Record<key, number>, boosted: Re
 	return blended;
 }
 
+// current drop odds (%) per rarity at this depth, for display in the info modal
+export function getRarityOdds(depth: number): Record<Rarity, number> {
+	const weights = blendWeights(RARITY_WEIGHTS, RARITY_WEIGHTS_BOOSTED, depthLuck(depth));
+	const total = Object.values(weights).reduce((sum, w) => sum + w, 0);
+	return Object.fromEntries(Object.entries(weights).map(([k, w]) => [k, (w / total) * 100])) as Record<Rarity, number>;
+}
+
 export function generateItem(depth: number): Item {
 	const luck = depthLuck(depth);
 	const rarity = weightedPick(blendWeights(RARITY_WEIGHTS, RARITY_WEIGHTS_BOOSTED, luck));
