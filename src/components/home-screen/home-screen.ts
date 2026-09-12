@@ -6,6 +6,7 @@ import { state } from "../../systems/state";
 import { createItemCard, RARITY_COLORS, STAT_LABELS, STATS } from "../../systems/items";
 import { getInventoryStats } from "../../systems/combat";
 import { openModal } from "../modal/modal";
+import { fireLootBeam } from "../../systems/loot-beam";
 
 const INVENTORY_SIZE = 8;
 const STAT_ROWS: (typeof STATS[number])[][] = [
@@ -72,14 +73,30 @@ export class HomeScreen {
 		});
 	}
 
-	refreshInventory() {
-		state.inventory.value.forEach((item, index) => {
-			const slot = this.slots[index];
-			slot.classList.toggle("empty", !item);
-			slot.classList.toggle("emoji-glyph", !!item);
-			slot.textContent = item ? item.emoji : "";
-			slot.style.borderColor = item ? RARITY_COLORS[item.rarity] : "";
+	// skipIndex: leave that slot's DOM untouched, e.g. while its loot beam is still in flight
+	refreshInventory(skipIndex: number | null = null) {
+		state.inventory.value.forEach((_, index) => {
+			if (index !== skipIndex) this.refreshSlot(index);
 		});
+	}
+
+	// fires the rainbow beam from the Magic button to slotIndex, then refreshes
+	// that slot's icon/border once the beam lands (see loot-beam's BEAM_DURATION)
+	playLootBeam(slotIndex: number, beamContainer: HTMLElement) {
+		const slot = this.slots[slotIndex];
+		fireLootBeam(beamContainer, this.magicButton, slot, "game");
+
+		setTimeout(() => this.refreshSlot(slotIndex), 220);
+	}
+
+	private refreshSlot(index: number) {
+		const item = state.inventory.value[index];
+		const slot = this.slots[index];
+
+		slot.classList.toggle("empty", !item);
+		slot.classList.toggle("emoji-glyph", !!item);
+		slot.textContent = item ? item.emoji : "";
+		slot.style.borderColor = item ? RARITY_COLORS[item.rarity] : "";
 	}
 
 	private openSlot(index: number) {

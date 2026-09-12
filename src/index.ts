@@ -15,7 +15,8 @@ import { HomeScreen } from "./components/home-screen/home-screen";
 import { BattleScreen } from "./components/battle-screen/battle-screen";
 import { RevealScreen } from "./components/reveal-screen/reveal-screen";
 import { DiffScreen } from "./components/diff-screen/diff-screen";
-import { generateItem, getItemScore } from "./systems/items";
+import { generateItem } from "./systems/items";
+import { randomInteger } from "./helpers/numbers";
 
 export let bodyElement: HTMLElement;
 export let gameContainer: HTMLElement;
@@ -124,24 +125,19 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	function resolveLoot(item: ReturnType<typeof generateItem>) {
 		const inventory = state.inventory.value;
-		const emptySlot = inventory.findIndex((slot) => slot === null);
+		const targetSlot = randomInteger(0, inventory.length - 1);
 
-		if (emptySlot !== -1) {
-			equipItem(emptySlot, item);
-			backToHome();
+		if (inventory[targetSlot] === null) {
+			equipItem(targetSlot, item);
+			backToHome(targetSlot);
 			return;
 		}
 
-		const weakestSlot = inventory.reduce(
-			(weakest, slot, index) => (getItemScore(slot) < getItemScore(inventory[weakest]) ? index : weakest),
-			0,
-		);
-
 		diffScreen.refreshDepth();
 		screens.show("diff").then(() => {
-			diffScreen.show(weakestSlot, item, (equip) => {
-				if (equip) equipItem(weakestSlot, item);
-				backToHome();
+			diffScreen.show(targetSlot, item, (equip) => {
+				if (equip) equipItem(targetSlot, item);
+				backToHome(equip ? targetSlot : null);
 			});
 		});
 	}
@@ -152,11 +148,16 @@ window.addEventListener("DOMContentLoaded", () => {
 		state.inventory.value = inventory;
 	}
 
-	function backToHome() {
+	// beamSlot: play the rainbow beam into that slot once Home is visible; null skips it
+	function backToHome(beamSlot: number | null) {
 		screens.show("home").then(() => {
 			homeScreen.refreshDepth();
 			homeScreen.refreshStats();
-			homeScreen.refreshInventory();
+			homeScreen.refreshInventory(beamSlot);
+
+			if (beamSlot !== null) {
+				homeScreen.playLootBeam(beamSlot, screens.container);
+			}
 		});
 	}
 
