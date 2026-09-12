@@ -109,11 +109,16 @@ window.addEventListener("DOMContentLoaded", () => {
 					state.depth.value += 1;
 
 					const item = generateItem(state.depth.value);
+					const targetSlot = randomInteger(0, state.inventory.value.length - 1);
 
-					revealScreen.refreshDepth();
-					screens.show("reveal").then(() => {
-						revealScreen.show(item, () => {
-							resolveLoot(item);
+					screens.show("home").then(async () => {
+						await homeScreen.levelUp(targetSlot, screens.container);
+
+						revealScreen.refreshDepth();
+						screens.show("reveal").then(() => {
+							revealScreen.show(item, () => {
+								resolveLoot(targetSlot, item);
+							});
 						});
 					});
 				});
@@ -121,13 +126,12 @@ window.addEventListener("DOMContentLoaded", () => {
 		}, 500);
 	});
 
-	function resolveLoot(item: ReturnType<typeof generateItem>) {
+	function resolveLoot(targetSlot: number, item: ReturnType<typeof generateItem>) {
 		const inventory = state.inventory.value;
-		const targetSlot = randomInteger(0, inventory.length - 1);
 
 		if (inventory[targetSlot] === null) {
 			equipItem(targetSlot, item);
-			backToHome(targetSlot);
+			backToHome();
 			return;
 		}
 
@@ -135,7 +139,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		screens.show("diff").then(() => {
 			diffScreen.show(targetSlot, item, (equip) => {
 				if (equip) equipItem(targetSlot, item);
-				backToHome(equip ? targetSlot : null);
+				backToHome();
 			});
 		});
 	}
@@ -146,16 +150,11 @@ window.addEventListener("DOMContentLoaded", () => {
 		state.inventory.value = inventory;
 	}
 
-	// beamSlot: play the rainbow beam into that slot once Home is visible; null skips it
-	function backToHome(beamSlot: number | null) {
+	function backToHome() {
 		screens.show("home").then(() => {
 			homeScreen.refreshDepth();
 			homeScreen.refreshStats();
-			homeScreen.refreshInventory(beamSlot);
-
-			if (beamSlot !== null) {
-				homeScreen.playLootBeam(beamSlot, screens.container);
-			}
+			homeScreen.refreshInventory();
 		});
 	}
 

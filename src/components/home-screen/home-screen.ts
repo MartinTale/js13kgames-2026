@@ -7,6 +7,7 @@ import { createItemCard, RARITY_COLORS, STAT_LABELS, STATS } from "../../systems
 import { getInventoryStats } from "../../systems/combat";
 import { openModal } from "../modal/modal";
 import { fireLootBeam } from "../../systems/loot-beam";
+import { playSound, sounds } from "../../systems/music";
 
 const INVENTORY_SIZE = 8;
 const STAT_ROWS: (typeof STATS[number])[][] = [
@@ -66,6 +67,39 @@ export class HomeScreen {
 		this.depthLabel.textContent = `${state.depth.value}`;
 	}
 
+	// bumps the cloud level with a pop animation, then beams loot into slotIndex;
+	// resolves once the beam lands, before the caller reveals what the item is
+	async levelUp(slotIndex: number, beamContainer: HTMLElement) {
+		await this.bumpDepth();
+		await this.playLootBeam(slotIndex, beamContainer);
+	}
+
+	private bumpDepth(): Promise<void> {
+		this.refreshDepth();
+		playSound(sounds.cloudPop);
+
+		const cloudAnim = this.depthCloud.animate(
+			[
+				{ transform: "scale(1) rotate(0deg)" },
+				{ transform: "scale(1.35) rotate(-8deg)", offset: 0.3 },
+				{ transform: "scale(1) rotate(0deg)" },
+			],
+			{ duration: 500, easing: "cubic-bezier(.34,1.2,.64,1)" },
+		);
+		this.depthLabel.animate(
+			[
+				{ transform: "scale(1)" },
+				{ transform: "scale(1.5)", offset: 0.3 },
+				{ transform: "scale(1)" },
+			],
+			{ duration: 500, easing: "cubic-bezier(.34,1.2,.64,1)" },
+		);
+
+		return new Promise((resolve) => {
+			cloudAnim.onfinish = () => resolve();
+		});
+	}
+
 	refreshStats() {
 		const totals = getInventoryStats(state.inventory.value);
 		STATS.forEach((stat) => {
@@ -74,20 +108,15 @@ export class HomeScreen {
 		});
 	}
 
-	// skipIndex: leave that slot's DOM untouched, e.g. while its loot beam is still in flight
-	refreshInventory(skipIndex: number | null = null) {
-		state.inventory.value.forEach((_, index) => {
-			if (index !== skipIndex) this.refreshSlot(index);
-		});
+	refreshInventory() {
+		state.inventory.value.forEach((_, index) => this.refreshSlot(index));
 	}
 
-	// fires the rainbow beam from the depth cloud to slotIndex, then refreshes
-	// that slot's icon/border once the beam lands (see loot-beam's BEAM_DURATION)
-	playLootBeam(slotIndex: number, beamContainer: HTMLElement) {
+	// fires the rainbow beam from the depth cloud to slotIndex; the slot's icon
+	// isn't updated here since the item isn't revealed/equipped yet at this point
+	playLootBeam(slotIndex: number, beamContainer: HTMLElement): Promise<void> {
 		const slot = this.slots[slotIndex];
-		fireLootBeam(beamContainer, this.depthCloud, slot, "game");
-
-		setTimeout(() => this.refreshSlot(slotIndex), 220);
+		return fireLootBeam(beamContainer, this.depthCloud, slot, "game");
 	}
 
 	private refreshSlot(index: number) {

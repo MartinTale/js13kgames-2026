@@ -6,8 +6,14 @@ const RAINBOW = ["#FF8FC7", "#FFB98F", "#FFF48F", "#8FFFC9", "#8FD9FF", "#C896FF
 const BEAM_DURATION = 1200;
 
 // fires a rainbow beam from originEl to targetEl (both within scaleContainerName's
-// scaled space) and flashes targetEl's border/glow on the same timing
-export function fireLootBeam(container: HTMLElement, originEl: HTMLElement, targetEl: HTMLElement, scaleContainerName: string) {
+// scaled space) and flashes targetEl's border/glow on the same timing; resolves once
+// the beam animation finishes
+export function fireLootBeam(
+	container: HTMLElement,
+	originEl: HTMLElement,
+	targetEl: HTMLElement,
+	scaleContainerName: string,
+): Promise<void> {
 	const originRect = originEl.getBoundingClientRect();
 	const targetRect = targetEl.getBoundingClientRect();
 	const containerRect = container.getBoundingClientRect();
@@ -25,6 +31,8 @@ export function fireLootBeam(container: HTMLElement, originEl: HTMLElement, targ
 	// east-based/counter-clockwise convention, so convert the beam's direction into that space
 	const beamAngleDeg = (Math.atan2(endY - startY, endX - startX) * 180) / Math.PI + 90 + 180;
 	burnSlot(targetEl, beamAngleDeg);
+
+	return new Promise((resolve) => setTimeout(resolve, BEAM_DURATION));
 }
 
 // tints the slot with the beam's colors and flashes its border/glow, fading out

@@ -13,17 +13,18 @@
 }
 
 .home-depth {
-	gap: 4px;
+	gap: 8px;
+	margin-bottom: 4px;
 }
 
 .home-depth-cloud {
-	width: 18px;
-	height: 18px;
-	filter: drop-shadow(0 0 2px #fff);
+	width: 36px;
+	height: 36px;
+	filter: drop-shadow(0 0 3px #fff);
 }
 
 .home-depth-value {
-	font-size: 13px;
+	font-size: 24px;
 	font-weight: bold;
 	letter-spacing: 0.5px;
 }
