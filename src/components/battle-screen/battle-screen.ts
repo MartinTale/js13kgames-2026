@@ -16,7 +16,7 @@ export class BattleScreen {
 	run(onDone: (won: boolean) => void) {
 		this.element.replaceChildren();
 
-		const player = createPlayerFighter(state.inventory.value);
+		const player = createPlayerFighter(state.inventory.value, state.depth.value);
 		const enemy = createStormling(state.depth.value);
 
 		const playerBar = el("div.hp-fill");

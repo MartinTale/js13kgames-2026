@@ -4,7 +4,7 @@ import { createButton, ButtonElement } from "../button/button";
 import { CLOUD_SVG } from "../progress-bar/progress-bar";
 import { state } from "../../systems/state";
 import { createItemCard, Item, RARITY_COLORS, STAT_LABELS, STATS } from "../../systems/items";
-import { getInventoryStats } from "../../systems/combat";
+import { getEffectiveStats, getInventoryStats } from "../../systems/combat";
 import { playSound, sounds } from "../../systems/music";
 import { BattleScreen } from "../battle-screen/battle-screen";
 
@@ -168,10 +168,19 @@ export class HomeScreen {
 
 	refreshStats() {
 		const totals = getInventoryStats(state.inventory.value);
-		STATS.forEach((stat) => {
-			const valueEl = this.statValues[stat];
-			if (valueEl) valueEl.textContent = `${totals[stat]}`;
-		});
+		const effective = getEffectiveStats(totals, state.depth.value);
+
+		this.setStatText("power", `${effective.power}`);
+		this.setStatText("guard", `${effective.guardPercent.toFixed(0)}%`);
+		this.setStatText("crit", `${effective.critPercent.toFixed(0)}%`);
+		this.setStatText("critDamage", `${effective.critDamage.toFixed(1)}x`);
+		this.setStatText("dodge", `${effective.dodgePercent.toFixed(0)}%`);
+		this.setStatText("vitality", `${effective.vitality}`);
+	}
+
+	private setStatText(stat: (typeof STATS)[number], text: string) {
+		const valueEl = this.statValues[stat];
+		if (valueEl) valueEl.textContent = text;
 	}
 
 	refreshInventory() {

@@ -1,12 +1,13 @@
 import { randomInteger } from "../helpers/numbers";
 import { el } from "../helpers/dom";
 
-export type Stat = "power" | "guard" | "crit" | "dodge" | "vitality";
-export const STATS: Stat[] = ["power", "guard", "crit", "dodge", "vitality"];
+export type Stat = "power" | "guard" | "crit" | "critDamage" | "dodge" | "vitality";
+export const STATS: Stat[] = ["power", "guard", "crit", "critDamage", "dodge", "vitality"];
 export const STAT_LABELS: Record<Stat, string> = {
 	power: "ATK",
 	guard: "DEF",
 	crit: "CRIT",
+	critDamage: "CRIT DMG",
 	dodge: "DODGE",
 	vitality: "HP",
 };
