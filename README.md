@@ -1,16 +1,15 @@
-# js13kgames-template
+# Cloudclimb
 
-WIP
+An idle-battler for [js13kGames 2026](https://js13kgames.com/). Climb an endless
+stack of clouds, fighting Stormlings for loot and Magic Dust to upgrade your gear.
 
 ## Usage
 
 ### Install
 
-Clone and install dependencies:
-
 ```bash
-git clone git@github.com:MartinTale/js13kgames-template.git
-cd js13kgames-template
+git clone git@github.com:MartinTale/js13kgames-2026.git
+cd js13kgames-2026
 npm i
 ```
 
@@ -34,6 +33,8 @@ npm run build
 
 ## Acknowledgements
 
+Built on [MartinTale/js13kgames-template](https://github.com/MartinTale/js13kgames-template) (Vite + TypeScript, DOM/CSS rendering).
+
 [Frank Force](https://twitter.com/KilledByAPixel) for [ZzFX](https://github.com/KilledByAPixel/ZzFX)
 
 [Keith Clark](https://twitter.com/keithclarkcouk) and [Frank Force](https://twitter.com/KilledByAPixel) for [ZzFXM](https://keithclark.github.io/ZzFXM/)
@@ -43,7 +44,5 @@ npm run build
 [Rob Louie](https://github.com/roblouie) for Roadroller configuration recommendations
 
 [Salvatore Previti](https://github.com/SalvatorePreviti) for Terser configuration recommendations
-
-Graphics: [Micro Roguelike by Kenney](https://www.kenney.nl/assets/micro-roguelike)
 
 [Andrzej Mazur](https://end3r.com/) for organizing js13k

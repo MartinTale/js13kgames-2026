@@ -1,7 +1,10 @@
-# js13kgames-2026
+# Cloudclimb
 
 Entry for the js13kGames 2026 compo (13 Aug - 13 Sep 2026), built on the
 [js13kgames-template](https://github.com/MartinTale/js13kgames-template) (Vite + TypeScript, DOM/CSS rendering).
+
+An idle-battler where you climb an endless stack of clouds, fighting Stormlings
+for loot and Magic Dust to upgrade your gear.
 
 ## Commands
 
