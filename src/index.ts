@@ -10,9 +10,7 @@ import { initGame, startGameLoop } from "./game/game";
 import { colors, setGameColor } from "./helpers/colors";
 import { closeModal, openModal } from "./components/modal/modal";
 import { createScaleableContainer } from "./components/scaleable-container/scaleable-container";
-import { ScreenManager } from "./components/screen-manager/screen-manager";
 import { HomeScreen } from "./components/home-screen/home-screen";
-import { BattleScreen } from "./components/battle-screen/battle-screen";
 import { generateItem } from "./systems/items";
 import { randomInteger } from "./helpers/numbers";
 
@@ -80,45 +78,32 @@ window.addEventListener("DOMContentLoaded", () => {
 		);
 	}
 
-	const screens = new ScreenManager(gameContainer);
-
-	const battleScreen = new BattleScreen();
-
-	const homeScreen = new HomeScreen(gameContainer, () => {
+	const homeScreen = new HomeScreen(gameContainer, async () => {
 		homeScreen.setMagicEnabled(false);
 
-		setTimeout(() => {
-			screens.show("battle").then(() => {
-				battleScreen.refreshDepth();
+		const won = await homeScreen.runBattle();
 
-				battleScreen.run((won) => {
-					if (!won) {
-						homeScreen.setMagicEnabled(true);
-						screens.show("home").then(() => {
-							homeScreen.refreshDepth();
-						});
-						return;
-					}
+		if (!won) {
+			homeScreen.hideBattle();
+			homeScreen.setMagicEnabled(true);
+			return;
+		}
 
-					state.level.value += 1;
-					state.depth.value += 1;
+		state.level.value += 1;
+		state.depth.value += 1;
 
-					const item = generateItem(state.depth.value);
-					const targetSlot = randomInteger(0, state.inventory.value.length - 1);
+		const item = generateItem(state.depth.value);
+		const targetSlot = randomInteger(0, state.inventory.value.length - 1);
 
-					screens.show("home").then(async () => {
-						await homeScreen.levelUp();
-						homeScreen.showLoot(targetSlot, item, (equip) => {
-							if (equip) equipItem(targetSlot, item);
-							homeScreen.hideLoot();
-							homeScreen.refreshStats();
-							homeScreen.refreshInventory();
-							homeScreen.setMagicEnabled(true);
-						});
-					});
-				});
-			});
-		}, 500);
+		homeScreen.hideBattle();
+		await homeScreen.levelUp();
+		homeScreen.showLoot(targetSlot, item, (equip) => {
+			if (equip) equipItem(targetSlot, item);
+			homeScreen.hideLoot();
+			homeScreen.refreshStats();
+			homeScreen.refreshInventory();
+			homeScreen.setMagicEnabled(true);
+		});
 	});
 
 	function equipItem(slot: number, item: ReturnType<typeof generateItem>) {
@@ -131,9 +116,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	homeScreen.refreshStats();
 	homeScreen.refreshInventory();
 
-	screens.register("home", homeScreen.element);
-	screens.register("battle", battleScreen.element);
-	screens.show("home");
+	mount(gameContainer, homeScreen.element);
 
 	setRealViewportValues();
 

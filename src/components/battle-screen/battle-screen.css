@@ -1,12 +1,7 @@
-.battle-screen {
-	justify-content: center;
-}
-
 .combat-view {
 	display: block;
 	box-sizing: border-box;
 	width: 100%;
-	max-width: 300px;
 }
 
 .hp-row {

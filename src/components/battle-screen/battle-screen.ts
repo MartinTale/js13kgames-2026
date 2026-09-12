@@ -7,21 +7,13 @@ const TICK_MS = 400;
 
 export class BattleScreen {
 	element: HTMLElement;
-	depthLabel: HTMLElement;
-	private body: HTMLElement;
 
 	constructor() {
-		this.depthLabel = el("div.screen-depth");
-		this.body = el("div.combat-view");
-		this.element = el("div.battle-screen", [this.depthLabel, this.body]);
-	}
-
-	refreshDepth() {
-		this.depthLabel.textContent = `Cloud ${state.depth.value}`;
+		this.element = el("div.combat-view");
 	}
 
 	run(onDone: (won: boolean) => void) {
-		this.body.replaceChildren();
+		this.element.replaceChildren();
 
 		const player = createPlayerFighter(state.inventory.value);
 		const enemy = createStormling(state.depth.value);
@@ -32,7 +24,7 @@ export class BattleScreen {
 		const enemyHpText = el("span", `${enemy.hp}/${enemy.maxHp}`);
 		const log = el("div.combat-log");
 
-		this.body.append(
+		this.element.append(
 			el("div.hp-row", [el("span.hp-label", [el("span", player.name), playerHpText]), el("div.hp-track", playerBar)]),
 			el("div.hp-row", [el("span.hp-label", [el("span", enemy.name), enemyHpText]), el("div.hp-track", enemyBar)]),
 			log,

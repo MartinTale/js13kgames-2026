@@ -7,6 +7,7 @@ import { createItemCard, Item, RARITY_COLORS, STAT_LABELS, STATS } from "../../s
 import { getInventoryStats } from "../../systems/combat";
 import { openModal } from "../modal/modal";
 import { playSound, sounds } from "../../systems/music";
+import { BattleScreen } from "../battle-screen/battle-screen";
 
 const INVENTORY_SIZE = 8;
 
@@ -17,12 +18,13 @@ export class HomeScreen {
 	private depthCloud: HTMLElement;
 	private statValues: Partial<Record<(typeof STATS)[number], HTMLElement>> = {};
 	private slots: HTMLElement[] = [];
-	private lootPanel: HTMLElement;
+	private featurePanel: HTMLElement;
+	private battleScreen: BattleScreen;
 	private buttonSlot: HTMLElement;
 
 	constructor(
 		private container: HTMLElement,
-		private onMagic: () => void,
+		onMagic: () => void,
 	) {
 		this.magicButton = createButton("Magic", onMagic, "primary", "md", true, 18, 1.5);
 		this.buttonSlot = el("div.home-button-slot", this.magicButton);
@@ -33,7 +35,8 @@ export class HomeScreen {
 
 		const depthRow = el("div.home-depth", [this.depthCloud, this.depthLabel]);
 
-		this.lootPanel = el("div.home-loot-panel");
+		this.featurePanel = el("div.home-feature-panel");
+		this.battleScreen = new BattleScreen();
 
 		const statsRow = el(
 			"div.home-stats-row",
@@ -53,7 +56,7 @@ export class HomeScreen {
 		const inventoryPanel = el("div.home-inventory-panel", this.slots);
 
 		const actions = el("div.home-actions", [
-			this.lootPanel,
+			this.featurePanel,
 			depthRow,
 			statsPanel,
 			inventoryPanel,
@@ -61,6 +64,24 @@ export class HomeScreen {
 		]);
 
 		this.element = el("div.home-screen", [actions]);
+	}
+
+	// runs a battle inline in the feature panel above the cloud; resolves with the outcome
+	runBattle(): Promise<boolean> {
+		this.buttonSlot.replaceChildren();
+		this.featurePanel.replaceChildren(this.battleScreen.element);
+		this.featurePanel.classList.add("active");
+
+		return new Promise((resolve) => {
+			this.battleScreen.run((won) => resolve(won));
+		});
+	}
+
+	// clears the feature panel and restores the Magic button
+	hideBattle() {
+		this.featurePanel.classList.remove("active");
+		this.featurePanel.replaceChildren();
+		this.buttonSlot.replaceChildren(this.magicButton);
 	}
 
 	setMagicEnabled(enabled: boolean) {
@@ -107,7 +128,7 @@ export class HomeScreen {
 	}
 
 	// shows the found item (or a keep/equip choice vs the occupied slot) in a panel
-	// above the cloud, dims every slot but the target and scales it up
+	// above the cloud, dimming every slot but the target
 	showLoot(slotIndex: number, item: Item, onResolved: (equip: boolean) => void) {
 		const currentItem = state.inventory.value[slotIndex];
 
@@ -115,33 +136,32 @@ export class HomeScreen {
 		this.slots[slotIndex].classList.add("highlighted");
 
 		if (!currentItem) {
-			this.lootPanel.replaceChildren(createItemCard(item, "loot"));
-			this.lootPanel.classList.add("active");
+			this.featurePanel.replaceChildren(createItemCard(item, "loot"));
+			this.featurePanel.classList.add("active");
 			this.buttonSlot.replaceChildren(createButton("Equip", () => onResolved(true), "primary", "md"));
 			return;
 		}
 
-		this.lootPanel.replaceChildren(
+		this.featurePanel.replaceChildren(
 			el("div.home-loot-compare", [
 				el("div.home-loot-side", [el("span.home-loot-side-label", "Current"), createItemCard(currentItem, "loot")]),
 				el("div.home-loot-vs", "→"),
 				el("div.home-loot-side", [el("span.home-loot-side-label", "New"), createItemCard(item, "loot")]),
 			]),
 		);
-		this.lootPanel.classList.add("active");
+		this.featurePanel.classList.add("active");
 
 		const keepButton = createButton("Keep", () => onResolved(false), "normal", "md");
 		const equipButton = createButton("Equip", () => onResolved(true), "primary", "md");
 		this.buttonSlot.replaceChildren(el("div.home-loot-choice", [keepButton, equipButton]));
 	}
 
-	// clears the loot panel/highlight and restores the Magic button
+	// clears the feature panel/highlight and restores the Magic button
 	hideLoot() {
-		this.lootPanel.classList.remove("active");
-		this.lootPanel.replaceChildren();
+		this.featurePanel.classList.remove("active");
+		this.featurePanel.replaceChildren();
 		this.slots.forEach((slot) => slot.classList.remove("dimmed", "highlighted"));
 
-		this.magicButton = createButton("Magic", this.onMagic, "primary", "md", true, 18, 1.5);
 		this.buttonSlot.replaceChildren(this.magicButton);
 	}
 
