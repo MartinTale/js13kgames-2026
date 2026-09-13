@@ -24,11 +24,13 @@
 .leaderboard-list {
 	display: flex;
 	flex-direction: column;
+	justify-content: flex-start;
 	width: 100%;
 }
 
 .leaderboard-row {
 	display: flex;
+	justify-content: flex-start;
 	align-items: center;
 	width: 100%;
 	box-sizing: border-box;
@@ -56,6 +58,7 @@
 .leaderboard-rank {
 	width: 20px;
 	flex-shrink: 0;
+	justify-content: flex-start;
 	text-align: left;
 	font-weight: bold;
 	opacity: 0.6;
@@ -80,6 +83,7 @@
 .leaderboard-name {
 	flex: 1;
 	min-width: 0;
+	justify-content: flex-start;
 	text-align: left;
 	overflow: hidden;
 	text-overflow: ellipsis;
