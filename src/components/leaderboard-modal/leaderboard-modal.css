@@ -1,0 +1,125 @@
+.leaderboard-content {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.leaderboard-panel {
+	padding: 8px 10px;
+	border-radius: 10px;
+	background-color: rgba(0, 0, 0, 0.2);
+	box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.45);
+}
+
+.leaderboard-empty {
+	padding: 12px 4px;
+	font-size: 14px;
+	opacity: 0.7;
+	text-align: center;
+}
+
+.leaderboard-list {
+	display: flex;
+	flex-direction: column;
+	max-height: 240px;
+	overflow-y: auto;
+}
+
+.leaderboard-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 6px 4px;
+	font-size: 15px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.leaderboard-row:last-child {
+	border-bottom: none;
+}
+
+.leaderboard-rank {
+	width: 20px;
+	flex-shrink: 0;
+	text-align: center;
+	font-weight: bold;
+	opacity: 0.6;
+}
+
+.leaderboard-row.top-three .leaderboard-rank {
+	opacity: 1;
+}
+
+.leaderboard-row.rank-1 .leaderboard-rank {
+	color: #ffd700;
+}
+
+.leaderboard-row.rank-2 .leaderboard-rank {
+	color: #d8d8d8;
+}
+
+.leaderboard-row.rank-3 .leaderboard-rank {
+	color: #cd7f32;
+}
+
+.leaderboard-name {
+	flex: 1;
+	min-width: 0;
+	text-align: left;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.leaderboard-depth {
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	flex-shrink: 0;
+	font-weight: bold;
+}
+
+.leaderboard-depth-icon {
+	font-size: 12px;
+}
+
+.leaderboard-current-depth {
+	text-align: center;
+	font-size: 13px;
+	opacity: 0.8;
+}
+
+.leaderboard-current-depth-value {
+	font-weight: bold;
+	opacity: 1;
+}
+
+.leaderboard-submit-row {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.leaderboard-submit-row .button-wrap {
+	width: 100%;
+}
+
+.leaderboard-submit-row button {
+	width: 100%;
+}
+
+.leaderboard-name-input {
+	width: 100%;
+	padding: 10px;
+	border-radius: 8px;
+	border: 2px solid var(--color);
+	background-color: rgba(0, 0, 0, 0.2);
+	color: inherit;
+	font: inherit;
+	box-sizing: border-box;
+}
+
+.leaderboard-name-input::placeholder {
+	color: inherit;
+	opacity: 0.5;
+}

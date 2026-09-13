@@ -15,6 +15,8 @@ export type State = {
 	inventory: Signal<(Item | null)[]>;
 	tapsToFill: Signal<number>;
 	magicDust: Signal<number>;
+	playerName: Signal<string>;
+	playerId: Signal<string>;
 };
 
 export const emptyState: State = {
@@ -27,6 +29,8 @@ export const emptyState: State = {
 	inventory: createSignal(Array(8).fill(null)),
 	tapsToFill: createSignal(3),
 	magicDust: createSignal(0),
+	playerName: createSignal(""),
+	playerId: createSignal(""),
 };
 
 export let state: State;

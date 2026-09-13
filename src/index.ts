@@ -13,6 +13,7 @@ import { createScaleableContainer } from "./components/scaleable-container/scale
 import { HomeScreen } from "./components/home-screen/home-screen";
 import { generateItem } from "./systems/items";
 import { randomInteger } from "./helpers/numbers";
+import { openLeaderboardModal } from "./components/leaderboard-modal/leaderboard-modal";
 
 export let bodyElement: HTMLElement;
 export let gameContainer: HTMLElement;
@@ -33,6 +34,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	new EdgeLinkButton(bodyElement, SVGs.discord, "#5865F2", 8, -8, "https://discord.gg/RNvbpqukvS");
 	new EdgeLinkButton(bodyElement, SVGs.coffee, "#FBAA19", 64, -8, "https://ko-fi.com/martintale?ref=cloudclimb");
+	new EdgeLinkButton(bodyElement, SVGs.trophy, "#FFD700", 120, -8, () => openLeaderboardModal(gameContainer));
 
 	soundToggle = new EdgeButton(bodyElement, SVGs.sound, "sound", 8, 8);
 
