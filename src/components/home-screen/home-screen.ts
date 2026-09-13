@@ -175,6 +175,7 @@ export class HomeScreen {
 			this.slots[this.viewingSlot].classList.remove("highlighted");
 			this.viewingSlot = null;
 		}
+		this.battleScreen.element.replaceChildren();
 		await this.crossfadeContent(this.battleScreen.element);
 		this.buttonSlot.replaceChildren();
 
