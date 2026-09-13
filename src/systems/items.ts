@@ -95,10 +95,10 @@ function rollStats(pool: Stat[], count: number): Stat[] {
 	return picked;
 }
 
-// 0 at depth 1, ramping smoothly toward 1 by depth ~35 - blends the base
+// 0 at depth 1, ramping smoothly toward 1 by depth ~75 - blends the base
 // weight tables toward their "boosted" counterparts so higher clouds drop
 // better rarity/quality more often, not just bigger numbers on the same odds
-const DEPTH_LUCK_RAMP_DEPTH = 35;
+const DEPTH_LUCK_RAMP_DEPTH = 74;
 
 function depthLuck(depth: number): number {
 	return Math.min(1, Math.max(0, depth - 1) / DEPTH_LUCK_RAMP_DEPTH);
