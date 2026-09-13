@@ -17,7 +17,28 @@ export type Fighter = {
 	usedSecondWind?: boolean;
 };
 
-const STORMLINGS = ["Thunderhead", "Sleetfang", "Grimcloud", "Hailmane", "Fogspite", "Squallhorn"];
+const STORMLINGS = [
+	"Thunderhead",
+	"Sleetfang",
+	"Grimcloud",
+	"Hailmane",
+	"Fogspite",
+	"Squallhorn",
+	"Mistclaw",
+	"Stormjaw",
+	"Cinderveil",
+	"Frostwisp",
+	"Galebrute",
+	"Nimbusfang",
+	"Duskdrifter",
+	"Rimefeather",
+	"Static",
+	"Wraithgust",
+	"Cloudreaver",
+	"Zephyrus",
+	"Boomcrag",
+	"Vaporling",
+];
 
 export function getInventoryStats(inventory: (Item | null)[]): Record<Stat, number> {
 	const totals: Record<Stat, number> = {
