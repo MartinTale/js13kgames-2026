@@ -350,8 +350,10 @@ export class HomeScreen {
 		}
 
 		this.viewingSlot = index;
-		this.slots.forEach((slot, i) => slot.classList.toggle("dimmed", i !== index));
-		this.slots[index].classList.add("highlighted");
+		this.slots.forEach((slot, i) => {
+			slot.classList.toggle("dimmed", i !== index);
+			slot.classList.toggle("highlighted", i === index);
+		});
 		await this.crossfadeContent(createItemCard(item, "loot", "Item Found", undefined, upgradeItem(item)));
 		this.renderUpgradeAction(index);
 	}
