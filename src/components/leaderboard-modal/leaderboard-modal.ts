@@ -7,7 +7,7 @@ import { state } from "../../systems/state";
 
 const PAGE_SIZE = 10;
 
-function renderPage(entries: LeaderboardEntry[], page: number): HTMLElement {
+function renderPage(entries: LeaderboardEntry[], page: number, localRank: number | null): HTMLElement {
 	if (entries.length === 0) {
 		return el("div.leaderboard-empty", "No scores yet - be the first!");
 	}
@@ -25,6 +25,7 @@ function renderPage(entries: LeaderboardEntry[], page: number): HTMLElement {
 				el("span.leaderboard-depth", [el("span.leaderboard-depth-icon", "☁️"), el("span", `${entry.depth}`)]),
 			]);
 			if (rank <= 3) row.classList.add("top-three", `rank-${rank}`);
+			if (rank === localRank) row.classList.add("local-player");
 			return row;
 		}),
 	);
@@ -43,12 +44,13 @@ export async function openLeaderboardModal(container: HTMLElement) {
 	nameInput.value = state.playerName.value;
 
 	let entries: LeaderboardEntry[] = [];
+	let localRank: number | null = null;
 	let page = 0;
 
 	function renderCurrentPage() {
 		const pageCount = Math.max(1, Math.ceil(entries.length / PAGE_SIZE));
 		page = Math.min(page, pageCount - 1);
-		listPanel.replaceChildren(renderPage(entries, page));
+		listPanel.replaceChildren(renderPage(entries, page, localRank));
 		pageLabel.textContent = `${page + 1} / ${pageCount}`;
 		prevButton.disabled = page <= 0;
 		nextButton.disabled = page >= pageCount - 1;
@@ -76,7 +78,8 @@ export async function openLeaderboardModal(container: HTMLElement) {
 			submitButton.face.disabled = true;
 			const result = await submitScore(name, state.depth.value);
 			entries = result.entries;
-			page = 0;
+			localRank = result.rank;
+			page = localRank ? Math.floor((localRank - 1) / PAGE_SIZE) : 0;
 			renderCurrentPage();
 			rankValue.textContent = result.rank ? `#${result.rank}` : "-";
 			submitButton.face.disabled = false;
@@ -101,6 +104,7 @@ export async function openLeaderboardModal(container: HTMLElement) {
 
 	const result = await fetchTopScores();
 	entries = result.entries;
+	localRank = result.rank;
 	renderCurrentPage();
 	rankValue.textContent = result.rank ? `#${result.rank}` : "-";
 }
