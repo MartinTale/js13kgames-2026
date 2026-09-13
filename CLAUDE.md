@@ -1,7 +1,10 @@
 # Cloudclimb
 
-Entry for the js13kGames 2026 compo (13 Aug - 13 Sep 2026), built on the
+Originally the entry for the js13kGames 2026 compo, built on the
 [js13kgames-template](https://github.com/MartinTale/js13kgames-template) (Vite + TypeScript, DOM/CSS rendering).
+Post-submission, the jam's 13,312-byte zip limit no longer applies - the build
+runs unminified (no Terser, no Roadroller) so property names stay stable and
+predictable.
 
 An idle-battler where you climb an endless stack of clouds, fighting Stormlings
 for loot and Magic Dust to upgrade your gear.
@@ -30,22 +33,20 @@ npm run lint      # eslint
 - Everything renders as real DOM elements styled with CSS, not canvas. `helpers/dom.ts`'s `el()`/`mount()` build elements; components are plain functions/classes that return/mutate `HTMLElement`s.
 - App state lives in `systems/state.ts` as `Signal`s (`systems/signals.ts`) - reactive values you `.subscribe()` to. State auto-saves to `localStorage` every 15s and on `beforeunload`, base64-encoded under one key.
 - The game loop runs via `requestAnimationFrame` in `game/game.ts`'s `startGameLoop`, driving `systems/animation.ts` tweens each frame.
-- `vite.config.ts` uses `js13k-vite-plugins`' `js13kViteConfig()`, which wires up Terser + Roadroller + zip size reporting automatically - no manual build script to maintain.
+- `vite.config.ts` uses `js13k-vite-plugins`' `js13kViteConfig()` with Roadroller and minification disabled (`roadrollerOptions: false`, `viteOptions: { minify: false }`) - image/zip plugins still run but no longer gate anything.
 
 ## Hard constraints
 
-- **13,312 bytes** for the final `dist/index.zip`. `npm run build` prints the size.
-- **Zero external resources.** No CDNs, fonts, or analytics. Everything ships in the zip. The leaderboard's runtime `fetch()` to the Cloudflare Worker (`src/systems/leaderboard.ts`) is the one exception - no bundled asset, just an optional network call at play time.
+- **Zero external resources bundled in the zip.** No CDNs, fonts, or analytics baked into the build. The leaderboard's runtime `fetch()` to the Cloudflare Worker (`src/systems/leaderboard.ts`) is a deliberate exception - no bundled asset, just an optional network call at play time.
 - **No console errors** in latest Chrome and Firefox.
 - Namespace the `localStorage` key in `systems/state.ts` (`STATE_KEY`) - games share one origin. Never `localStorage.clear()`.
-- Submission needs both the zip and a public GitHub repo with readable, buildable source.
 
 ## Working rules
 
 - TypeScript throughout; `tsc` runs as part of `npm run build` and must pass.
-- Roadroller is skipped in dev builds automatically (see `vite.config.ts`) but runs for the real production build - always check `npm run build`'s reported size before assuming something fits.
+- Build output is unminified on purpose: Terser's property mangler previously broke dynamic string-keyed object lookups (`RARITY_WEIGHTS[rarity]`, `state[key]`, `item.affixes[stat]`) since it can't trace runtime strings back to the literal keys it renames. Don't re-enable minification without addressing that.
 - Prefer extending the existing `systems/`/`components/` patterns over introducing new ad-hoc globals.
-- Reference docs: [docs/js13k-rules.md](docs/js13k-rules.md) - competition rules, deadlines, submission requirements.
+- Reference docs: [docs/js13k-rules.md](docs/js13k-rules.md) - original competition rules, kept for historical context only.
 
 ## Git
 
