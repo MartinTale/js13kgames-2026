@@ -333,6 +333,10 @@ export class HomeScreen {
 		slot.classList.toggle("emoji-glyph", !!item);
 		slot.textContent = item ? item.emoji : "";
 		slot.style.borderColor = item ? RARITY_COLORS[item.rarity] : "";
+
+		if (item && item.upgradeLevel > 0) {
+			slot.append(el("span.home-slot-level", `+${item.upgradeLevel}`));
+		}
 	}
 
 	// idle only: tapping a filled slot opens it inline in the feature panel

@@ -162,6 +162,15 @@
 	box-shadow: 0 0 12px 2px var(--shadow);
 }
 
+.home-slot-level {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	font-size: 9px;
+	font-weight: bold;
+	line-height: 1;
+}
+
 .home-button-slot {
 	position: relative;
 	min-height: 44px;
