@@ -46,7 +46,7 @@ export default {
 
 		if (request.method === "GET" && url.pathname === "/top") {
 			const scores = await getScores(env);
-			const id = url.searchParams.get("id") ?? "";
+			const id = (url.searchParams.get("id") ?? "").slice(0, ID_LENGTH);
 			return json(withRank(scores, id));
 		}
 
