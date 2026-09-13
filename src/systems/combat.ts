@@ -20,7 +20,14 @@ export type Fighter = {
 const STORMLINGS = ["Thunderhead", "Sleetfang", "Grimcloud", "Hailmane", "Fogspite", "Squallhorn"];
 
 export function getInventoryStats(inventory: (Item | null)[]): Record<Stat, number> {
-	const totals: Record<Stat, number> = { power: 0, guard: 0, crit: 0, critDamage: 0, dodge: 0, vitality: 0 };
+	const totals: Record<Stat, number> = {
+		"power": 0,
+		"guard": 0,
+		"crit": 0,
+		"critDamage": 0,
+		"dodge": 0,
+		"vitality": 0,
+	};
 
 	for (const item of inventory) {
 		if (!item) continue;

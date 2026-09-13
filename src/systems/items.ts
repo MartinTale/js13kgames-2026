@@ -4,51 +4,51 @@ import { el } from "../helpers/dom";
 export type Stat = "power" | "guard" | "crit" | "critDamage" | "dodge" | "vitality";
 export const STATS: Stat[] = ["power", "guard", "crit", "critDamage", "dodge", "vitality"];
 export const STAT_LABELS: Record<Stat, string> = {
-	power: "ATK",
-	guard: "DEF",
-	crit: "CRIT",
-	critDamage: "CRIT DMG",
-	dodge: "DODGE",
-	vitality: "HP",
+	"power": "ATK",
+	"guard": "DEF",
+	"crit": "CRIT",
+	"critDamage": "CRIT DMG",
+	"dodge": "DODGE",
+	"vitality": "HP",
 };
 
 export type Rarity = "common" | "rare" | "epic" | "legendary";
 export const RARITY_COLORS: Record<Rarity, string> = {
-	common: "#9CA3AF",
-	rare: "#8FD9FF",
-	epic: "#C896FF",
-	legendary: "#FFB84D",
+	"common": "#9CA3AF",
+	"rare": "#8FD9FF",
+	"epic": "#C896FF",
+	"legendary": "#FFB84D",
 };
 // total stats on the item: 1 guaranteed primary + N bonus stats by rarity
-const RARITY_BONUS_STATS: Record<Rarity, number> = { common: 0, rare: 1, epic: 2, legendary: 3 };
-const RARITY_WEIGHTS: Record<Rarity, number> = { common: 60, rare: 30, epic: 9, legendary: 1 };
-const RARITY_WEIGHTS_BOOSTED: Record<Rarity, number> = { common: 28, rare: 44, epic: 24, legendary: 4 };
+const RARITY_BONUS_STATS: Record<Rarity, number> = { "common": 0, "rare": 1, "epic": 2, "legendary": 3 };
+const RARITY_WEIGHTS: Record<Rarity, number> = { "common": 60, "rare": 30, "epic": 9, "legendary": 1 };
+const RARITY_WEIGHTS_BOOSTED: Record<Rarity, number> = { "common": 28, "rare": 44, "epic": 24, "legendary": 4 };
 
 export type AbilityId = "lifesteal" | "thorns" | "secondWind";
 export const ABILITIES: Record<AbilityId, { name: string; description: string }> = {
-	lifesteal: { name: "Vampiric", description: "Heal 15% of damage you deal" },
-	thorns: { name: "Thorned", description: "Reflect 20% of damage you take" },
-	secondWind: { name: "Second Wind", description: "Survive one killing blow per battle at 1 HP" },
+	"lifesteal": { name: "Vampiric", description: "Heal 15% of damage you deal" },
+	"thorns": { name: "Thorned", description: "Reflect 20% of damage you take" },
+	"secondWind": { name: "Second Wind", description: "Survive one killing blow per battle at 1 HP" },
 };
 const ABILITY_IDS = Object.keys(ABILITIES) as AbilityId[];
 
 export type Quality = "dull" | "shiny" | "glowing" | "radiant" | "iridescent" | "prismatic";
 // [minRoll, maxRoll, statMultiplier, weight]
 const QUALITY_TABLE: Record<Quality, [number, number, number, number]> = {
-	dull: [70, 79, 0.7, 22],
-	shiny: [80, 89, 1, 35],
-	glowing: [90, 94, 1.4, 25],
-	radiant: [95, 98, 1.9, 14],
-	iridescent: [99, 100, 2.4, 3.5],
-	prismatic: [100, 105, 2.9, 0.5],
+	"dull": [70, 79, 0.7, 22],
+	"shiny": [80, 89, 1, 35],
+	"glowing": [90, 94, 1.4, 25],
+	"radiant": [95, 98, 1.9, 14],
+	"iridescent": [99, 100, 2.4, 3.5],
+	"prismatic": [100, 105, 2.9, 0.5],
 };
 const QUALITY_TABLE_BOOSTED: Record<Quality, [number, number, number, number]> = {
-	dull: [70, 79, 0.7, 5],
-	shiny: [80, 89, 1, 20],
-	glowing: [90, 94, 1.4, 30],
-	radiant: [95, 98, 1.9, 25],
-	iridescent: [99, 100, 2.4, 15],
-	prismatic: [100, 105, 2.9, 5],
+	"dull": [70, 79, 0.7, 5],
+	"shiny": [80, 89, 1, 20],
+	"glowing": [90, 94, 1.4, 30],
+	"radiant": [95, 98, 1.9, 25],
+	"iridescent": [99, 100, 2.4, 15],
+	"prismatic": [100, 105, 2.9, 5],
 };
 
 // Unicode 13-safe (2020 or earlier) so glyphs render consistently across browsers;
@@ -132,7 +132,7 @@ export function generateItem(depth: number): Item {
 	const [minRoll, maxRoll, statMultiplier] = QUALITY_TABLE[quality];
 	const qualityRoll = randomInteger(minRoll, maxRoll);
 	const bonusCount = RARITY_BONUS_STATS[rarity];
-	const rarityMultiplier = { common: 1, rare: 1.5, epic: 2.2, legendary: 3 }[rarity];
+	const rarityMultiplier = { "common": 1, "rare": 1.5, "epic": 2.2, "legendary": 3 }[rarity];
 	const baseMin = 2 + depth * 0.6;
 	const baseMax = 4 + depth * 1.1;
 
@@ -266,12 +266,12 @@ export function createItemCard(
 
 export function getQualityGlow(quality: Quality): string {
 	const glowByQuality: Record<Quality, string> = {
-		dull: "none",
-		shiny: "0 0 4px var(--shadow)",
-		glowing: "0 0 8px var(--shadow)",
-		radiant: "0 0 12px 2px var(--shadow)",
-		iridescent: "0 0 16px 3px var(--shadow)",
-		prismatic: "0 0 20px 4px var(--shadow), 0 0 30px 6px var(--color)",
+		"dull": "none",
+		"shiny": "0 0 4px var(--shadow)",
+		"glowing": "0 0 8px var(--shadow)",
+		"radiant": "0 0 12px 2px var(--shadow)",
+		"iridescent": "0 0 16px 3px var(--shadow)",
+		"prismatic": "0 0 20px 4px var(--shadow), 0 0 30px 6px var(--color)",
 	};
 	return glowByQuality[quality];
 }
