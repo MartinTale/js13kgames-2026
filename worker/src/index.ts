@@ -14,6 +14,11 @@ function toPublic({ name, depth }: Entry): PublicEntry {
 	return { name, depth };
 }
 
+function withRank(scores: Entry[], id: string): { entries: PublicEntry[]; rank: number | null } {
+	const rank = scores.findIndex((entry) => entry.id === id);
+	return { entries: scores.map(toPublic), rank: rank === -1 ? null : rank + 1 };
+}
+
 const corsHeaders = {
 	"Access-Control-Allow-Origin": "*",
 	"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -41,7 +46,8 @@ export default {
 
 		if (request.method === "GET" && url.pathname === "/top") {
 			const scores = await getScores(env);
-			return json(scores.slice(0, 10).map(toPublic));
+			const id = url.searchParams.get("id") ?? "";
+			return json(withRank(scores, id));
 		}
 
 		if (request.method === "POST" && url.pathname === "/submit") {
@@ -74,7 +80,7 @@ export default {
 			const trimmed = scores.slice(0, MAX_ENTRIES);
 
 			await env.LEADERBOARD.put(KEY, JSON.stringify(trimmed));
-			return json(trimmed.slice(0, 10).map(toPublic));
+			return json(withRank(trimmed, id));
 		}
 
 		return json({ error: "not found" }, 404);

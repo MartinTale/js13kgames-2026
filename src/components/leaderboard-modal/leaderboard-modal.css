@@ -21,8 +21,6 @@
 .leaderboard-list {
 	display: flex;
 	flex-direction: column;
-	max-height: 240px;
-	overflow-y: auto;
 }
 
 .leaderboard-row {
@@ -41,7 +39,7 @@
 .leaderboard-rank {
 	width: 20px;
 	flex-shrink: 0;
-	text-align: center;
+	text-align: left;
 	font-weight: bold;
 	opacity: 0.6;
 }
@@ -83,15 +81,67 @@
 	font-size: 12px;
 }
 
-.leaderboard-current-depth {
-	text-align: center;
-	font-size: 13px;
-	opacity: 0.8;
+.leaderboard-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
 }
 
-.leaderboard-current-depth-value {
+.leaderboard-pagination.hidden {
+	display: none;
+}
+
+.leaderboard-page-button {
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	border: 2px solid var(--color);
+	background-color: rgba(0, 0, 0, 0.2);
+	color: inherit;
+	font: inherit;
 	font-weight: bold;
-	opacity: 1;
+	cursor: pointer;
+}
+
+.leaderboard-page-button:disabled {
+	opacity: 0.35;
+	cursor: default;
+}
+
+.leaderboard-page-label {
+	font-size: 13px;
+	opacity: 0.8;
+	min-width: 40px;
+	text-align: center;
+}
+
+.leaderboard-stats {
+	display: flex;
+	gap: 10px;
+}
+
+.leaderboard-stat {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	padding: 8px 4px;
+	border-radius: 10px;
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+.leaderboard-stat-label {
+	font-size: 11px;
+	opacity: 0.7;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+.leaderboard-stat-value {
+	font-size: 16px;
+	font-weight: bold;
 }
 
 .leaderboard-submit-row {
