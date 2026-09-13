@@ -23,6 +23,7 @@ npm run lint      # eslint
 - `src/components/` - reusable DOM UI pieces (button, modal, progress-bar, edge-button, fireflies, scaleable-container)
 - `src/helpers/` - small pure utilities (dom, colors, numbers)
 - `src/third-party-libraries/` - vendored ZzFX/ZzFXM (keep unmodified)
+- `worker/` - Cloudflare Worker + KV backing the global leaderboard; deployed separately via `wrangler deploy`, not part of the zip build
 
 ## Architecture
 
@@ -34,7 +35,7 @@ npm run lint      # eslint
 ## Hard constraints
 
 - **13,312 bytes** for the final `dist/index.zip`. `npm run build` prints the size.
-- **Zero external resources.** No CDNs, fonts, or analytics. Everything ships in the zip.
+- **Zero external resources.** No CDNs, fonts, or analytics. Everything ships in the zip. The leaderboard's runtime `fetch()` to the Cloudflare Worker (`src/systems/leaderboard.ts`) is the one exception - no bundled asset, just an optional network call at play time.
 - **No console errors** in latest Chrome and Firefox.
 - Namespace the `localStorage` key in `systems/state.ts` (`STATE_KEY`) - games share one origin. Never `localStorage.clear()`.
 - Submission needs both the zip and a public GitHub repo with readable, buildable source.
