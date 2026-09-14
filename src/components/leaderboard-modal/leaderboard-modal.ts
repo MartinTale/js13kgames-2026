@@ -1,5 +1,6 @@
 import "./leaderboard-modal.css";
 import { el } from "../../helpers/dom";
+import { formatNumber } from "../../helpers/numbers";
 import { createButton } from "../button/button";
 import { openModal } from "../modal/modal";
 import { fetchTopScores, submitScore, LeaderboardEntry } from "../../systems/leaderboard";
@@ -22,7 +23,7 @@ function renderPage(entries: LeaderboardEntry[], page: number, localRank: number
 			const row = el("div.leaderboard-row", [
 				el("span.leaderboard-rank", `${rank}`),
 				el("span.leaderboard-name", entry.name),
-				el("span.leaderboard-depth", [el("span.leaderboard-depth-icon", "☁️"), el("span", `${entry.depth}`)]),
+				el("span.leaderboard-depth", [el("span.leaderboard-depth-icon", "☁️"), el("span", formatNumber(entry.depth))]),
 			]);
 			if (rank <= 3) row.classList.add("top-three", `rank-${rank}`);
 			if (rank === localRank) row.classList.add("local-player");
@@ -89,7 +90,7 @@ export async function openLeaderboardModal(container: HTMLElement) {
 	);
 
 	const statsRow = el("div.leaderboard-stats", [
-		el("div.leaderboard-stat", [el("span.leaderboard-stat-label", "Current cloud"), el("span.leaderboard-stat-value", `${state.depth.value}`)]),
+		el("div.leaderboard-stat", [el("span.leaderboard-stat-label", "Current cloud"), el("span.leaderboard-stat-value", formatNumber(state.depth.value))]),
 		el("div.leaderboard-stat", [el("span.leaderboard-stat-label", "Leaderboard rank"), rankValue]),
 	]);
 

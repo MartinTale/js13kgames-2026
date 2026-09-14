@@ -50,6 +50,10 @@ export function abbreviateNumber(
 	return formattedExpValue + suffix;
 }
 
+export function formatNumber(value: number): string {
+	return Math.round(value).toLocaleString();
+}
+
 export function removeTrailingZeros(value: string): string {
 	return value.replace(/0+$/, "").replace(/\.$/, "");
 }

@@ -1,5 +1,6 @@
 import "./home-screen.css";
 import { el, svgEl } from "../../helpers/dom";
+import { formatNumber } from "../../helpers/numbers";
 import { createButton, ButtonElement } from "../button/button";
 import { CLOUD_SVG } from "../progress-bar/progress-bar";
 import { state } from "../../systems/state";
@@ -203,7 +204,7 @@ export class HomeScreen {
 	}
 
 	refreshDepth() {
-		this.depthLabel.textContent = `${state.depth.value}`;
+		this.depthLabel.textContent = formatNumber(state.depth.value);
 	}
 
 	// builds the current rarity-odds list for the info modal, read live each open
@@ -224,7 +225,7 @@ export class HomeScreen {
 	}
 
 	refreshDust() {
-		this.dustValue.textContent = `${state.magicDust.value}`;
+		this.dustValue.textContent = formatNumber(state.magicDust.value);
 	}
 
 	// bumps the cloud level with a pop animation; resolves once it settles
@@ -254,14 +255,14 @@ export class HomeScreen {
 		const totals = getInventoryStats(state.inventory.value);
 		const effective = getEffectiveStats(totals, state.depth.value);
 
-		this.setStatText("power", `${effective.power}`);
+		this.setStatText("power", formatNumber(effective.power));
 		this.setStatText("guard", `${effective.guardPercent.toFixed(0)}%`);
 		this.setStatText("crit", `${effective.critPercent.toFixed(0)}%`);
 		this.setStatText("critDamage", `${effective.critDamage.toFixed(1)}x`);
 		this.setStatText("dodge", `${effective.dodgePercent.toFixed(0)}%`);
-		this.setStatText("vitality", `${effective.vitality}`);
+		this.setStatText("vitality", formatNumber(effective.vitality));
 
-		this.sparkleValue.textContent = `${getInventoryScore(state.inventory.value)} sparkles`;
+		this.sparkleValue.textContent = `${formatNumber(getInventoryScore(state.inventory.value))} sparkles`;
 	}
 
 	private setStatText(stat: (typeof STATS)[number], text: string) {
@@ -409,7 +410,7 @@ export class HomeScreen {
 		upgradeButton.face.disabled = !canAfford;
 
 		this.buttonSlot.replaceChildren(
-			el("div.home-item-view-actions", [upgradeButton, el("span.home-upgrade-cost", `✨ ${cost} Magic Dust`)]),
+			el("div.home-item-view-actions", [upgradeButton, el("span.home-upgrade-cost", `✨ ${formatNumber(cost)} Magic Dust`)]),
 		);
 	}
 }

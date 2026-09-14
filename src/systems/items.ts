@@ -1,4 +1,4 @@
-import { randomInteger } from "../helpers/numbers";
+import { formatNumber, randomInteger } from "../helpers/numbers";
 import { el } from "../helpers/dom";
 
 export type Stat = "power" | "guard" | "crit" | "critDamage" | "dodge" | "vitality";
@@ -217,8 +217,8 @@ export function createItemCard(
 			const previewValue = previewItem?.affixes[stat];
 			const text =
 				previewValue !== undefined && previewValue !== item.affixes[stat]
-					? `+${item.affixes[stat]} → +${previewValue} ${STAT_LABELS[stat]}`
-					: `+${item.affixes[stat]} ${STAT_LABELS[stat]}`;
+					? `+${formatNumber(item.affixes[stat]!)} → +${formatNumber(previewValue)} ${STAT_LABELS[stat]}`
+					: `+${formatNumber(item.affixes[stat]!)} ${STAT_LABELS[stat]}`;
 
 			const line = el(`div.${cls}-stat`, text);
 			if (stat === item.primaryStat) line.classList.add("primary-stat");
@@ -235,7 +235,7 @@ export function createItemCard(
 	);
 
 	const score = getItemScore(item);
-	const scoreEl = el(`div.${cls}-score`, `${score}`);
+	const scoreEl = el(`div.${cls}-score`, formatNumber(score));
 	if (compareItem !== undefined) {
 		const compareScore = getItemScore(compareItem ?? null);
 		if (score > compareScore) scoreEl.classList.add("stat-up");

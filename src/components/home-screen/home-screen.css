@@ -141,18 +141,18 @@
 	transform: translate(-50%, -50%);
 	display: flex;
 	align-items: center;
-	gap: 4px;
-	padding: 3px 10px;
+	gap: 3px;
+	padding: 2px 8px;
 	border-radius: 999px;
 	background-color: var(--bg);
 	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 2px 4px rgba(0, 0, 0, 0.4);
-	font-size: 11px;
+	font-size: 9px;
 	font-weight: bold;
 	white-space: nowrap;
 }
 
 .home-sparkle-icon {
-	font-size: 12px;
+	font-size: 10px;
 }
 
 .home-slot {

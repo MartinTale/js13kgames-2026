@@ -2,7 +2,7 @@ import "./battle-screen.css";
 import { el } from "../../helpers/dom";
 import { combatTick, CombatEvent, createPlayerFighter, createStormling } from "../../systems/combat";
 import { state } from "../../systems/state";
-import { randomInteger } from "../../helpers/numbers";
+import { formatNumber, randomInteger } from "../../helpers/numbers";
 import { playSound, sounds } from "../../systems/music";
 
 const TICK_MS = 400;
@@ -25,8 +25,8 @@ export class BattleScreen {
 
 		const playerBar = el("div.hp-fill");
 		const enemyBar = el("div.hp-fill");
-		const playerHpText = el("span", `${player.hp}/${player.maxHp}`);
-		const enemyHpText = el("span", `${enemy.hp}/${enemy.maxHp}`);
+		const playerHpText = el("span", `${formatNumber(player.hp)}/${formatNumber(player.maxHp)}`);
+		const enemyHpText = el("span", `${formatNumber(enemy.hp)}/${formatNumber(enemy.maxHp)}`);
 		const log = el("div.combat-log");
 
 		const hpPanel = el("div.hp-panel", [
@@ -45,8 +45,8 @@ export class BattleScreen {
 		const updateBars = () => {
 			playerBar.style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
 			enemyBar.style.width = `${Math.max(0, (enemy.hp / enemy.maxHp) * 100)}%`;
-			playerHpText.textContent = `${Math.max(0, player.hp)}/${player.maxHp}`;
-			enemyHpText.textContent = `${Math.max(0, enemy.hp)}/${enemy.maxHp}`;
+			playerHpText.textContent = `${formatNumber(Math.max(0, player.hp))}/${formatNumber(player.maxHp)}`;
+			enemyHpText.textContent = `${formatNumber(Math.max(0, enemy.hp))}/${formatNumber(enemy.maxHp)}`;
 		};
 
 		let round = 0;
@@ -88,7 +88,7 @@ export class BattleScreen {
 				const [min, max] = won ? DUST_ON_WIN : DUST_ON_LOSS;
 				const dust = randomInteger(min, max);
 				state.magicDust.value += dust;
-				logLine(`+${dust} Magic Dust`, "dust");
+				logLine(`+${formatNumber(dust)} Magic Dust`, "dust");
 
 				onDone(won);
 				return;
@@ -102,14 +102,14 @@ export class BattleScreen {
 			} else {
 				const verb = event.attacker === "You" ? "hit" : "hits";
 				logLine(
-					`${event.attacker} ${verb} ${event.defender} for ${event.damage}${event.crit ? " (crit!)" : ""}`,
+					`${event.attacker} ${verb} ${event.defender} for ${formatNumber(event.damage)}${event.crit ? " (crit!)" : ""}`,
 					event.crit ? "crit" : "",
 				);
 				playSound(event.crit ? sounds.crit : sounds.hit);
 
 				if (event.savedByAbility) logLine(`${event.defender} survives with Second Wind!`, "ability");
-				if (event.healed) logLine(`${event.attacker} heals ${event.healed} from Vampiric`, "ability");
-				if (event.reflected) logLine(`${event.attacker} takes ${event.reflected} from Thorned`, "ability");
+				if (event.healed) logLine(`${event.attacker} heals ${formatNumber(event.healed)} from Vampiric`, "ability");
+				if (event.reflected) logLine(`${event.attacker} takes ${formatNumber(event.reflected)} from Thorned`, "ability");
 			}
 
 			updateBars();
