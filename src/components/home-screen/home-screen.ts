@@ -74,17 +74,8 @@ export class HomeScreen {
 			upgradeInfo,
 		]);
 
-		this.sparkleValue = el("span.home-sparkle-value", "0");
-		const sparkleInfo = infoButton(this.container, "Power Level", () => [
-			el("p", "Total Sparkles across your whole inventory."),
-			el("p", "A quick way to compare your overall gear strength run to run."),
-		]);
-		const sparkleRow = el("div.home-sparkle", [
-			el("span.home-sparkle-icon", "🌟"),
-			this.sparkleValue,
-			el("span", "Power Level"),
-			sparkleInfo,
-		]);
+		this.sparkleValue = el("span.home-sparkle-value", "0 sparkles");
+		const sparkleBadge = el("div.home-sparkle-badge", [el("span.home-sparkle-icon", "🌟"), this.sparkleValue]);
 
 		this.featurePanelInner = el("div.home-feature-panel-inner");
 		this.featurePanel = el("div.home-feature-panel", this.featurePanelInner);
@@ -105,13 +96,12 @@ export class HomeScreen {
 			slot.onclick = () => this.openSlot(index);
 			return slot;
 		});
-		const inventoryPanel = el("div.home-inventory-panel", this.slots);
+		const inventoryPanel = el("div.home-inventory-panel", [sparkleBadge, ...this.slots]);
 
 		const actions = el("div.home-actions", [
 			this.featurePanel,
 			depthRow,
 			dustRow,
-			sparkleRow,
 			statsPanel,
 			inventoryPanel,
 			this.buttonSlot,
@@ -271,7 +261,7 @@ export class HomeScreen {
 		this.setStatText("dodge", `${effective.dodgePercent.toFixed(0)}%`);
 		this.setStatText("vitality", `${effective.vitality}`);
 
-		this.sparkleValue.textContent = `${getInventoryScore(state.inventory.value)}`;
+		this.sparkleValue.textContent = `${getInventoryScore(state.inventory.value)} sparkles`;
 	}
 
 	private setStatText(stat: (typeof STATS)[number], text: string) {

@@ -79,20 +79,6 @@
 	font-weight: bold;
 }
 
-.home-sparkle {
-	gap: 4px;
-	margin-bottom: 8px;
-	font-size: 12px;
-	opacity: 0.85;
-}
-
-.home-sparkle-icon {
-	font-size: 14px;
-}
-
-.home-sparkle-value {
-	font-weight: bold;
-}
 
 .home-depth-cloud {
 	width: 36px;
@@ -136,14 +122,37 @@
 }
 
 .home-inventory-panel {
+	position: relative;
 	display: grid;
 	grid-template-columns: repeat(4, 1fr);
 	gap: 6px;
 	padding: 10px;
+	margin-top: 10px;
 	margin-bottom: 16px;
 	border-radius: 12px;
 	background-color: rgba(0, 0, 0, 0.2);
 	box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.45);
+}
+
+.home-sparkle-badge {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 3px 10px;
+	border-radius: 999px;
+	background-color: var(--bg);
+	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 2px 4px rgba(0, 0, 0, 0.4);
+	font-size: 11px;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+.home-sparkle-icon {
+	font-size: 12px;
 }
 
 .home-slot {
