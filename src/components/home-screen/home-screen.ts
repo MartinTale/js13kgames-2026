@@ -5,6 +5,7 @@ import { CLOUD_SVG } from "../progress-bar/progress-bar";
 import { state } from "../../systems/state";
 import {
 	createItemCard,
+	getInventoryScore,
 	getRarityOdds,
 	getUpgradeCost,
 	Item,
@@ -35,6 +36,7 @@ export class HomeScreen {
 	depthLabel: HTMLElement;
 	magicButton: ButtonElement;
 	private dustValue: HTMLElement;
+	private sparkleValue: HTMLElement;
 	private depthCloud: HTMLElement;
 	private statValues: Partial<Record<(typeof STATS)[number], HTMLElement>> = {};
 	private slots: HTMLElement[] = [];
@@ -72,6 +74,18 @@ export class HomeScreen {
 			upgradeInfo,
 		]);
 
+		this.sparkleValue = el("span.home-sparkle-value", "0");
+		const sparkleInfo = infoButton(this.container, "Power Level", () => [
+			el("p", "Total Sparkles across your whole inventory."),
+			el("p", "A quick way to compare your overall gear strength run to run."),
+		]);
+		const sparkleRow = el("div.home-sparkle", [
+			el("span.home-sparkle-icon", "🌟"),
+			this.sparkleValue,
+			el("span", "Power Level"),
+			sparkleInfo,
+		]);
+
 		this.featurePanelInner = el("div.home-feature-panel-inner");
 		this.featurePanel = el("div.home-feature-panel", this.featurePanelInner);
 		this.battleScreen = new BattleScreen();
@@ -97,6 +111,7 @@ export class HomeScreen {
 			this.featurePanel,
 			depthRow,
 			dustRow,
+			sparkleRow,
 			statsPanel,
 			inventoryPanel,
 			this.buttonSlot,
@@ -255,6 +270,8 @@ export class HomeScreen {
 		this.setStatText("critDamage", `${effective.critDamage.toFixed(1)}x`);
 		this.setStatText("dodge", `${effective.dodgePercent.toFixed(0)}%`);
 		this.setStatText("vitality", `${effective.vitality}`);
+
+		this.sparkleValue.textContent = `${getInventoryScore(state.inventory.value)}`;
 	}
 
 	private setStatText(stat: (typeof STATS)[number], text: string) {

@@ -160,6 +160,10 @@ export function getItemScore(item: Item | null): number {
 	return Object.values(item.affixes).reduce((sum, value) => sum + (value || 0), 0);
 }
 
+export function getInventoryScore(inventory: (Item | null)[]): number {
+	return inventory.reduce((sum, item) => sum + getItemScore(item), 0);
+}
+
 const UPGRADE_BASE_COST = 5;
 const UPGRADE_COST_GROWTH = 1.5;
 const UPGRADE_STAT_GROWTH = 0.15;

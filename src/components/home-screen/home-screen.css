@@ -79,6 +79,21 @@
 	font-weight: bold;
 }
 
+.home-sparkle {
+	gap: 4px;
+	margin-bottom: 8px;
+	font-size: 12px;
+	opacity: 0.85;
+}
+
+.home-sparkle-icon {
+	font-size: 14px;
+}
+
+.home-sparkle-value {
+	font-weight: bold;
+}
+
 .home-depth-cloud {
 	width: 36px;
 	height: 36px;
