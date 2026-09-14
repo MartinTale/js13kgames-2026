@@ -75,7 +75,7 @@ export class HomeScreen {
 			upgradeInfo,
 		]);
 
-		this.sparkleValue = el("span.home-sparkle-value", "0 sparkles");
+		this.sparkleValue = el("span.home-sparkle-value", "0");
 		const sparkleBadge = el("div.home-sparkle-badge", [el("span.home-sparkle-icon", "🌟"), this.sparkleValue]);
 
 		this.featurePanelInner = el("div.home-feature-panel-inner");
@@ -262,7 +262,7 @@ export class HomeScreen {
 		this.setStatText("dodge", `${effective.dodgePercent.toFixed(0)}%`);
 		this.setStatText("vitality", formatNumber(effective.vitality));
 
-		this.sparkleValue.textContent = `${formatNumber(getInventoryScore(state.inventory.value))} sparkles`;
+		this.sparkleValue.textContent = formatNumber(getInventoryScore(state.inventory.value));
 	}
 
 	private setStatText(stat: (typeof STATS)[number], text: string) {
